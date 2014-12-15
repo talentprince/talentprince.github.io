@@ -91,7 +91,7 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name:
+disqus_short_name: princechen
 disqus_show_comment_count: false
 
 # Google Analytics
@@ -99,3 +99,7 @@ google_analytics_tracking_id:
 
 # Facebook Like
 facebook_like: false
+
+#duoshuo
+duoshuo_comments: true
+duoshuo_short_name: talentprince
