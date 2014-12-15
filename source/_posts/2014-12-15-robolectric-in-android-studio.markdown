@@ -56,8 +56,8 @@ Setup in Android Studio
 3. 配置Debug属性
 >  增加Gradle任务并设置JUnit运行目录, 添加增加的Gradle任务在Make之前,进行编译
 >  cmd + , 进入工程配置
-![Gradle Set](images/res/201412/gradle_set.png)
-![Junit Set](images/res/201412/junit_set.png)
+![Gradle Set](/blog/images/res/201412/gradle_set.png)
+![Junit Set](/blog/images/res/201412/junit_set.png)
 
 
  
