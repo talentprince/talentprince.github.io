@@ -34,10 +34,13 @@ Robolectric makes this possible by rewriting Android SDK classes as they’re be
 
 ----------
 
+<!--more-->
+
 Setup in Android Studio
 -----------------------
 
 1. 读取sdk所在目录, 通过local.properties 
+gradle
 > repositories {
 >   def androidHome = System.getenv("ANDROID_HOME")
 >    if(androidHome == null) {
@@ -50,8 +53,18 @@ Setup in Android Studio
 >    }
 >}
 2. 设置robolectric的配置文件,指定res与manifest所在目录
+org.robolectric.Config.properties
 > manifest: xxxxxxx
 > resourceDir: xxxxx
+
+gradle:
+> sourceSets {
+>   test {
+>       // Fix for running tests through AndroidStudio
+>       // Make sure our resources are on our classpath
+>       output.dir(output.resourcesDir, builtBy: "processTestResources")
+>   }
+>}
 
 3. 配置Debug属性
 >  增加Gradle任务并设置JUnit运行目录, 添加增加的Gradle任务在Make之前,进行编译
