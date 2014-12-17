@@ -8,12 +8,6 @@ description: Robolectric in Android Studio
 keywords: Android Studio Robolectric Test
 ---
 
-
-Robolectric in Android Studio
-=============================
-
-----------
-
 Robolectric
 -----------
 Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:
