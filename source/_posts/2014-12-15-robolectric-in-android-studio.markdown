@@ -6,6 +6,7 @@ comments: true
 categories: Android
 description: Robolectric in Android Studio
 keywords: Android Studio Robolectric Test
+tag: [android, robolectric]
 ---
 
 Robolectric

@@ -6,6 +6,7 @@ comments: true
 categories: android
 keywords: Android Activity  TaskState Launchmode taskAffinity  Intent Flags
 description: Activity Task State与Launch Mode 揭秘
+tags: [android]
 ---
 Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。
 <!--more-->
