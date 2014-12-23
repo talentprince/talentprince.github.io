@@ -19,7 +19,7 @@ dependencies {
     compile 'joda-time:joda-time:2.6'
 }
 ```
-
+<!--more-->
 #使用
 大致有两种方式可以对ISO8601时间进行格式化
 ```Java
