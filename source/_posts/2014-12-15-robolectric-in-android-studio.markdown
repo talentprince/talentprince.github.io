@@ -72,6 +72,41 @@ Setup in Android Studio
 >  cmd + , 进入工程配置
 ![Gradle Set](/images/res/201412/gradle_set.png)
 ![Junit Set](/images/res/201412/junit_set.png)
+
+
+
+如果不想通过配置文件指定位置,可以通过重写方法,写死路径来指定Android项目的Manifest与Res位置
+如:
+```Java
+    public class ApplicationTestRunner extends RobolectricTestRunner {
+
+        //Maximun SDK Robolectric will compile (issues with SDK > 18)
+        private static final int MAX_SDK_SUPPORTED_BY_ROBOLECTRIC = 18;
+
+        private static final String ANDROID_MANIFEST_PATH = "../app/build/intermediates/manifests/full/unittest/debug/AndroidManifest.xml";
+        private static final String ANDROID_MANIFEST_RES_PATH = "../app/build/intermediates/res/unittest/debug";
+
+        /**
+         * Call this constructor to specify the location of resources and AndroidManifest.xml.
+         *
+         * @throws org.junit.runners.model.InitializationError
+         */
+        public ApplicationTestRunner(Class<?> testClass) throws InitializationError {
+            super(testClass);
+        }
+
+        @Override
+        protected AndroidManifest getAppManifest(Config config) {
+            return new AndroidManifest(Fs.fileFromPath(ANDROID_MANIFEST_PATH),
+                    Fs.fileFromPath(ANDROID_MANIFEST_RES_PATH)) {
+                @Override
+                public int getTargetSdkVersion() {
+                    return MAX_SDK_SUPPORTED_BY_ROBOLECTRIC;
+                }
+            };
+        }
+    }
+```
  
 ----------
 

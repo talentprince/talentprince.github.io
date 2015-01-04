@@ -1,11 +1,11 @@
 ---
 layout: post
-title: "Joda Time 中英格式化相关问题"
+title: "Joda Time 中英格式化相关问题 for Java"
 date: 2014-12-23 14:19:17 +0800
 comments: true
 categories: Java
 tags: [Java Joda]
-description: Joda Time 中英格式化相关问题
+description: Joda Time 中英格式化相关问题 for Java
 keywords: Java Joda
 ---
 #Joda Time
@@ -33,7 +33,7 @@ String str = date.toString(fmt);
 ```
 
 #中英文格式区别
-通过官方文档可知, 常用的`Symbol`有`E`(星期) `y`(年) `d`(日) `M`(月) `H`(小时0~23) `k`(时钟小时1~24) `m`(分钟) `s`(秒)
+通过官方文档可知, 常用的`Symbol`有`E`(星期) `y`(年) `d`(日) `M`(月) `H`(小时0~23) `k`(时钟小时1~24) `m`(分钟) `s`(秒) `K`(小时0~11) `a`(am/pm)
 
  - **E** 中文永远都是`星期X` 英文`E`代表简写,如`Mon`, 而`EEEE`代表`Monday`, 调皮的话可以发现`EE`跟`EEE`都是简写,而再多的`E`都是全写
 
@@ -43,7 +43,7 @@ String str = date.toString(fmt);
 
  - **M** 英文`M`跟`MM`为数字月份,如`03`, `MMM`则为简写`Mar`, 而`MMMM`或者更多(调皮)为`March`. 中文三个或以上为`X月`,其他都为纯数字
 
- - `H` `K` `m` `s`超过两个后,就会补0
+ - `H` `K` `k` `m` `s`等小时分钟,一个为0,超过加0
 
  - `Z`表示时区, 个数多少也有不同, 可参见官方文档
 
