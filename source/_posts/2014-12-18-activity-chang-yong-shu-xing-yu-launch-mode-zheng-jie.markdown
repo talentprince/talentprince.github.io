@@ -10,11 +10,15 @@ tags: [android]
 ---
 Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。
 <!--more-->
+
+
 *Task概念*
 
 ----------
 
 >Task相当于一个栈，用来管理Activity，默认情况下每一个程序都会拥有一个自己的Task，有自己独立的id，所以一个手机同时可能会拥有很多Task，标识就是id，默认情况下跟包名有关系。
+
+
 
 *Mode*
 
@@ -33,12 +37,16 @@ Android Activity所涉及的四种Launch Mode与其重要的几个属性，如ta
 >官方解读，启动的Activity会开启一个新的Task并独享，在其上启动的Activity会寻找其他合适的Task
 
 
+
+
 *Mode揭秘*
 
 ----------
 
  1.  singleTask的Activity**不一定**是在栈低，在默认状况也**不会**创建新的Task，除非指定taskAffinity，或使用其他程序启动该Activity（或在另外的进程启动，如Receiver之类的回调中，需加NEW_TASK标识），如果没有对应的Task，则会创建，如果已有，则会附庸。其特性可利用之处在于，**其总能保证一个Task内只有一个实例，并且总会销毁位于它之上的所有Activity**
  2. singleInstance的Activity**永远会**创建新的Task并自己独享该Activity，不会受到taskAffinity的影响，并且在其上开启的其他Activity都会寻找适合自己的Task（如指定则会附庸或者创建，如未指定则会使用之前默认的栈），singleInstance能保证**整个操作系统**拥有**唯一**的实例对象。
+
+
 
 
 *Activity对task state影响的其他属性介绍*
@@ -56,6 +64,9 @@ Android Activity所涉及的四种Launch Mode与其重要的几个属性，如ta
  
  4. android:finishOnTaskLaunch
 >默认false，如果开启，程序重新启动，会销毁所有存在的Activity，也只对根Activity生效
+
+
+
 
 *重要的几个Intent Flag介绍*
 

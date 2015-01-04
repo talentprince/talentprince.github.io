@@ -39,10 +39,8 @@ Butterknite是一个专注于简化View相关使用的DI框架, 而且其不像`
         ButterKnife.inject(this);
 
     }
-```
-
-2. 指定控件的id, 这里定义了 `TextView` `EditText` `Button` 用于测试
-
+```  
+2. 指定控件的id, 这里定义了 `TextView` `EditText` `Button` 用于测试  
 3. 使用`Butterknife`注解简化代码  
 ```Java
     //声明注入的View
