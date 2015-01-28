@@ -5,7 +5,7 @@ date: 2015-01-04 14:56:04 +0800
 comments: true
 categories: Android
 description: Android 与Inject(依赖注入)的不解之缘
-keywords: Android Inject Butterknife Dagger
+keywords: Android,Inject,Butterknife,Dagger,依赖注入,annotation,注解
 tags: [android, inject]
 ---
  依赖注入(DI)

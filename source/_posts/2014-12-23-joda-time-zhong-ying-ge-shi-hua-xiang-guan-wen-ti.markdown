@@ -6,7 +6,7 @@ comments: true
 categories: Java
 tags: [Java Joda]
 description: Joda Time 中英格式化相关问题 for Java
-keywords: Java Joda
+keywords: Java,Joda,Android,时间格式
 ---
 #Joda Time
 Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  

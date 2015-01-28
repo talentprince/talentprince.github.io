@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "Activity Launch Mode 与 Intent Flags 揭秘"
+title: "Activity LaunchMode 与 Intent Flags 揭秘"
 date: 2014-12-18 19:24:32 +0800
 comments: true
 categories: android
-keywords: Android Activity  TaskState Launchmode taskAffinity  Intent Flags
+keywords: Android,Activity,TaskState,Launchmode,taskAffinity,Intent,Flags
 description: Activity Task State与Launch Mode 揭秘
 tags: [android]
 ---

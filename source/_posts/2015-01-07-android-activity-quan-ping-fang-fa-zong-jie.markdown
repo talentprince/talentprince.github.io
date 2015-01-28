@@ -5,7 +5,7 @@ date: 2015-01-07 15:30:21 +0800
 comments: true
 categories: android
 description: Android Activity 全屏方法总结
-keywords: Android Activity 全屏 Fullscreen
+keywords: Android,Activity,全屏,fullscreen
 tag: [android]
 ---
 Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.

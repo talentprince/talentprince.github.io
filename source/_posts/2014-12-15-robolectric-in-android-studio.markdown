@@ -5,7 +5,7 @@ date: 2014-12-15 15:07:06 +0800
 comments: true
 categories: Android
 description: Robolectric in Android Studio
-keywords: Android Studio Robolectric Test
+keywords: AndroidStudio,robolectric,test,android,unit test
 tag: [android, robolectric]
 ---
 

@@ -6,9 +6,9 @@ url: http://talentprince.github.io
 title: Weyoung's Blog
 subtitle: 長樂未央
 author: Prince Chen
-simple_search: https://www.google.com/search
+simple_search: https://www.baidu.com/search
 description: 技术博客,专注移动互联网
-keywords: Mobile Android Java C++ 移动互联网
+keywords: Mobile,Android,Java,webkit,C++,移动互联网
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
