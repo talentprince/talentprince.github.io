@@ -206,6 +206,28 @@ public class DemoActivity extends Activity {
 
 下面就可以通过`@Inject`轻松使用**无需再构造**的对象了, 以后只需要添加`injects`, 并且调用`inject`方法, 就可以在其他类继续**无构造**使用提供过`Provides`的对象啦
 
+-------
+
+####PS:
+
+当然把所有注入对象的构造声明全部放在我们的`DemoModule`里面也显得有些繁琐, 实际上`Dagger`也支持标准的`Java`注入格式. 我们可以直接在自己声明的需要**注入**的类上面添加**注解**, 来让`Dagger`找到它的构造函数. 如:
+
+```Java
+@Singleton
+class DaggerHehe {
+    @Inject
+    DaggerHehe(Context context) {
+    ...
+    }
+    @Inject
+    DaggerHehe(DaggerTa ta) {
+    ...
+    }
+}
+```
+
+在预编译的时候, `Dagger`就会通过`@Inject`找到`DaggerHehe`的构造, 当然`DaggerHehe`的参数也都需要注入哦. `@Singleton`同样的将该类声明为一个单例了, 并且还少了之前的`@Provider`注解, 是不是显得很精简. 赶快去试试吧!
+
 --------------
 
 详细可参考: http://square.github.io/dagger/
