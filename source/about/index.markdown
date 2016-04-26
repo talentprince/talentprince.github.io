@@ -17,6 +17,7 @@ Thinking changes everything
 -----------
 [Yanni](http://yanni4night.com/)  
 [圣骑士Wind](http://www.cnblogs.com/mengdd/)  
+[LC+](http://www.lchml.com)  
 
 
 
