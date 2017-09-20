@@ -7,12 +7,12 @@ title: Weyoung's Blog
 subtitle: Nothing can prevent is going to be
 description:
 author: Prince Chen
-language:
-timezone:
+language: zh-Hans
+timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: http://talentprince.github.io
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -72,7 +72,8 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: casper
+theme: tranquilpeak
+post_assert_folder: true
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
@@ -80,3 +81,20 @@ deploy:
   type: git
   repo: https://github.com/talentprince/talentprince.github.io
   branch: master
+
+# RSS
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+
+# Sitemap
+sitemap:
+path: sitemap.xml
+
+# Local search
+search:
+  path: search.xml
+  field: post
+
