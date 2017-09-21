@@ -8,31 +8,36 @@ tags: [Java Joda]
 description: Joda Time 中英格式化相关问题 for Java
 keywords: Java,Joda,Android,时间格式
 ---
-#Joda Time
+# Joda Time
+
 Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  
 
-#Install
+## Install
+
 Joda已经更新到2.6版本,jar包的下载可以到[Joda Jar](https://github.com/JodaOrg/joda-time/releases/tag/v2.6)进行下载.
-如果使用gradle管理,可添加  
+如果使用gradle管理,可添加 
+
 ```
 dependencies {
     compile 'joda-time:joda-time:2.6'
 }
 ```
 <!--more-->
-#使用
+## 使用
 大致有两种方式可以对ISO8601时间进行格式化
+
 ```Java
 DateTime dateTime  = new DateTime();//也可以传入ISO8601格式时间作为参数
 textView.setText(dateTime.toString("EEEE MMMM dd yyyy HH:mm:ss"));
 ```
+
 ```Java
 LocalDate date = LocalDate.now();
 DateTimeFormatter fmt = DateTimeFormat.forPattern("EEEE MMMM dd yyyy HH:mm:ss");
 String str = date.toString(fmt);
 ```
 
-#中英文格式区别
+## 中英文格式区别
 通过官方文档可知, 常用的`Symbol`有`E`(星期) `y`(年) `d`(日) `M`(月) `H`(小时0~23) `k`(时钟小时1~24) `m`(分钟) `s`(秒) `K`(小时0~11) `a`(am/pm)
 
  - **E** 中文永远都是`星期X` 英文`E`代表简写,如`Mon`, 而`EEEE`代表`Monday`, 调皮的话可以发现`EE`跟`EEE`都是简写,而再多的`E`都是全写

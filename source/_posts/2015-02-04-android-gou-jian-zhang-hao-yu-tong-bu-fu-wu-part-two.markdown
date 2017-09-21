@@ -10,7 +10,7 @@ description: Android 构建账号与同步服务 SyncAdapter Account Authenticat
 ---
 紧接[上一部分](http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/)
 
-####更新系统的建立
+#### 更新系统的建立
 
 更新系统即是所说的[SyncAdapter](http://developer.android.com/training/sync-adapters/creating-sync-adapter.html), 实现了这个系统服务, 就可以利用系统的定时器对程序数据`ContentProvider`进行更新, 也可以在系统设置->账号里面控制开启或者关闭(如果`SyncAdapter`的配置文件允许的话)
 
@@ -22,7 +22,7 @@ description: Android 构建账号与同步服务 SyncAdapter Account Authenticat
 
 <!--more-->
 
-#####第一步
+##### 第一步
 
 Sync服务一般工作在独立的进程, 并且可由操作系统调度, 当然要实现自己的Binder接口, 好在Google已经提供了非常简单的抽象类`AbstractThreadedSyncAdapter`来完成这件事情.
 
@@ -66,7 +66,7 @@ public class SyncService extends Service{
 
 由代码可以看出, 定义的`SyncService`会提供已经`SyncAdapter`的Binder对象, 这样就可以通过连接这个同步服务来完成同步啦, 当然这些事情都是交给操作系统的, 所以这个Service的声明有讲究的地方.
 
-#####第二步
+##### 第二步
 
 正如第一步最后所讲, 此服务需能交给操作系统使唤, 那么声明也需要加入一些表示, 具体如下.
 
@@ -102,7 +102,7 @@ public class SyncService extends Service{
 
 `supportsUploading`决定在Provider [notifyChanged](http://developer.android.com/reference/android/content/ContentResolver.html#notifyChange\(android.net.Uri, android.database.ContentObserver, boolean\))的时候, `syncToNetwork`是否起作用, 如果前者为`true`, 那么后者为`true`的时候可以触发SyncAdapter `onPerformSync`的回调
 
-#####第三步
+##### 第三步
 
 万事俱备, 只欠东风
 
@@ -141,7 +141,7 @@ ContentResolver.requestSync(
 下一部分, 我们将完成整个程序, 添加最后的账号模块, 敬请期待吧
 
 -------------
-####Reference
+#### Reference
 
 * http://developer.android.com/training/sync-adapters/creating-sync-adapter.html
 

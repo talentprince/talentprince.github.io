@@ -11,15 +11,16 @@ tag: [android, robolectric]
 
 Robolectric
 -----------
+
 Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:
 
-``` Java Example
-	// Test class for MyActivity @RunWith(RobolectricTestRunner.class)
-	public class MyActivityTest {
+```java
+  // Test class for MyActivity @RunWith(RobolectricTestRunner.class)
+  public class MyActivityTest {
  
     @Test   public void clickingButton_shouldChangeResultsViewText()
- 	throws Exception {
-	  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();
+  throws Exception {
+    Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();
       Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);
       TextView results = (TextView) activity.findViewById(R.id.results_text_view);
   
@@ -27,6 +28,7 @@ Robolectric is a unit test framework that de-fangs the Android SDK jar so you ca
       String resultsText = results.getText().toString();
       assertThat(resultsText, equalTo("Testing Android Rocks!"));   } }
 ```
+
 Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. 
 
 ----------
@@ -36,48 +38,59 @@ Robolectric makes this possible by rewriting Android SDK classes as they’re be
 Setup in Android Studio
 -----------------------
 
-1. 读取sdk所在目录, 通过local.properties   
-  
-``` Javascript gradle
-	repositories {  
-	def androidHome = System.getenv("ANDROID_HOME")  
-	 if(androidHome == null) {   
-	   Properties props = new Properties()    
-	  props.load(new FileInputStream("${projectDir.getParent()}/local.properties"))    
-	    androidHome = props.getProperty("sdk.dir")    
-	 }   
-	 maven {    
-	     url "$androidHome/extras/android/m2repository/"    
-	 }   
-	}
-``` 
+#### Step 1: 
 
-2. 设置robolectric的配置文件,指定res与manifest所在目录   
-``` Javascript   org.robolectric.Config.properties   
-	manifest: xxxxxxx   
-	resourceDir: xxxxx  
-```   
-``` Javascript  gradle    
-	sourceSets {  
-	test {  
-	    // Fix for running tests through AndroidStudio   
-	    // Make sure our resources are on our classpath    
-	    output.dir(output.resourcesDir, builtBy: "processTestResources")   
-		}   
-	}   
+读取sdk所在目录, 通过local.properties   
+
+```
+  repositories {  
+  def androidHome = System.getenv("ANDROID_HOME")  
+   if(androidHome == null) {   
+     Properties props = new Properties()    
+    props.load(new FileInputStream("${projectDir.getParent()}/local.properties"))    
+      androidHome = props.getProperty("sdk.dir")    
+   }   
+   maven {    
+       url "$androidHome/extras/android/m2repository/"    
+   }   
+  }
 ```
 
-3. 配置Debug属性
+#### Step 2: 
+
+设置robolectric的配置文件,指定res与manifest所在目录  
+
+```
+  manifest: xxxxxxx   
+  resourceDir: xxxxx  
+```
+
+```
+  sourceSets {  
+  test {  
+      // Fix for running tests through AndroidStudio   
+      // Make sure our resources are on our classpath    
+      output.dir(output.resourcesDir, builtBy: "processTestResources")   
+    }   
+  }   
+```
+
+#### Step 3 
+配置Debug属性
+
 >  增加Gradle任务并设置JUnit运行目录, 添加增加的Gradle任务在Make之前,进行编译
 >  cmd + , 进入工程配置
 ![Gradle Set](/images/gradle_set.png)
 ![Junit Set](/images/junit_set.png)
 
 
+------------
 
 如果不想通过配置文件指定位置,可以通过重写方法,写死路径来指定Android项目的Manifest与Res位置
 如:
-```Java
+
+
+```java
     public class ApplicationTestRunner extends RobolectricTestRunner {
 
         //Maximun SDK Robolectric will compile (issues with SDK > 18)

@@ -19,17 +19,19 @@ tags: [android, inject]
 
 ----------------
 
-#Butterknife
+# Butterknife
 Butterknite是一个专注于简化View相关使用的DI框架, 而且其不像`Spring`一样使用反射, 而通过预编译来做到注入效果, 大大降低了消耗, 绿色环保, 下面就来讲讲他的使用, 其实很简单.
 
 配置:
 由于目前基本都是用Android Studio开发, 这里添加gradle的依赖就行了  
+
 ```
     compile 'com.jakewharton:butterknife:6.0.0'
 ```
 
-#使用方法:
+# 使用方法:
 1. 初始化注入  
+
 ```Java
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +42,10 @@ Butterknite是一个专注于简化View相关使用的DI框架, 而且其不像`
 
     }
 ```  
+
 2. 指定控件的id, 这里定义了 `TextView` `EditText` `Button` 用于测试  
 3. 使用`Butterknife`注解简化代码  
+
 ```Java
     //声明注入的View
     @InjectView(R.id.search_src_text)
@@ -84,13 +88,14 @@ Butterknite是一个专注于简化View相关使用的DI框架, 而且其不像`
 Dagger的工作原理  
 ![Dagger](/images/dagger.png)
 
-配置:  
+配置: 
+
 ```
     compile 'com.squareup.dagger:dagger:1.2.2'
     compile 'com.squareup.dagger:dagger-compiler:1.2.2'
 ```
 
-#使用方法  
+# 使用方法  
 
 1.定义Moudle (告诉Dagger其如何构造)  
 我们首先先定义一个Android服务相关的Moudle, 简化我们对`LocationManager`的使用  
@@ -208,7 +213,7 @@ public class DemoActivity extends Activity {
 
 -------
 
-####PS:
+#### PS:
 
 当然把所有注入对象的构造声明全部放在我们的`DemoModule`里面也显得有些繁琐, 实际上`Dagger`也支持标准的`Java`注入格式. 我们可以直接在自己声明的需要**注入**的类上面添加**注解**, 来让`Dagger`找到它的构造函数. 如:
 

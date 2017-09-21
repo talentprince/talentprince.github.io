@@ -9,9 +9,9 @@ keywords: Android,SyncAdapter,Account,Authenticator,账号,同步,后台更新
 description: Android 构建账号与同步服务 SyncAdapter Account Authenticator
 ---
 
-####紧接[上期](http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/)
+#### 紧接[上期](http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/)
 
-####账号系统建立 Account Authenticator
+#### 账号系统建立 Account Authenticator
 
 如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.
 
@@ -24,7 +24,7 @@ description: Android 构建账号与同步服务 SyncAdapter Account Authenticat
 
 <!--more-->
 
-####实现AccountService 以及 Authenticator
+#### 实现AccountService 以及 Authenticator
 
 先看看所提供的重写方法
 
@@ -105,7 +105,7 @@ public class AccountService extends Service {
 
 通过`Authenticator`所提供的方法可以看出, 最核心的就是实现`addAccount`与`getAuthToken`方法, 这样我们的`AccountService`就可以获得**授权**与**添加账号**功能了
 
-####添加账号
+#### 添加账号
 
 先看代码
 
@@ -157,7 +157,7 @@ submit() {
     finish();
 ```
 
-####获得认证
+#### 获得认证
 
 先看代码
 
@@ -236,7 +236,7 @@ getAuthToken() {
 
 ----------------------
 
-####使用账号服务
+#### 使用账号服务
 
 构建好了自己的Service跟账号认证Adapter, 下面就剩如何使用了. 使用大致分为两种, 一种是直接申请Token, 一种是添加账号. 当然如果没申请到, 结果跟后面一种类似.
 
@@ -266,7 +266,7 @@ getAuthToken() {
 
 -------------
 
-####Reference:
+#### Reference:
 
 * http://developer.android.com/reference/android/accounts/AccountManager.html
 * http://developer.android.com/training/sync-adapters/creating-authenticator.html
