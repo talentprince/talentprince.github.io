@@ -4,6 +4,7 @@ title: "Android Activity 全屏方法总结"
 date: 2015-01-07 15:30:21 +0800
 comments: true
 categories: android
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg
 description: Android Activity 全屏方法总结
 keywords: Android,Activity,全屏,fullscreen
 tag: [android]

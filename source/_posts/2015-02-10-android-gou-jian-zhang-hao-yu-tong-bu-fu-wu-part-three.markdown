@@ -4,6 +4,7 @@ title: "Android 构建账号与同步服务 Part Three"
 date: 2015-02-10 17:13:33 +0800
 comments: true
 categories: Android
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg
 Tags: [android]
 keywords: Android,SyncAdapter,Account,Authenticator,账号,同步,后台更新
 description: Android 构建账号与同步服务 SyncAdapter Account Authenticator

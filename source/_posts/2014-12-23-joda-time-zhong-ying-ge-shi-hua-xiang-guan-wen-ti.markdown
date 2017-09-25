@@ -4,6 +4,7 @@ title: "Joda Time 中英格式化相关问题 for Java"
 date: 2014-12-23 14:19:17 +0800
 comments: true
 categories: Java
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png
 tags: [Java Joda]
 description: Joda Time 中英格式化相关问题 for Java
 keywords: Java,Joda,Android,时间格式

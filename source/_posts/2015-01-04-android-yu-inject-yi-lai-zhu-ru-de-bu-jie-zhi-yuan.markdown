@@ -4,6 +4,7 @@ title: "Android 与Inject(依赖注入)的不解之缘"
 date: 2015-01-04 14:56:04 +0800
 comments: true
 categories: Android
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png
 description: Android 与Inject(依赖注入)的不解之缘
 keywords: Android,Inject,Butterknife,Dagger,依赖注入,annotation,注解
 tags: [android, inject]

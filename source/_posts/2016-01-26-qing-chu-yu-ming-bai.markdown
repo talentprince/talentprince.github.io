@@ -3,11 +3,14 @@ layout: post
 title: "清楚与明白"
 date: 2016-01-26 13:55:42 +0800
 comments: true
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg
 categories: nonsense
 tag: life
 ---
 
 许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.
+
+<!--more-->
 
 #### 关于工作,
 回西安已近一年又半, 所感所闻与之前预期基本相符, 由于环境因素与行业发展因素的决定, 科技或者说技术已不再是追求与评判的首要标准, xx`技术发展`公司, xx`科技有限`公司已渐渐偏离其创建的名号. 也许这就叫做入乡随俗吧.

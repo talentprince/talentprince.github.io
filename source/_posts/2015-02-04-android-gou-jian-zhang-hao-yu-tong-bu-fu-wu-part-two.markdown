@@ -3,6 +3,7 @@ layout: post
 title: "Android 构建账号与同步服务 Part Two"
 date: 2015-02-04 13:23:02 +0800
 comments: true
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg
 categories: Android
 Tags: [android]
 keywords: Android,SyncAdapter,Account,Authenticator,账号,同步,后台更新

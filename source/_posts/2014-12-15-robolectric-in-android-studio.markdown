@@ -4,6 +4,7 @@ title: "Robolectric in Android Studio"
 date: 2014-12-15 15:07:06 +0800
 comments: true
 categories: Android
+thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png
 description: Robolectric in Android Studio
 keywords: AndroidStudio,robolectric,test,android,unit test
 tag: [android, robolectric]
