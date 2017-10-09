@@ -3,7 +3,7 @@ layout: post
 title: "Activity LaunchMode 与 Intent Flags 揭秘"
 date: 2014-12-18 19:24:32 +0800
 comments: true
-categories: android
+categories: Android
 thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg
 keywords: Android,Activity,TaskState,Launchmode,taskAffinity,Intent,Flags
 description: Activity Task State与Launch Mode 揭秘
