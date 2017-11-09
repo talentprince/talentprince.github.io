@@ -57,8 +57,7 @@ October 8th, 2017
 
 通过数据对比,得出X86 with google api的模拟器性价比最高.
 
-## [Kotlin Function Literal with Receiver
-](https://tech.io/playgrounds/6973/kotlin-function-literal-with-receiver)
+## [Kotlin Function Literal with Receiver](https://tech.io/playgrounds/6973/kotlin-function-literal-with-receiver)
 
 介绍了Kotlin的`Lambda Exstension`特性, 函数本体作为参数被访问,并函数本体内可以访问函数的Receiver.
 
