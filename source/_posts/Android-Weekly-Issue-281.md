@@ -1,5 +1,5 @@
 ---
-title: 'Android Weekly Note #282'
+title: 'Android Weekly Issue #281'
 date: 2017-11-03 09:36:41
 tags: [Kotlin Delegate,Google Actions,Dialog Flow,Android 8.1]
 categories: Android Weekly

@@ -1,5 +1,5 @@
 ---
-title: 'Android Weekly #282'
+title: 'Android Weekly Issue #282'
 date: 2017-11-13 08:24:12
 tags: [Android Weekly,Koin,Grox,Architecture Component,Room,Kotlin Coroutines,Android Prefetching]
 categories: Android Weekly
