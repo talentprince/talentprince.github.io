@@ -8,8 +8,6 @@ description: Android Weekly 中文概要 #289
 thumbnailImage: http://res.cloudinary.com/dtn0pkdmg/image/upload/v1514691335/289_fyupzr.jpg
 ---
 
-# Android Weekly Issue #289
-
 December 24th, 2017
 
 ## [Android Weekly Issue #289](http://androidweekly.net/issues/issue-289)
