@@ -1,5 +1,5 @@
 ---
-title: Android Weekly 290
+title: Android Weekly Issue #290
 date: 2018-04-01 10:37:28
 tags: [Android, IoT, Kotlin, Animation, LiveData,DataBinding,RxLog]
 categories: Android Weekly
