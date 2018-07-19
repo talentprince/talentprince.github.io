@@ -1,5 +1,5 @@
 ---
-title: 'Android Weekly #310'
+title: 'Android Weekly Issue #310'
 date: 2018-06-13 09:00:01
 tags: [Android Weekly,Google IO,Kotlin Espresso,Navigation Architecture Component]
 categories: Android Weekly
