@@ -1,5 +1,5 @@
 ---
-title: 'Android Weekly #275'
+title: 'Android Weekly Issue #275'
 date: 2017-09-27 09:00:14
 tags: [Android, Google Map, Kotlin, Architecture Component]
 categories: Android Weekly

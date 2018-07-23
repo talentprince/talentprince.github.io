@@ -4,7 +4,7 @@ date: 2017-09-30 15:03:42
 tags: [Dagger2,Android,Detect Inject,DI]
 comments: true
 description: 介绍Dagger2进阶使用,高级技巧
-categories: android
+categories: Android
 ---
 
 之前拙荆有一篇文章介绍Dagger2的[初步知识](http://www.cnblogs.com/mengdd/p/5613889.html), 本篇文章主要介绍Dagger2的进阶知识点.
