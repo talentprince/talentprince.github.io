@@ -1,0 +1,155 @@
+---
+title: Refresh Java
+date: 2020-06-2 17:54:52
+tags: [Java]
+categories: Java
+description: Thinking in Java
+thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1592819744/java_cwuv0h.png
+---
+
+当你的知识来源于实践, 你可能会忽略很多细节.
+当你的知识来源于阅读, 你可能会很快的忘掉.
+
+那么, 不如在空闲之余, 浏览一遍, 把觉得有必要的记录下来, 即便与刷新, 也便于以后温故而知新, 何乐而不为呢?
+于是便有了这138条从Thinking In Java中记下来的条目. 这本书不同于其他的Java教材, 它的作者更喜欢通过与C++进行对比来阐述Java的不同思想, 如果读者有一定C++知识储备, 会更好的理解Java的很多设计.
+
+<!--more-->
+
+- `>>>`无符号移位
+- `for(1 : range(10))`可实现计数器循环foreach
+- `printnb`不会换行放在缓冲区, `print()`将其输出
+- 带标签的`break`与`continue`可以跳出嵌套循环
+- 构造调用`this(xxx)`只能调用一次,并且在最开始
+- Java的`finalize`是在垃圾回收时候调用的, 一般是配合释放ndk相关的底层空间
+- 静态对象只有在所属类被实创建时才会被加载
+- 构造方法其实也是静态方法
+- `int[] a`与`int a[]`都可以,  前一种更合理, 后一种像C++
+- 数组初始化花括号最后一个逗号可选, 即`{x,y,z,}`
+- 没有写`package`的类默认属于目录所在包
+- 即时类不是`public`, 但是`main`方法依旧可以被调用
+- 子类调用父类方法, 父类再调用`public`方法则可能会调用到子类所继承的方法(如果覆盖的话), 如果该方法在父类是`private`, 则只会调用父类方法, 因为不能覆盖, C++如果不是虚函数, 则只会调用父类的, 因为`this`内函数地址编译时就确定了
+- `Java`函数没有隐藏/屏蔽特性, `C++`子类会同名函数会隐藏/屏蔽掉父类所有同名重载函数, 因为它会先查找函数名, 再找具体类型.
+- 早起`JVM`会根据`final`类型来内联函数, 现在已经有更先进的技术了, 只为了禁止覆盖.
+- 覆盖`private final`其实是假象而已
+- 面向对象特性, 抽象, 继承, 多态
+- `Java`除了`static`与`final`外函数都是后期绑定的, 即动态绑定
+- `Java`构建子类时父类构造函数调用已被覆盖的函数会触发动态绑定, 但此时子类未完成构造, 所以类内对象都为空值. `C++`在处理同样问题时更加合理, 由于虚表指针未完整建立, 所以不会触发动态绑定, 无论是构造还是析构函数, 都是直接调用而非虚调用, 为了避免问题, 尽量不要在构造函数内调用可被覆盖的函数, 可以调用`final`函数来防止出错
+- Java5加入被覆盖方法返回参数协变(向下转型)
+- interface中定义的所有常量都是自动static fianl的
+- 类内部定义的private接口可以进行内部public的实现, 但在外部无法看出任何有关私有接口的类型信息, 即不可向上转型
+- 嵌套在接口内的接口自动public
+- private接口不能在定义它的类之外被实现
+- 内部类持有的外部类对象学术名叫Enclosing Object(外围对象)
+- 创建非静态内部类必须通过`.new`来创建, 即使用外部对象来创建内部对象
+- private内部类可以帮助隐藏具体实现, 外部类可以提供其实例的向上转型
+- 内部类还可以放在方法里缩小scope, 作用于与局部变量一样
+- 匿名内部类没有命名构造器, 只有实例初始化传参, 或者通过final形参直接在内部使用
+- static内部类叫作嵌套类, 它不持有外围对象
+- 接口内部可以放嵌套类, 可以这么搞个测试在里面
+- 内部类更重要的作用是有效的实现了`多重继承`, 比如需要继承多个抽象类而不是接口
+- Java使用内部类实例做回调来实现闭包功能
+- Java通过接口+内部类可以结果C++多重继承所能解决的问题
+- List/Set/Queue都继承Collection, Map独立有接口, 两者唯一的关系是Map提供一个返回Collection的entrySet与values
+- Queue虽然继承于Collection, 但Queue有自己独立的接口, 创建Queue不需要Collection的方法
+- LinkedList也继承于Dequeue
+- 当我们在异常处理的终止与恢复中选择时, 开始往往是恢复, 最后趋向终止
+- 对自定义异常的扩展可能没太大用, 因为更多的时候只关注异常类型
+- 重新抛异常会保留之前的信息, 不会新加入抛出点的信息, 除非调用fillInStackTrace()
+- 重新抛出新的异常则会清楚之前的信息
+- Finally用来清理，C++靠的是析构函数
+- 即便有break，continue，return，finally始终都会被执行
+- Finally中return会吃掉try内的异常
+- Finally中抛异常会吃掉try内的异常
+- 基类构造抛出异常不用在子类限制必须抛出， 因为基类构造必须调用， 并且需要处理
+- 子类方法不能抛出基类未声明过的异常，这样直接调用基类接口不用处理，实际运行可能会出错
+- 子类方法可以抛出基类声明异常的子类异常
+- 对于构造需要清理的对象，如文件，应该将构造失败单独try/catch，而close方法放在内部的try/catch只对创建成功后进行清理
+- 字符串正则表达式查找find匹配任意位置，lookingAt只从开头匹配， matches匹配全部
+- 正则Pattern可以用`|`与操作进行组合
+- Java默认类型转换会RTTI，但是C++不会
+- setAccessable只是控制是否安全检测，public默认仍是false，关闭后速度快
+- 泛型会被擦除， ArrayList<Integer>跟ArrayList<String>一样，通过getTypeParameters()也只能得到占位符
+- C++泛型不会擦除， 所以编译的时候仍然可以获得具体使用类型，所以定义时泛型对象就可以调用实际类型的方法，Java得通过泛型extends来实现
+- 擦除主要是为了兼容低版本
+- C++可以直接new T()而Java只能通过泛型当参数newInstance，对于没有默认构造的Java可以传入泛型工场进行构造
+- 泛型可以通过extends来限制边界, 并且可以通过`&`增加多个边界, 类应该放在接口的前面
+- `Clazz<Apple>`只能向上转型为`Clazz<? extends Fruit>`, 而不能`Clazz<Fruit>`, `Clazz<Food>`可以向下转型为`Clazz<? super Fruit>`
+- `<? extends X>`指定上界, 无法进行add操作, 因为它是由子类List向上转型来的, 子类多种多样不确定, 所以不让你放, 而get返回`X`, `<? super X>`指定下届, 是由父类List向下转型来的, 可以add `X`的子类, 内部可安全强转为同一个父类(X的某个父类), 但get就不清楚是哪个父类, 所以只能拿到`Object`
+-  类不能实现泛型接口的两种变体
+-  自限定泛型继承, `class SelfBounded<T extends SelfBounded<T>>`, 任何继承SelfBounded类的泛型类型必须也是SelfBounded的导出类
+-  继承自限定类可保证接口函数导入类唯一, 参数为限定类泛型指定
+-  C++可以通过`template<class T> : T`来进行混型, 有一些AOP方面的思想
+-  Java可以通过继承多个接口, 并分别初始化的时候进行实现, 然后再代理进行混型
+-  Java也可以通过装饰器进行混型的概念, 但是由于装饰器其实只有最后一层是暴露的, 失去了内部各层的特性, 而混型是基于继承, 保留所有特性
+-  Java还可以通过动态代理, 将所有需要混型的实现与接口导入, 在invoke的时候查表得到对应的Delegate来调用方法, 实现混型, 但是不方便, 也不易懂, 不如C++静态的好
+-  对于一些脚本语言, 类型检测是在运行期, 所以可以使用潜在类型机制, 进行代码复用, 如Python, 只需要方法名一样, 或者称为鸭子类型机制, 只要走起来像鸭子, 叫起来像鸭子, 就当做鸭子...
+-  由于C++的泛型在编译器可以检测T支持的方法, 可以直接对泛型类型调用相应函数,  也可以做到类似Python的效果. 表面上看C++的泛型成了弱类型, 但实际上是安全的, 称之为具有通气门的强类型
+-  Java的泛型出现的晚, 已经不具备这种潜在类型机制了, 可以认为比他们更缺乏泛化性
+-  Java虽然不能潜在类型, 但可以通过泛型, 一定程度补偿了这样的灵活性
+-  虽然Java的Map有泛型, 但是`containsKey`, `get`之类的方法不受泛型约束, 而C++的Map是会在编译器检查类型的. 主要原因是泛型对于Java是后来引入的, 而对于C++在最初的标准版本里就引入了
+-  `Arrays.deepToString()`可以给数组填充初始默认值
+-  `Arrays.fill()`可以给数组填充指定值
+-  无法创建泛型数组, 但是类型可以被赋值
+-  `Array.newInstance`用反射的Array可以生成任意类型, 指定大小的数组
+-  `System.arraycopy`可以实现高效的数组内存拷贝
+-  自己实现Collection不一定需要支持所有的操作, 虽然平时用的List, Map, Set都实现了
+-  `Arrays.asList()`生成的是固定大小数组, 不支持改变大小的操作, 使用会抛异常
+-  `LinkedList`实现了`Queue`接口, 但是Java没有`Dequeue`接口, 不过它已经实现了所需方法`getLast`, 所以可以自己包装 
+-  `TreeMap`是唯一带`subMap`的Map, 返回一个子树, 它是`SortedMap`的唯一实现
+-  `LinkedHashMap`的散列是一个LRU, 没有被使用的数据放在前面
+-  通过`Collection.synchronized`可以创建不同的线程同步子类
+-  `SoftReference`跟`WeakReference`都可以单独使用, 而`PhantomReference`必须跟`ReferenceQueue`一起使用
+-  普通对象被gc后会进入`Finalizable`状态, finalize未被调用,  仍就可以有机会复生 (复写finalize), 当finalize调用后,  会进入`Finalized`状态, 下次GC会被回收
+-  `PhantomReference`天生就是finalized状态, GC发生后就清掉了
+-  `Stack`,`Vector`都是1.0/1.1版本的东西, 为了兼容性而保留了
+-  1.4之后引入了`nio`相较于之前的被称之为新IO
+-  1.1加入的Reader跟Writer是为了国际化兼容16位Unicode字符
+-  `BufferedInputFile.read`可以读取文件到Reader里, 在进行其他的包装, 如`StringReader`, `BufferedReader`, 没有快捷方式.
+-  写入文本可以使用`PrinterWriter`简化, 直接`writer.println`
+-  `System.out/in/err`被称为标准IO, 通过`setOut/In/Err`可以进行重定向
+-  `javap`随jdk一起发布做反编译
+-  旧IO底层已经用nio重构过了
+-  旧的`FileInputStream`, `FileOutputStream`等被修改支持生成一个`Channel`, Writer跟Reader不支持, 但是Channel有方法可以生成他们
+-  Channel通过`ByteBuffer`进行读写, 写之前需要`flip`准备缓冲区, 读之前需要`rewind`回到数据头,  再通过`asCharBuffer`转换后打印
+-  `ByteBuffer.flip`是将position设置为0, 将limit设置为当前位置, 准备写;  `ByteBuffer.rewind`是将position设置为0, 并将marker清除, 准备读; `mark`会设置mark, `reset`会把position指向mark
+-  通过ByteBuffer的`asCharBuffer`或者别的方法, 可以获得所谓缓冲器视图, 对缓冲器进行对应类型的`put`, 该缓冲器可通过其他as方法切换至其他的窗口进行输出
+-  如果直接向缓冲器内写入Bytes, 那么无法通过`asCharBuffer`读出, 必须写入`UTF-16BE`才对应格式, 按Char读出不会乱码
+- 通过`RandomAccesFile.map`可以产生`MappedByteBuffer`进行内存磁盘映射, 必须指定一个映射范围, 它的效率要比建立在nio之上的旧IO要快
+- Object序列化的文件, 必须能在找到类定义的环境下才能被反序列化成功, 否则会ClassNotFoundException
+- 通过Serializable序列化, 内部有大量反射, 直接将二进制赋值,  不需要通过构造. 如果复写read/writeObject, 或者实现`Externalizable`接口, 自己实现序列化, 则需要有public默认构造, 没有反射, 效率高
+- 静态成员变量不能自己序列化
+- 枚举在编译的时候编译器会给加入`values`跟单参的`valueOf`静态方法
+- 所以枚举向上转型Enum就没有values方法了, 但可以通过Class中`getEnumConstant`方法反射
+- 构建枚举的枚举可以通过将枚举Class当构造参数传入枚举对象, 并且通过`geEnumConstant`覆盖其values
+- `EnumSet.allOf`可以传入一个枚举类class, `of`则是手动传入N个枚举类型
+- 枚举可以添加自定义方法, 每一个实例独自实现,  但是枚举实例不能像普通类一样作函数参数, 因为每一个实例其实是enum类型本身
+- 注解不能继承, 注解的字段要么定义默认值, 要么使用时传入, 不能为空
+- 线程设置为Deamon模式, 主线程结束后就被杀掉了
+- Thread可以设置`setDefaultUncaughtExceptionHandler`, 不设置就会被default处理
+- 测试资源竞争可以调用`Thread.yield`增加几率
+- Java也提供手动的`Lock`, return要写在try里确保在finally的unlock之前调用
+- 如果想实现尝试获取, 不行放弃的话, 需要自己封装`ReentrantLock`, 使用`tryLock`
+- 多核处理器上可视性比原子性问题多得多, volatile会解决可视性问题
+- volatile如果已经被synchronized防护, 则不需要加; 如果只在一个任务中用, 也不用加; 如果依赖前值, 或者某个域的值, 那也无法工作
+- 在C++中自加可能是原子性的, 但是Java中肯定不是
+- `synchronized`最合理的是锁被调用对象this, 或者加方法上, 这样如果一个线程获得了锁, 其他synchronized的方法也都不能被别的线程调用了
+- IO与Synchronized的阻塞无法被打断, 关闭资源才可以释放锁, 并打断线程, 锁阻塞续采用`Lock.lockInterruptibly`才可以被打断
+- 线程被中断一般需要有清理逻辑, 通过try/catch/fanilly来做
+- `sleep()`, `yield()`不会释放锁, `wait()`期间对象锁会释放, 被notify后, 醒之前必须重新获得锁
+- `wait`一般跟while循环配合, 因为在即将被唤起之前(调用notify的前后), 可能条件已经发生了改变
+- 为了防止错过信号, 通常也需要通过while(cindition)来保护wait, 防止死锁
+- 因为wait会释放锁, 而notify在synchronized区间内, 会在之前获取锁, 而wait被唤醒又会重新获取锁,  所以实际上使用notifyAll也只能唤起在等待的一个任务, 同样, 使用notify的时候, 应使等待条件一致, 如果条件不一致, 则只能使用notifyAll
+- 可以synchronized锁Object以及wait/notify做同步, 也可以通过`ReentrantLock`生成condition, 通过await/signal/lock/unlock来操控
+- 有时候使用一些同步对象也可以简化逻辑, 如`BlockingQueue`
+- 简单的线程同步也ke已用1.5引入的`CountDownLatch`做
+- 相较于CountDown只能计数一边, `CyclicBarrier`可以重复利用, 第一个参数传入parties个数, 当await数量达到时会停止等待, 并且调用第二个参数Runnable执行, 可以再次触发await, 这样可以形成一个循环, 或者闭环
+- 除了`BlockingQueue`之外, 还有其他类似的同步队列, 但需要实现一定的接口, 如`DelayBlockingQueue`, `PriorityBlockingQueue`
+- `SynchronousQueue`的put必须等待take
+- 常用的Excutor有`CachedThreadPool`, `ScheduledThreadPool`, `FixedThreadPool`等
+- `Semaphore`作为信号量, 可以设置次数, 多次acquire, 并通过release来释放信号, 区别于`ReentrantLock`
+- `Exchanger`可以作为一个类似管道的东西, 同时传递生产到消费
+- 一般使用synchronized, 可读性强, 调优用Lock, 简单情况用Atomic, 有性能指标可以替换
+- `CopyOnWriteArrayList`内部使用整个数组的副本进行操作, 最终原子替换, 性能高一些, `ConcurrentHashMap`与`ConcurrentLinkededQueue`类似, 只不过是部分复制再操作. 这两者读取过程都有乐观锁处理, 所以性能要比synchronized List/Map好, 尤其是在很少写入的情况
+- AtomicXXX有一些乐观加锁的函数, 如compareAndSet, 当提供的oldValue发生变化时, set失败
+- 读写锁(ReentrantReadWriteLock)保证了读取数据的一致性, 当写锁被持有的时候, 读锁将不能获取, 其他时候可多次获取读锁
+- 更多的时候多线程的问题要通过Task+消息队列, 但这个依赖于平台或者额外复杂的设计
