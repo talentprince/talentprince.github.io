@@ -79,7 +79,7 @@ post_assert_folder: true
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: https://github.com/talentprince/talentprince.github.io
+  repo: git@github.com:talentprince/talentprince.github.io.git 
   branch: master
 
 # RSS
