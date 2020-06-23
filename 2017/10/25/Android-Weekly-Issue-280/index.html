@@ -11,10 +11,13 @@
     
     
     
-        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
     
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"October 22nd, 2017\nAndroid Weekly Issue #280本期主要内容包含几篇关于迁移kotlin以及kotlin帮助提升test与其他实践的文章,还包含迁移过程遇到的一些坑的总结,以及为什么要迁移的方法论.还包含Clean Architecture的HighLevel分析,以及为何要坚持Native App开发的讨论分析.\n比较有意思的是开启文本大小测试模式,文字都变成了火星文,帮助你测试多语言环境truncate的问题.\nLib部分有一个比较炫酷的开源App, Ribble, 可以作为学习Modern Android开发的playground.\n\nARTICLES &amp; TUTORIALSSmooth your migration to Kotlin 介绍了为何以及如何一步一步让整个团队迁移到kotlin上来,主要是方法论,喜欢理论的可以看看.\nThoughts on Clean Architecture 从HighLevel的角度介绍了CleanArchitecture,包括一些作者的Concept,比较抽象.\nWhy we are not cross-platform developers 从各个方面介绍了想象中的只写一次多个平台公用的思想存在的问题,文章覆盖了Hybrid,React,还有像Xamarin这种针对UI封装的特殊的.\nEngineering NullAway 介绍了Uber的一个NPE check工具,检测代码NullPointerException的位置,属于静态检测,需要使用@Nullable与@NotNull进行声明.\nTesting Concurrency in RxJava 文章介绍了对于通过delay模拟网络延迟该如何进行测试,通过引入TestScheduler可以轻松的模拟时间流逝,不用真实的去等.\nHow Kotlin’s “@Deprecated” Relieves Pain of Colossal Refactoring? 文章介绍了kotlin的@Deprecated注解的强大之处,相较于Java,它还可以指定ReplaceWith, 如果使用了已经被废弃的方法,可以一键切换.\n12@Deprecated(&quot;It&apos;s deperacated&quot;,        replaceWith = ReplaceWith(&quot;xxx&quot;,&quot;yyy&quot;))\nRemoving Logic from Your Views with BindingAdapters 文章简单的介绍了MVVM应该讲xml里面的逻辑挪到BindAdapter里面去,这样可以直接调用来做简单的Espresso测试,并且对于VM相关的逻辑可以做UT,一定要将VM与Android Framework隔离.\nTesting your Room DAO classes 文章介绍了如何测试Room DAO,可以使用inMemoryDatabaseBuilder来初始化一个Memeroy的数据库,好处是每一个testcase完就会删掉.比较有特点的是一个测试思想.\n测试DAO.insert的时候利用DAO.get.isNotEmpty,而不是通过raw的query来做.\n测试DAO.get的时候,则是通过查看order是否正确来判定是否正确.\nOdd things to look out for when converting code to Kotlin 文章介绍了从Java一键转换到Kotlin遇到的各种奇怪的事情,有不少是因为占用了kotlin的关键字导致的,还有一些是不符合Kotlin的语法,如接口转换为object,但是不支持将lambda直接传入,必须显示创建,或者可手动的讲接口声明为typealias的lambda也可以解决.1typealias KolinInterface&lt;T&gt; = (T) -&gt; Unit\n总共有近20条,还是值得看一下的.\nTesting Android Apps with Pseudolocalization 在gradle里面开启pseudoLocalesEnabled true,再把语言改成English (XA), 你就可以看到你所有text都变成了很奇怪的样子,如[NŃEĘ],这样你就可以看看上下左右是否超出了边界.\nGetting rid of boilerplate with Kotlin Android Extensions 文章介绍了用kotlin extension替换吊findViewById或者Butterknife,而且kotlin有lazy加载与cache,可以让整个过程更快,但是只对Activity,Fragment还有自定义View有效,但是ViewHolder不支持,文章提供了几种办法,不过都挺坑的.\nOpen-sourcing RacerD: Fast static race detection at scale 文章介绍了一个线程安全分析工具RaceD,可以分析代码中标记为@ThreadSafe的类是否真的safe.\nKotlin, you’ve broken my heart! 文章介绍了作者的一个教训,kotlin对于map有一个内置方法叫做getOrDefault,但是忽略了上面写的依赖系统,需要在Jdk1.8上才能用.结果就UT可以过,android就崩了…\nLIBRARIES &amp; CODERibble 一个使用了各种流行框架,Material Design,等等等的APP,非常fancy,值得学习.\nok-gradle 一个类似gradle的spotlight,可以cmd+shift+a呼出直接查库\nactions-on-google-kotlin Actions on Google的一个kotlin port\n","dateCreated":"2017-10-25T08:47:11+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-10-25T08:47:11+08:00","description":"October 22nd, 2017\nAndroid Weekly Issue #280本期主要内容包含几篇关于迁移kotlin以及kotlin帮助提升test与其他实践的文章,还包含迁移过程遇到的一些坑的总结,以及为什么要迁移的方法论.还包含Clean Architecture的HighLevel分析,以及为何要坚持Native App开发的讨论分析.\n比较有意思的是开启文本大小测试模式,文字都变成了火星文,帮助你测试多语言环境truncate的问题.\nLib部分有一个比较炫酷的开源App, Ribble, 可以作为学习Modern Android开发的playground.","headline":"Android Weekly Issue #280","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1509324637/280_kutqb9.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/","keywords":"Kotlin, RxJava, Clean Architecture, Kotlin Migration, Android Testing, MVVM","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1509324637/280_kutqb9.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
-<meta name="keywords" content="Kotlin,Clean Architecture,RxJava,Kotlin Migration,Android Testing,MVVM">
+<meta name="keywords" content="Kotlin,RxJava,Clean Architecture,Kotlin Migration,Android Testing,MVVM">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Weekly Issue #280">
 <meta property="og:url" content="http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/index.html">
@@ -32,14 +35,29 @@
     
     
         <meta property="og:image" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1509324637/280_kutqb9.jpg"/>
-        <meta class="swiftype" name="image" data-type="enum" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1509324637/280_kutqb9.jpg" />
+        <meta class="swiftype" name="image" data-type="enum" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1509324637/280_kutqb9.jpg"/>
     
     
     
     <!--STYLES-->
-    <link rel="stylesheet" href="/assets/css/style-o74idg7azsb0cijbmsphaworuuzllhz4futxxaz3kcnb0gtidec5dfgqw6zp.min.css">
+    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
     <!--STYLES END-->
     
+
+    
+    <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?26839bbbc9c89fbe9eb99aba7bceb413";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+        
     
 </head>
 
@@ -50,15 +68,24 @@
 
     
 
-<header id="header" data-behavior="4">
+<header id="header" data-behavior="5">
     <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
     <div class="header-title">
-        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+        <a
+            class="header-title-link"
+            href="/ "
+            aria-label=""
+        >
+            Weyoung&#39;s Blog
+        </a>
     </div>
     
         
-            <a  class="header-right-picture "
-                href="#about">
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
         
         
         </a>
@@ -68,7 +95,7 @@
             <!-- Define author's picture -->
 
 
-<nav id="sidebar" data-behavior="4">
+<nav id="sidebar" data-behavior="5">
     <div class="sidebar-container">
         
         
@@ -76,72 +103,84 @@
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/ "
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
                             
+                            rel="noopener"
+                            title="首页"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/all-categories"
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
                             
+                            rel="noopener"
+                            title="分类"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/all-tags"
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
                             
+                            rel="noopener"
+                            title="标签"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/all-archives"
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
                             
+                            rel="noopener"
+                            title="归档"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">归档</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link open-algolia-search"
-                             href="#search"
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
                             
+                            rel="noopener"
+                            title="搜索"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="#about"
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
                             
+                            rel="noopener"
+                            title="关于"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
@@ -150,19 +189,33 @@
         
             <ul class="sidebar-buttons">
             
-        </ul>
-        
-            <ul class="sidebar-buttons">
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/atom.xml"
+                        <a
+                            class="sidebar-button-link "
+                            href="/mailto"
                             
+                            rel="noopener"
+                            title="邮箱"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
-                        <span class="sidebar-button-desc">RSS</span>
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
                     </a>
             </li>
             
@@ -172,23 +225,23 @@
 </nav>
 
             
-            <div id="main" data-behavior="4"
+            <div id="main" data-behavior="5"
                  class="
                         hasCoverMetaIn
                         ">
                 
-<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+<article class="post">
     
     
         <div class="post-header main-content-wrap text-left">
     
-        <h1 class="post-title" itemprop="headline">
+        <h1 class="post-title">
             Android Weekly Issue #280
         </h1>
     
     
         <div class="post-meta">
-    <time itemprop="datePublished" datetime="2017-10-25T08:47:11+08:00">
+    <time datetime="2017-10-25T08:47:11+08:00">
 	
 		    10月 25, 2017
     	
@@ -204,8 +257,9 @@
 
     
 </div>
+
     
-    <div class="post-content markdown" itemprop="articleBody">
+    <div class="post-content markdown">
         <div class="main-content-wrap">
             <p>October 22nd, 2017</p>
 <h2 id="Android-Weekly-Issue-280"><a href="#Android-Weekly-Issue-280" class="headerlink" title="Android Weekly Issue #280"></a><a href="http://androidweekly.net/issues/issue-280" target="_blank" rel="noopener">Android Weekly Issue #280</a></h2><p>本期主要内容包含几篇关于迁移kotlin以及kotlin帮助提升test与其他实践的文章,还包含迁移过程遇到的一些坑的总结,以及为什么要迁移的方法论.还包含Clean Architecture的HighLevel分析,以及为何要坚持Native App开发的讨论分析.</p>
@@ -234,6 +288,8 @@
 <h2 id="actions-on-google-kotlin"><a href="#actions-on-google-kotlin" class="headerlink" title="actions-on-google-kotlin "></a><a href="https://github.com/TicketmasterMobileStudio/actions-on-google-kotlin" target="_blank" rel="noopener">actions-on-google-kotlin </a></h2><p>Actions on Google的一个kotlin port</p>
 
             
+
+
         </div>
     </div>
     <div id="post-footer" class="post-footer main-content-wrap">
@@ -251,59 +307,92 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/11/03/Android-Weekly-Issue-281/"  data-tooltip="Android Weekly Issue #281">
-                
-                    <i class="fa fa-angle-left"></i>
-                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2017/11/03/Android-Weekly-Issue-281/"
+                    data-tooltip="Android Weekly Issue #281"
+                    aria-label="上一篇: Android Weekly Issue #281"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/10/20/Android-Weekly-Issue-279/" data-tooltip="Android Weekly Issue #279">
-                
-                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
-                    <i class="fa fa-angle-right"></i>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2017/10/20/Android-Weekly-Issue-279/"
+                    data-tooltip="Android Weekly Issue #279"
+                    aria-label="下一篇: Android Weekly Issue #279"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
             </li>
         </ul>
     </nav>
     <ul class="post-actions post-action-share">
         <li class="post-action hide-lg hide-md hide-sm">
-            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
-                <i class="fa fa-share-alt"></i>
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
         </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-facebook-official"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-twitter"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-google-plus"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
             </li>
         
+        
+            
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
-                <i class="fa fa-list"></i>
+                <i class="fa fa-list" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -327,65 +416,98 @@
 
             </div>
             
-                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
                     <div class="post-actions-wrap">
     <nav>
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/11/03/Android-Weekly-Issue-281/"  data-tooltip="Android Weekly Issue #281">
-                
-                    <i class="fa fa-angle-left"></i>
-                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2017/11/03/Android-Weekly-Issue-281/"
+                    data-tooltip="Android Weekly Issue #281"
+                    aria-label="上一篇: Android Weekly Issue #281"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/10/20/Android-Weekly-Issue-279/" data-tooltip="Android Weekly Issue #279">
-                
-                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
-                    <i class="fa fa-angle-right"></i>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2017/10/20/Android-Weekly-Issue-279/"
+                    data-tooltip="Android Weekly Issue #279"
+                    aria-label="下一篇: Android Weekly Issue #279"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
             </li>
         </ul>
     </nav>
     <ul class="post-actions post-action-share">
         <li class="post-action hide-lg hide-md hide-sm">
-            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
-                <i class="fa fa-share-alt"></i>
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
         </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-facebook-official"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-twitter"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-google-plus"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
             </li>
         
+        
+            
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
-                <i class="fa fa-list"></i>
+                <i class="fa fa-list" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -393,36 +515,53 @@
 
 
                 </div>
-                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
-    <i id="btn-close-shareoptions" class="fa fa-close"></i>
-    <ul class="share-options">
-        
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
             
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
             
-            <li class="share-option">
-                <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
-                </a>
-            </li>
-        
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
             
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
             
-            <li class="share-option">
-                <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
-                </a>
-            </li>
-        
-            
-            
-            <li class="share-option">
-                <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/10/25/Android-Weekly-Issue-280/">
-                    <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
-                </a>
-            </li>
-        
-    </ul>
-</div>
+        </ul>
+    </div>
+
 
             
         </div>
@@ -432,33 +571,40 @@
 <div id="about">
     <div id="about-card">
         <div id="about-btn-close">
-            <i class="fa fa-remove"></i>
+            <i class="fa fa-times"></i>
         </div>
         
             <h4 id="about-card-name">Prince Chen</h4>
         
-            <div id="about-card-bio"><p>author.bio</p>
+            <div id="about-card-bio"><p>Xi’an B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>author.job</p>
+                <p>Worker</p>
 
             </div>
         
         
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an
+            </div>
+        
     </div>
 </div>
 
-        <div id="algolia-search-modal" class="modal-container">
+        
+            <div id="algolia-search-modal" class="modal-container">
     <div class="modal">
         <div class="modal-header">
-            <span class="close-button"><i class="fa fa-close"></i></span>
+            <span class="close-button"><i class="fa fa-times"></i></span>
             <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
                 <span class="searchby-algolia-text text-color-light text-small">by</span>
-                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
             </a>
             <i class="search-icon fa fa-search"></i>
             <form id="algolia-search-form">
@@ -474,7 +620,11 @@
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            aria-label=": First Blog"
+                        >
                             <h3 class="media-heading">First Blog</h3>
                         </a>
                         <span class="media-meta">
@@ -492,8 +642,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
                         </a>
                         <span class="media-meta">
@@ -514,8 +678,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
                         </a>
                         <span class="media-meta">
@@ -533,8 +711,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
                         </a>
                         <span class="media-meta">
@@ -554,8 +746,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
                         </a>
                         <span class="media-meta">
@@ -575,8 +781,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
                         </a>
                         <span class="media-meta">
@@ -595,8 +815,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
                         </a>
                         <span class="media-meta">
@@ -624,8 +858,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
                         </a>
                         <span class="media-meta">
@@ -650,8 +898,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
                         </a>
                         <span class="media-meta">
@@ -675,8 +937,22 @@
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
                             <h3 class="media-heading">清楚与明白</h3>
                         </a>
                         <span class="media-meta">
@@ -706,20 +982,24 @@
 </div>
 
         
+        
 <div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
         <!--SCRIPTS-->
-<script src="/assets/js/script-dkftwi4fn0akh1pk7kjgazpo1sv0j4rgqfrmobxkejbd2aq6tbmapmsp3gzq.min.js"></script>
+<script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
 <!--SCRIPTS END-->
+
 
     
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
-    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+
+    <script src="/assets/js/moment-with-locales.js"></script>
+    <script src="/assets/js/algoliasearch.js"></script>
     <script>
-        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
-        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+      var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
     </script>
+
 
     </body>
 </html>

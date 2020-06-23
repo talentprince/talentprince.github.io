@@ -13,8 +13,11 @@
     
     
     
-        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
     
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":" 依赖注入(DI) 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的注解让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.\n 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注结果,而忽略制作过程, 呵呵, 跟周星驰他老母恰巧相反.  \n 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.\n \n\nButterknifeButterknite是一个专注于简化View相关使用的DI框架, 而且其不像Spring一样使用反射, 而通过预编译来做到注入效果, 大大降低了消耗, 绿色环保, 下面就来讲讲他的使用, 其实很简单.\n配置:由于目前基本都是用Android Studio开发, 这里添加gradle的依赖就行了  \n1compile &apos;com.jakewharton:butterknife:6.0.0&apos;\n使用方法:\n初始化注入  \n\n1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556    @Override    protected void onCreate(Bundle savedInstanceState) &#123;        super.onCreate(savedInstanceState);        setContentView(R.layout.activity_main);        //初始化        ButterKnife.inject(this);    &#125;```  2. 指定控件的id, 这里定义了 `TextView` `EditText` `Button` 用于测试  3. 使用`Butterknife`注解简化代码  ```Java    //声明注入的View    @InjectView(R.id.search_src_text)    TextView textView;    @InjectView(R.id.edit_query)    EditText editText;    @InjectView(R.id.search)    Button button;    @Override    protected void onCreate(Bundle savedInstanceState) &#123;        super.onCreate(savedInstanceState);        setContentView(R.layout.activity_main);        ButterKnife.inject(this);        //可直接使用啦        textView.setText(\"Hehe\");    &#125;    //也可以注入Listener    @OnClick(R.id.search)    void setEditText() &#123;        editText.setText(\"Haha\");    &#125;``` 这里可以看出, 以往通过`findViewById`以及`setOnClickListener`都得到了简化, 我们**冲上去**使用就行了类似的还有其他的注解, 如`@OnLongClick` `@OnItemClick` `@OnItemSelected`, 用法类似当layout复用的时候, 有些不一定存在的View可以通过`@Optional`来标识, 否则会**爆炸**详细使用可参照 http://jakewharton.github.io/butterknife/----------#Dagger说简单一些, 使用Dagger注入依旧绿色环保, 省去了日常所关注的`构造`过程, 让所有指定在`Moudle`里面的类型, 想用即用.Dagger的工作原理  ![Dagger](/images/dagger.png)配置:\ncompile &apos;com.squareup.dagger:dagger:1.2.2&apos;\ncompile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;\n123456789101112131415# 使用方法  1.定义Moudle (告诉Dagger其如何构造)  我们首先先定义一个Android服务相关的Moudle, 简化我们对`LocationManager`的使用  ```Java AndroidModule    @Module(library = true,            complete = false)    public class AndroidModule &#123;      @Provides       @Singleton       LocationManager provideLocationManager(Application application) &#123;        return (LocationManager) application.getSystemService(LOCATION_SERVICE);      &#125;    &#125;\n这里的library = true的意思是可能不会被使用, 这只是一个lib, 默认为false, 如没有被使用会抛错complete = false的意思是这是一个不完整的moudle, 为何这么说, 可以看出provideLocationManager的参数没有响应提供值的Providers呢, 为什么呢, 因为这个Moudle接下来要被另外一个Moudle引用, 所以application这个参数我们将在下一个Moudle里提供.@Provides是必须要有的注解, 告诉Dagger这个方法就是提供LocationManager的方法.@Singleton是标注这是一个单例, 保证了线程安全.  \nDemoMoudle1234567891011121314151617181920212223242526272829303132333435363738@Module(    //声明将要使用注入对象的类    injects = DemoActivity.class,    includes = AndroidModule.class,    library = true)public class DemoModule &#123;    private Context application;    public DemoModule(Context application) &#123;        this.application = application;    &#125;    @Provides    @Singleton    Context provideApplicationContext() &#123;        return application;    &#125;    @Provides    @Named(\"hehe\")    DaggerYa provideDaggerYa1(Context context) &#123;        return new DaggerTa(context, \"hehe\");    &#125;    @Provides    @Named(\"haha\")    DaggerYa provideDaggerYa2(Context context) &#123;        return new DaggerTa(context, \"haha\");    &#125;    @Provides    DaggerLa providerDaggerLa(Context context,                              @Named(\"hehe\")                              DaggerYa  daggerYa) &#123;        return new DaggerLa(context, daggerYa);    &#125;&#125;\n这个Moudle比较长, 首先使用了include来包含我们之前定义的Moudle.而且也可以发现,这个Moudle提供了Context的Provides\ninjects比较重要, 这里指定的class就是那些需要使用注入对象的类\n有些同学可能会有同样类型的对象注入的问题, 问题的解决办法就是使用@Named来标识其使用的是哪一个@Provides.\n2.将Moudle提供给容器ObjectGraph(把之前定义的各个对象的构造方法交给Dagger来维护, 它将会把其注入到程序中去)    由于Application一个Android程序只有一个, 可以通过getApplication获得,那么最佳存放容器与注入的地方就是这里了,请看代码DemoApplication1234567891011121314151617public class DemoApplication extends Application &#123;  private ObjectGraph graph;  @Override public void onCreate() &#123;    super.onCreate();    graph = ObjectGraph.create(getModules().toArray());  &#125;  protected List&lt;DemoModule&gt; getModules() &#123;    return Arrays.asList(new DemoModule(this));  &#125;  public void inject(Object object) &#123;    graph.inject(object);  &#125;&#125;\n3.使用注入对象劳烦了半天, 终于可以尝尝甜头了, 下面看看使用的办法, 请看代码DemoActivity1234567891011121314151617public class DemoActivity extends Activity &#123;    @Inject    LocationManager locationManager;    @Inject    @Named(\"hehe\")    DaggerYa daggerYa;    @Inject    DaggerLa daggerLa;    @Override    protected void onCreate(Bundle savedInstanceState) &#123;        super.onCreate(savedInstanceState);        //注入        ((DemoApplication) getApplication()).inject(this);    &#125;&#125;\n使用注入对象的类, 定义的Moudle里面必须要有这个类的声明(injects = xxx.class), 并且需要调用容器的inject方法(如加粗部分)\n下面就可以通过@Inject轻松使用无需再构造的对象了, 以后只需要添加injects, 并且调用inject方法, 就可以在其他类继续无构造使用提供过Provides的对象啦\n\nPS:当然把所有注入对象的构造声明全部放在我们的DemoModule里面也显得有些繁琐, 实际上Dagger也支持标准的Java注入格式. 我们可以直接在自己声明的需要注入的类上面添加注解, 来让Dagger找到它的构造函数. 如:\n1234567891011@Singletonclass DaggerHehe &#123;    @Inject    DaggerHehe(Context context) &#123;    ...    &#125;    @Inject    DaggerHehe(DaggerTa ta) &#123;    ...    &#125;&#125;\n在预编译的时候, Dagger就会通过@Inject找到DaggerHehe的构造, 当然DaggerHehe的参数也都需要注入哦. @Singleton同样的将该类声明为一个单例了, 并且还少了之前的@Provider注解, 是不是显得很精简. 赶快去试试吧!\n\n详细可参考: http://square.github.io/dagger/\n","dateCreated":"2015-01-04T14:56:04+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2015-01-04T14:56:04+08:00","description":" 依赖注入(DI) 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的注解让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.\n 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注结果,而忽略制作过程, 呵呵, 跟周星驰他老母恰巧相反.  \n 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.","headline":"Android 与Inject(依赖注入)的不解之缘","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/","keywords":"android, inject","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png"}</script>
     <meta name="description" content="Android 与Inject(依赖注入)的不解之缘">
 <meta name="keywords" content="Android,Inject,Butterknife,Dagger,依赖注入,annotation,注解">
 <meta property="og:type" content="blog">
@@ -34,14 +37,29 @@
     
     
         <meta property="og:image" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png"/>
-        <meta class="swiftype" name="image" data-type="enum" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" />
+        <meta class="swiftype" name="image" data-type="enum" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png"/>
     
     
     
     <!--STYLES-->
-    <link rel="stylesheet" href="/assets/css/style-o74idg7azsb0cijbmsphaworuuzllhz4futxxaz3kcnb0gtidec5dfgqw6zp.min.css">
+    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
     <!--STYLES END-->
     
+
+    
+    <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?26839bbbc9c89fbe9eb99aba7bceb413";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+        
     
 </head>
 
@@ -52,15 +70,24 @@
 
     
 
-<header id="header" data-behavior="4">
+<header id="header" data-behavior="5">
     <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
     <div class="header-title">
-        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+        <a
+            class="header-title-link"
+            href="/ "
+            aria-label=""
+        >
+            Weyoung&#39;s Blog
+        </a>
     </div>
     
         
-            <a  class="header-right-picture "
-                href="#about">
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
         
         
         </a>
@@ -70,7 +97,7 @@
             <!-- Define author's picture -->
 
 
-<nav id="sidebar" data-behavior="4">
+<nav id="sidebar" data-behavior="5">
     <div class="sidebar-container">
         
         
@@ -78,72 +105,84 @@
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/ "
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
                             
+                            rel="noopener"
+                            title="首页"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/all-categories"
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
                             
+                            rel="noopener"
+                            title="分类"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/all-tags"
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
                             
+                            rel="noopener"
+                            title="标签"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/all-archives"
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
                             
+                            rel="noopener"
+                            title="归档"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">归档</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link open-algolia-search"
-                             href="#search"
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
                             
+                            rel="noopener"
+                            title="搜索"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="#about"
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
                             
+                            rel="noopener"
+                            title="关于"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
                         <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
@@ -152,19 +191,33 @@
         
             <ul class="sidebar-buttons">
             
-        </ul>
-        
-            <ul class="sidebar-buttons">
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
             
                 <li class="sidebar-button">
                     
-                        <a  class="sidebar-button-link "
-                             href="/atom.xml"
+                        <a
+                            class="sidebar-button-link "
+                            href="/mailto"
                             
+                            rel="noopener"
+                            title="邮箱"
                         >
-                    
-                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
-                        <span class="sidebar-button-desc">RSS</span>
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
                     </a>
             </li>
             
@@ -174,23 +227,23 @@
 </nav>
 
             
-            <div id="main" data-behavior="4"
+            <div id="main" data-behavior="5"
                  class="
                         hasCoverMetaIn
                         ">
                 
-<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+<article class="post">
     
     
         <div class="post-header main-content-wrap text-left">
     
-        <h1 class="post-title" itemprop="headline">
+        <h1 class="post-title">
             Android 与Inject(依赖注入)的不解之缘
         </h1>
     
     
         <div class="post-meta">
-    <time itemprop="datePublished" datetime="2015-01-04T14:56:04+08:00">
+    <time datetime="2015-01-04T14:56:04+08:00">
 	
 		    1月 04, 2015
     	
@@ -206,8 +259,9 @@
 
     
 </div>
+
     
-    <div class="post-content markdown" itemprop="articleBody">
+    <div class="post-content markdown">
         <div class="main-content-wrap">
             <p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
 <p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
@@ -241,6 +295,8 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
 <p>详细可参考: <a href="http://square.github.io/dagger/" target="_blank" rel="noopener">http://square.github.io/dagger/</a></p>
 
             
+
+
         </div>
     </div>
     <div id="post-footer" class="post-footer main-content-wrap">
@@ -258,59 +314,92 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"  data-tooltip="Android Activity 全屏方法总结">
-                
-                    <i class="fa fa-angle-left"></i>
-                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    data-tooltip="Android Activity 全屏方法总结"
+                    aria-label="上一篇: Android Activity 全屏方法总结"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/" data-tooltip="Joda Time 中英格式化相关问题 for Java">
-                
-                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
-                    <i class="fa fa-angle-right"></i>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                    data-tooltip="Joda Time 中英格式化相关问题 for Java"
+                    aria-label="下一篇: Joda Time 中英格式化相关问题 for Java"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
             </li>
         </ul>
     </nav>
     <ul class="post-actions post-action-share">
         <li class="post-action hide-lg hide-md hide-sm">
-            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
-                <i class="fa fa-share-alt"></i>
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
         </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-facebook-official"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-twitter"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-google-plus"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
             </li>
         
+        
+            
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
-                <i class="fa fa-list"></i>
+                <i class="fa fa-list" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -334,65 +423,98 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
 
             </div>
             
-                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
                     <div class="post-actions-wrap">
     <nav>
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"  data-tooltip="Android Activity 全屏方法总结">
-                
-                    <i class="fa fa-angle-left"></i>
-                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    data-tooltip="Android Activity 全屏方法总结"
+                    aria-label="上一篇: Android Activity 全屏方法总结"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
             </li>
             <li class="post-action">
                 
-                    <a class="post-action-btn btn btn--default tooltip--top" href="/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/" data-tooltip="Joda Time 中英格式化相关问题 for Java">
-                
-                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
-                    <i class="fa fa-angle-right"></i>
-                </a>
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                    data-tooltip="Joda Time 中英格式化相关问题 for Java"
+                    aria-label="下一篇: Joda Time 中英格式化相关问题 for Java"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
             </li>
         </ul>
     </nav>
     <ul class="post-actions post-action-share">
         <li class="post-action hide-lg hide-md hide-sm">
-            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
-                <i class="fa fa-share-alt"></i>
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
         </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-facebook-official"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-twitter"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
             </li>
         
             
             
             <li class="post-action hide-xs">
-                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-google-plus"></i>
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
                 </a>
             </li>
         
+        
+            
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
-                <i class="fa fa-list"></i>
+                <i class="fa fa-list" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -400,36 +522,53 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
 
 
                 </div>
-                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
-    <i id="btn-close-shareoptions" class="fa fa-close"></i>
-    <ul class="share-options">
-        
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
             
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
             
-            <li class="share-option">
-                <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
-                </a>
-            </li>
-        
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
             
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
             
-            <li class="share-option">
-                <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
-                </a>
-            </li>
-        
-            
-            
-            <li class="share-option">
-                <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
-                    <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
-                </a>
-            </li>
-        
-    </ul>
-</div>
+        </ul>
+    </div>
+
 
             
         </div>
@@ -439,33 +578,40 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
 <div id="about">
     <div id="about-card">
         <div id="about-btn-close">
-            <i class="fa fa-remove"></i>
+            <i class="fa fa-times"></i>
         </div>
         
             <h4 id="about-card-name">Prince Chen</h4>
         
-            <div id="about-card-bio"><p>author.bio</p>
+            <div id="about-card-bio"><p>Xi’an B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>author.job</p>
+                <p>Worker</p>
 
             </div>
         
         
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an
+            </div>
+        
     </div>
 </div>
 
-        <div id="algolia-search-modal" class="modal-container">
+        
+            <div id="algolia-search-modal" class="modal-container">
     <div class="modal">
         <div class="modal-header">
-            <span class="close-button"><i class="fa fa-close"></i></span>
+            <span class="close-button"><i class="fa fa-times"></i></span>
             <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
                 <span class="searchby-algolia-text text-color-light text-small">by</span>
-                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
             </a>
             <i class="search-icon fa fa-search"></i>
             <form id="algolia-search-form">
@@ -481,7 +627,11 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 <div class="media">
                     
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            aria-label=": First Blog"
+                        >
                             <h3 class="media-heading">First Blog</h3>
                         </a>
                         <span class="media-meta">
@@ -499,8 +649,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
                         </a>
                         <span class="media-meta">
@@ -521,8 +685,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
                         </a>
                         <span class="media-meta">
@@ -540,8 +718,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
                         </a>
                         <span class="media-meta">
@@ -561,8 +753,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
                         </a>
                         <span class="media-meta">
@@ -582,8 +788,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
                         </a>
                         <span class="media-meta">
@@ -602,8 +822,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
                         </a>
                         <span class="media-meta">
@@ -631,8 +865,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
                         </a>
                         <span class="media-meta">
@@ -657,8 +905,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
                         </a>
                         <span class="media-meta">
@@ -682,8 +944,22 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
                 
                 <div class="media">
                     
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
                     <div class="media-body">
-                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
                             <h3 class="media-heading">清楚与明白</h3>
                         </a>
                         <span class="media-meta">
@@ -713,20 +989,24 @@ compile &apos;com.squareup.dagger:dagger-compiler:1.2.2&apos;
 </div>
 
         
+        
 <div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
         <!--SCRIPTS-->
-<script src="/assets/js/script-dkftwi4fn0akh1pk7kjgazpo1sv0j4rgqfrmobxkejbd2aq6tbmapmsp3gzq.min.js"></script>
+<script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
 <!--SCRIPTS END-->
+
 
     
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
-    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+
+    <script src="/assets/js/moment-with-locales.js"></script>
+    <script src="/assets/js/algoliasearch.js"></script>
     <script>
-        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
-        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+      var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
     </script>
+
 
     </body>
 </html>

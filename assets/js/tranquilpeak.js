@@ -8,7 +8,7 @@
    * @constructor
    */
   var AboutCard = function() {
-    this.$openBtn = $("#sidebar, #header").find("a[href*='#about']");
+    this.$openBtn = $('#sidebar, #header').find('a[href*="#about"]');
     this.$closeBtn = $('#about-btn-close');
     this.$blog = $('#blog');
     this.$about = $('#about');
@@ -32,6 +32,15 @@
       self.$closeBtn.click(function(e) {
         e.preventDefault();
         self.playBack();
+      });
+      // Detect click on close button outside of card
+      self.$about.click(function(e) {
+        e.preventDefault();
+        self.playBack();
+      });
+      // Deny closing the about page when users click on the card
+      self.$aboutCard.click(function(event) {
+        event.stopPropagation();
       });
     },
 
@@ -507,7 +516,7 @@
 })(jQuery);
 ;(function($) {
   'use strict';
-  
+
   // Run fancybox feature
 
   $(document).ready(function() {
@@ -516,51 +525,31 @@
      * @returns {void}
      */
     function fancyFox() {
-      var arrows = true;
-      var thumbs = null;
+      var thumbs = false;
 
       // disable navigation arrows and display thumbs on medium and large screens
       if ($(window).height() > 480) {
-        arrows = false;
-        thumbs = {
-          width: 70,
-          height: 70
-        };
+        thumbs = true;
       }
 
       $('.fancybox').fancybox({
-        maxWidth: 900,
-        maxHeight: 800,
-        fitToView: true,
-        width: '50%',
-        height: '50%',
-        autoSize: true,
-        arrows: arrows,
-        closeClick: false,
-        openEffect: 'elastic',
-        closeEffect: 'elastic',
-        prevEffect: 'none',
-        nextEffect: 'none',
-        padding: '0',
-        helpers: {
-          thumbs: thumbs,
-          overlay: {
-            css: {
-              overflow: 'hidden',
-              background: 'rgba(0, 0, 0, 0.85)'
-            }
-          }
-        },
-        afterLoad: function() {
-          setTimeout(function() {
-            $('.fancybox-next > span, .fancybox-prev > span').css('visibility', 'visible');
-          }, 400);
+        buttons: [
+          'fullScreen',
+          'thumbs',
+          'share',
+          'download',
+          'zoom',
+          'close'
+        ],
+        thumbs: {
+          autoStart: thumbs,
+          axis: 'x'
         }
       });
     }
 
     fancyFox();
-    
+
     $(window).smartresize(function() {
       fancyFox();
     });
@@ -580,7 +569,7 @@
     this.headerHeight = this.$header.height();
     // CSS class located in `source/_css/layout/_header.scss`
     this.headerUpCSSClass = 'header-up';
-    this.delta = 5;
+    this.delta = 15;
     this.lastScrollTop = 0;
   };
 
@@ -756,8 +745,10 @@
     this.$postBottomBar = $('.post-bottom-bar');
     this.$postFooter = $('.post-actions-wrap');
     this.$header = $('#header');
-    this.delta = 1;
+    this.delta = 15;
     this.lastScrollTop = 0;
+    this.lastScrollDownPos = 0;
+    this.lastScrollUpPos = 0;
   };
 
   PostBottomBar.prototype = {
@@ -791,17 +782,26 @@
     swipePostBottomBar: function() {
       var scrollTop = $(window).scrollTop();
       var postFooterOffsetTop = this.$postFooter.offset().top;
-      // show bottom bar
-      // if the user scrolled upwards more than `delta`
-      // and `post-footer` div isn't visible
-      if (this.lastScrollTop > scrollTop &&
-        (postFooterOffsetTop + this.$postFooter.height() > scrollTop + $(window).height() ||
-        postFooterOffsetTop < scrollTop + this.$header.height())) {
-        this.$postBottomBar.slideDown();
+
+      // scrolling up
+      if (this.lastScrollTop > scrollTop) {
+        // show bottom bar
+        // if the user scrolled upwards more than `delta`
+        // and `post-footer` div isn't visible
+        if (Math.abs(this.lastScrollDownPos - scrollTop) > this.delta &&
+          (postFooterOffsetTop + this.$postFooter.height() > scrollTop + $(window).height() ||
+            postFooterOffsetTop < scrollTop + this.$header.height())) {
+          this.$postBottomBar.slideDown();
+          this.lastScrollUpPos = scrollTop;
+        }
       }
-      else {
+
+      // scrolling down
+      if (scrollTop > this.lastScrollUpPos + this.delta) {
         this.$postBottomBar.slideUp();
+        this.lastScrollDownPos = scrollTop;
       }
+
       this.lastScrollTop = scrollTop;
     }
   };
@@ -1320,42 +1320,36 @@
 ;(function($) {
   'use strict';
 
-  // Animate tabs of tabbed code blocks
-
   /**
-   * TabbedCodeBlock
-   * @param {String} elems
-   * @constructor
+   * Animate tabs and tab contents of tabbed codeblocks
+   * @param {Object} $tabbedCodeblocks
+   * @return {undefined}
    */
-  var TabbedCodeBlock = function(elems) {
-    this.$tabbedCodeBlocs = $(elems);
-  };
+  function animateTabbedCodeBlocks($tabbedCodeblocks) {
+    $tabbedCodeblocks.find('.tab').click(function() {
+      var $currentTabButton = $(this);
+      var $currentTabbedCodeblock = $currentTabButton.parent().parent().parent();
+      var $codeblocks = $currentTabbedCodeblock.find('.tabs-content').children('pre, .highlight');
+      var $activeCodeblock = $codeblocks.eq($currentTabButton.index());
+      var $tabButtons = $currentTabButton.siblings();
 
-  TabbedCodeBlock.prototype = {
-    /**
-     * Run TabbedCodeBlock feature
-     * @return {void}
-     */
-    run: function() {
-      var self = this;
-      self.$tabbedCodeBlocs.find('.tab').click(function() {
-        var $codeblock = $(this).parent().parent().parent();
-        var $tabsContent = $codeblock.find('.tabs-content').children('pre, .highlight');
-        // remove `active` css class on all tabs
-        $(this).siblings().removeClass('active');
-        // add `active` css class on the clicked tab
-        $(this).addClass('active');
-        // hide all tab contents
-        $tabsContent.hide();
-        // show only the right one
-        $tabsContent.eq($(this).index()).show();
-      });
-    }
-  };
+      $tabButtons.removeClass('active');
+      $currentTabButton.addClass('active');
+      $codeblocks.hide();
+      $activeCodeblock.show();
+
+      // Resize the active codeblock according to the width of the window.
+      var $gutter = $activeCodeblock.find('.gutter');
+      var $code = $activeCodeblock.find('.code');
+      var codePaddings = $code.width() - $code.innerWidth();
+      var width = $activeCodeblock.outerWidth() - $gutter.outerWidth() + codePaddings;
+      $code.css('width', width);
+      $code.children('pre').css('width', width);
+    });
+  }
 
   $(document).ready(function() {
-    var tabbedCodeBlocks = new TabbedCodeBlock('.codeblock--tabbed');
-    tabbedCodeBlocks.run();
+    animateTabbedCodeBlocks($('.codeblock--tabbed'));
   });
 })(jQuery);
 ;(function($) {
