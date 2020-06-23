@@ -1,0 +1,745 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Android Weekly Issue #276 - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="Android Weekly 中文概要">
+<meta name="keywords" content="Android,Android Weekly,Life Circle,Room Persistence,ObjectBox,Realm,Anko,Android Studio Debug">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Android Weekly Issue #276">
+<meta property="og:url" content="http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="Android Weekly 中文概要">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2020-06-22T09:44:59.471Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Weekly Issue #276">
+<meta name="twitter:description" content="Android Weekly 中文概要">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506751408/download_rarkl4.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506751408/download_rarkl4.jpg" />
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/font-awesome.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox-thumbs.css">
+    <link rel="stylesheet" href="/assets/css/tranquilpeak.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+    </div>
+    
+        
+            <a  class="header-right-picture "
+                href="#about">
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            Android Weekly Issue #276
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time itemprop="datePublished" datetime="2017-09-30T14:00:48+08:00">
+	
+		    9月 30, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
+
+
+    
+</div>
+
+    
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>September 24th, 2017</p>
+<h2 id="Android-Weekly-Issue-276"><a href="#Android-Weekly-Issue-276" class="headerlink" title="Android Weekly Issue #276"></a><a href="http://androidweekly.net/issues/issue-276" target="_blank" rel="noopener">Android Weekly Issue #276</a></h2><p>本期内容包括LifeCycle与Architecture的相关文章,以及新的JSON解析库Moshi的介绍,还有<br>ConstraintLayout的一些特性,还包括一个加速你Debug的小技巧,喜欢数据库的也不容错过,有介绍Realm,Room,ObjectBox,Anko SQLite等等的对比与分析的文章哦.</p>
+<a id="more"></a>
+<h2 id="ARTICLES-amp-TUTORIALS"><a href="#ARTICLES-amp-TUTORIALS" class="headerlink" title="ARTICLES &amp; TUTORIALS"></a>ARTICLES &amp; TUTORIALS</h2><h2 id="Is-your-Android-Library-Lifecycle-Aware"><a href="#Is-your-Android-Library-Lifecycle-Aware" class="headerlink" title="Is your Android Library, Lifecycle-Aware? "></a><a href="https://android.jlelse.eu/is-your-android-library-lifecycle-aware-127629d32dcc" target="_blank" rel="noopener">Is your Android Library, Lifecycle-Aware? </a></h2><p>还在为必须在固定的生命周期里处理你的init与destroy吗, 文章介绍了通过google最新的LifeCircle库来实现自主监听.</p>
+<p>你只需要引入相关依赖.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">implementation &quot;android.arch.lifecycle:runtime:1.0.0&quot;</span><br><span class="line">annotationProcessor &quot;android.arch.lifecycle:compiler:1.0.0-alpha9-1&quot;</span><br></pre></td></tr></table></figure>
+<p>然后让你需要关注生命周期的类继承于<code>LifecycleObserver</code>.</p>
+<p>这样你就可以通过注解来监听生命周期了.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@OnLifecycleEvent(Lifecycle.Event.ON_CREATE)</span><br><span class="line">or </span><br><span class="line">@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)</span><br><span class="line">..and so on</span><br></pre></td></tr></table></figure>
+<p>当然别忘了需要注册.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">getLifecycle().addObserver(LifecycleObserver);</span><br><span class="line">与</span><br><span class="line">getLifecycle().removeObserver(LifecycleObserver);</span><br></pre></td></tr></table></figure>
+<h2 id="Creating-a-Custom-Type-Adapter-for-Moshi"><a href="#Creating-a-Custom-Type-Adapter-for-Moshi" class="headerlink" title="Creating a Custom Type Adapter for Moshi "></a><a href="https://medium.com/@emmaguy/creating-a-custom-type-adapter-for-moshi-ae7e1cf469a9" target="_blank" rel="noopener">Creating a Custom Type Adapter for Moshi </a></h2><p>文章介绍了如何给JSON解析库<a href="https://github.com/square/moshi" target="_blank" rel="noopener">Moshi</a>添加一个自定义的Adapter来完成非1:1的Json2Object的解析, 主要逻辑在于实现了@FromJson的方法.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class StageAdapter &#123;</span><br><span class="line">  @FromJson fun fromJson(jsonReader: JsonReader, delegate: JsonAdapter&lt;Stage&gt;): Stage? &#123;</span><br><span class="line">    val value = jsonReader.nextString()</span><br><span class="line">    return if (value.startsWith(&quot;in-progress&quot;)) Stage.IN_PROGRESS else delegate.fromJsonValue(value)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>把所有的以<code>in-progress</code>开头的都转换成<code>Stage.IN_PROGRESS</code>.</p>
+<h2 id="Register-Better-In-App-Billing-Testing-on-Android"><a href="#Register-Better-In-App-Billing-Testing-on-Android" class="headerlink" title="Register: Better In App Billing Testing on Android "></a><a href="https://open.nytimes.com/register-better-in-app-billing-testing-on-android-73af5fcc36dc" target="_blank" rel="noopener">Register: Better In App Billing Testing on Android </a></h2><p>介绍了开发的一个框架<code>Register</code>用来帮助使用<code>Google In-App Billing</code>开发应用的人来进行测试, mock掉Server.</p>
+<p>原因是Google API必须是内嵌在Play Store上线的应用里, 去订阅一个已经上线的应用, 而且必须使用开发上号来进行购买测试, 并且重复测试也受到限制, 因为取消之前的购买是唯一的方式, 但是需要等很久状态才会被Reset.</p>
+<h2 id="ConstraintLayout-Guidelines-Barriers-Chains-and-Groups"><a href="#ConstraintLayout-Guidelines-Barriers-Chains-and-Groups" class="headerlink" title="ConstraintLayout - Guidelines, Barriers, Chains and Groups "></a><a href="https://riggaroo.co.za/constraintlayout-guidelines-barriers-chains-groups/" target="_blank" rel="noopener">ConstraintLayout - Guidelines, Barriers, Chains and Groups </a></h2><p>介绍了ContraintLayout的一些新的特性, 包括<code>Guidelines</code>, <code>Barriers</code>, <code>Chains</code> 跟 <code>Groups</code>.</p>
+<h2 id="Repository-layer-using-Room-and-Dagger-2"><a href="#Repository-layer-using-Room-and-Dagger-2" class="headerlink" title="Repository layer using Room and Dagger 2 "></a><a href="https://medium.com/@saurabh30pant/repository-layer-using-room-and-dagger-2-android-12d311830fd9" target="_blank" rel="noopener">Repository layer using Room and Dagger 2 </a></h2><p>文章介绍了如何搭建MVP中的M层, 源自Google的MVP套路, <code>Presenter</code>持有一个<code>Repository</code>,而<code>Repository</code>里面持有的对应数据的<code>DataSource</code>,用来真正操作数据的<code>IDUQ</code>, 而<code>DataSource</code>内部是通过<code>Room Persistence</code>来实现的.</p>
+<h2 id="Stop-testing-on-emulators-Access-Real-Devices"><a href="#Stop-testing-on-emulators-Access-Real-Devices" class="headerlink" title="Stop testing on emulators - Access Real Devices "></a><a href="http://www.kobiton.com/freetrial?utm_source=Android%20Weekly%20Newsletter&amp;utm_medium=Newsletter&amp;utm_campaign=Android%20Weekly%208.6%20Newsletter&amp;utm_term=Emulators&amp;utm_content=Stop%20using%20emulators" target="_blank" rel="noopener">Stop testing on emulators - Access Real Devices </a></h2><p>一个云端真机测试的广告.</p>
+<h2 id="Realm-ObjectBox-or-Room-Which-one-is-for-you"><a href="#Realm-ObjectBox-or-Room-Which-one-is-for-you" class="headerlink" title="Realm, ObjectBox or Room. Which one is for you? "></a><a href="https://notes.devlabs.bg/realm-objectbox-or-room-which-one-is-for-you-3a552234fd6e" target="_blank" rel="noopener">Realm, ObjectBox or Room. Which one is for you? </a></h2><p>文章介绍了根正苗红新秀<code>Room Persistence</code>, 成熟稳重<code>Realm</code>, 与没什么人听过的<code>ObjectBox</code>三个数据库的优劣.</p>
+<ul>
+<li>如果你关心安装包体积与方法数, 用<code>Room</code></li>
+<li>如果你关心速度与效率,那么用<code>ObjectBox</code></li>
+<li>如果你嫌<code>ObjectBox</code>不够成熟稳定,那就使用七年老大哥<code>Realm</code></li>
+</ul>
+<h2 id="Making-the-most-out-of-Android-Studio-Debugger"><a href="#Making-the-most-out-of-Android-Studio-Debugger" class="headerlink" title="Making the most out of Android Studio Debugger "></a><a href="https://medium.com/@droidchef/making-the-most-out-of-the-android-studio-debugger-61713131d065" target="_blank" rel="noopener">Making the most out of Android Studio Debugger </a></h2><p>常常调试的时候,你只想看看程序里某个地方运行时候的值,或者想测试新加的一段逻辑是否正常(可以Debug时跑在Evluate的环境里),你完全可以不编译程序,但是默认的情况下你<code>Ctrl+R</code>运行却需要等Gradle跑好久,非常恼火.</p>
+<p>文章介绍了个小技巧, 自己创建一个Build选项, 让IDE不再去做Gradle编译, 只是单纯运行程序,想知道怎么弄么,进去看看就知道了.</p>
+<h2 id="Kotlin-Testability-–-Part-2"><a href="#Kotlin-Testability-–-Part-2" class="headerlink" title="Kotlin Testability – Part 2 "></a><a href="https://blog.stylingandroid.com/kotlin-testability-part-2/" target="_blank" rel="noopener">Kotlin Testability – Part 2 </a></h2><p>文章继续上次的套路,将同样的方法运用在一些Android Framework组件上也是可以的.</p>
+<p>开启<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testOptions &#123;</span><br><span class="line">       unitTests.returnDefaultValues = true</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<p>后相关Framework的方法也会调用Stub的.</p>
+<p>作者最后强调使用<code>Factory</code>封装接口是因为有多个需要Mock的对象,如果只有一个第三方组件需要Mock,我们可以直接通过internal primary用于测试与secondary用于production的办法来玩.</p>
+<h2 id="Building-a-Guitar-Chord-Tutor-for-Actions-on-Google-Part-Two"><a href="#Building-a-Guitar-Chord-Tutor-for-Actions-on-Google-Part-Two" class="headerlink" title="Building a Guitar Chord Tutor for Actions on Google: Part Two "></a><a href="https://medium.com/@hitherejoe/building-a-guitar-chord-tutor-for-actions-on-google-part-two-9e0786dfa108" target="_blank" rel="noopener">Building a Guitar Chord Tutor for Actions on Google: Part Two </a></h2><p>继续了上次的项目,通过<code>Actions on Google</code>实现吉他和弦教程APP</p>
+<h2 id="Stress-free-SQLite-with-Anko"><a href="#Stress-free-SQLite-with-Anko" class="headerlink" title="Stress-free SQLite with Anko "></a><a href="https://www.kotlindevelopment.com/anko-sqlite-database/" target="_blank" rel="noopener">Stress-free SQLite with Anko </a></h2><p>推荐了一个SQLite的包装库，纯Kotlin的，叫做<a href="https://www.kotlinresources.com/library/anko/" target="_blank" rel="noopener">Anko SQLite</a>, 看了下官网居然还有一个叫Anko Layout的库,使用办法都是Lambda.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">database.use &#123;</span><br><span class="line">    // 增删改查</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="From-design-to-android-part-2"><a href="#From-design-to-android-part-2" class="headerlink" title="From design to android, part 2 "></a><a href="https://medium.com/@saulmm2/from-design-to-android-part-2-2a6c141547d9" target="_blank" rel="noopener">From design to android, part 2 </a></h2><p>介绍了由设计入手来做Android动画的思想,介绍了通过Skech+<a href="https://shapeshifter.design/" target="_blank" rel="noopener">Shape Shifter</a>制作Vector图片,然后通过Android的<a href="https://developer.android.com/reference/android/graphics/drawable/AnimatedStateListDrawable.html" target="_blank" rel="noopener">AnimatedStateListDrawable</a>设置给ImageView当资源,最后通过<a href="https://developer.android.com/reference/android/widget/ImageView.html#setImageState%28int[],%20boolean%29" target="_blank" rel="noopener">ImageView#setImageState</a>来控制显示哪个State下的Vector动画</p>
+<h2 id="LIBRARIES-amp-CODE"><a href="#LIBRARIES-amp-CODE" class="headerlink" title="LIBRARIES &amp; CODE"></a>LIBRARIES &amp; CODE</h2><h2 id="RxLifecycle"><a href="#RxLifecycle" class="headerlink" title="RxLifecycle "></a><a href="https://github.com/florent37/RxLifecycle" target="_blank" rel="noopener">RxLifecycle </a></h2><p>关于流式控制逻辑在相应的生命周期里完成,防止内存泄露的一个库.</p>
+<h2 id="Anko"><a href="#Anko" class="headerlink" title="Anko "></a><a href="https://github.com/Kotlin/anko" target="_blank" rel="noopener">Anko </a></h2><p>一系列Kotlin的框架,让Android开发更简单更快捷,挺厉害的样子.</p>
+<h2 id="Register"><a href="#Register" class="headerlink" title="Register "></a><a href="https://github.com/NYTimes/Register" target="_blank" rel="noopener">Register </a></h2><p>帮助测试PlayStore Billing的一个框架</p>
+<h2 id="Moshi"><a href="#Moshi" class="headerlink" title="Moshi "></a><a href="https://github.com/square/moshi" target="_blank" rel="noopener">Moshi </a></h2><p>解析JSON的一个库,通过实现一个Adapter可以轻松做原始数据到Model之间的转换.</p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Android/">Android</a> <a class="tag tag--primary tag--small t-link" href="/tags/Android-Studio-Debug/">Android Studio Debug</a> <a class="tag tag--primary tag--small t-link" href="/tags/Android-Weekly/">Android Weekly</a> <a class="tag tag--primary tag--small t-link" href="/tags/Anko/">Anko</a> <a class="tag tag--primary tag--small t-link" href="/tags/Life-Circle/">Life Circle</a> <a class="tag tag--primary tag--small t-link" href="/tags/ObjectBox/">ObjectBox</a> <a class="tag tag--primary tag--small t-link" href="/tags/Realm/">Realm</a> <a class="tag tag--primary tag--small t-link" href="/tags/Room-Persistence/">Room Persistence</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/09/30/Advanced-Dagger2-Skills/"  data-tooltip="Dagger2进阶必备技能">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/09/27/Android-Weekly-Issue-275/" data-tooltip="Android Weekly Issue #275">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/09/30/Advanced-Dagger2-Skills/"  data-tooltip="Dagger2进阶必备技能">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/09/27/Android-Weekly-Issue-275/" data-tooltip="Android Weekly Issue #275">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <i id="btn-close-shareoptions" class="fa fa-close"></i>
+    <ul class="share-options">
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/09/30/Android-Weekly-Issue-276/">
+                    <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
+                </a>
+            </li>
+        
+    </ul>
+</div>
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 41 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/jquery.fancybox.js"></script>
+<script src="/assets/js/jquery.fancybox-thumbs.js"></script>
+<script src="/assets/js/tranquilpeak.js"></script>
+<!--SCRIPTS END-->
+
+    
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+    </body>
+</html>

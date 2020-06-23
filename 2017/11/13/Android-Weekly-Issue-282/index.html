@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Android Weekly Issue #282 - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="Android Weekly 中文概要">
+<meta name="keywords" content="Architecture Component,Android Weekly,Kotlin Coroutines,Room,Koin,Grox,Android Prefetching">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Android Weekly Issue #282">
+<meta property="og:url" content="http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="Android Weekly 中文概要">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2020-06-22T09:44:59.472Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Weekly Issue #282">
+<meta name="twitter:description" content="Android Weekly 中文概要">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510532777/282_rtsvp0.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510532777/282_rtsvp0.jpg" />
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/font-awesome.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox-thumbs.css">
+    <link rel="stylesheet" href="/assets/css/tranquilpeak.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+    </div>
+    
+        
+            <a  class="header-right-picture "
+                href="#about">
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            Android Weekly Issue #282
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time itemprop="datePublished" datetime="2017-11-13T08:24:12+08:00">
+	
+		    11月 13, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
+
+
+    
+</div>
+
+    
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>November 5th, 2017</p>
+<h2 id="Android-Weekly-Issue-282"><a href="#Android-Weekly-Issue-282" class="headerlink" title="Android Weekly Issue #282"></a><a href="http://androidweekly.net/issues/issue-282" target="_blank" rel="noopener">Android Weekly Issue #282</a></h2><p>本期内容相较上期丰富许多, 技术干货当然也有不少, 如<code>Koin</code>来替代Dagger应用在Kotlin项目,<code>Grox</code>做一个面向状态的程序,以及Room实现Relation的介绍,如何解决Architecture Component在Fragment上的漏洞,还有Kotlin Coroutines里面的一些新概念(Actor,Channel等).<br>当然也包含一些方法论,如将项目转Kotlin的好处及其方法,Java数据结构的基础介绍,伦敦Droidcon大会概况等等.</p>
+<p>代码亮点主要在Koin的使用,可以特别关注一下.</p>
+<a id="more"></a>
+<h2 id="ARTICLES-amp-TUTORIALS"><a href="#ARTICLES-amp-TUTORIALS" class="headerlink" title="ARTICLES &amp; TUTORIALS"></a>ARTICLES &amp; TUTORIALS</h2><h2 id="Moving-from-Dagger-to-Koin"><a href="#Moving-from-Dagger-to-Koin" class="headerlink" title="Moving from Dagger to Koin"></a><a href="https://medium.com/@giuliani.arnaud/moving-from-dagger-to-koin-simplify-your-android-development-e8c61d80cddb" target="_blank" rel="noopener">Moving from Dagger to Koin</a></h2><p>文章介绍了如何用<a href="https://github.com/Ekito/koin" target="_blank" rel="noopener">Koin</a>做到一个更Kotlin的依赖注入,与Dagger相比,使用<code>Koin</code>,无论是你的gradle配置会从很多行缩减到1行,而且你的初始化也将只需要调用<code>startAndroidContext</code>即刻.</p>
+<p>最方便的是可以使用高阶Lambda定义你的<code>Module</code>,并且在注入的时候不需要写任何的Annotation,可以通过<code>by inject()</code>的lazy注入方法,或者直接通过primary constructor.</p>
+<p>作者还提供了他将google的achitecture里面的Todo Sample用Koin改造后的效果,可以进行学习.</p>
+<h2 id="Exploring-Firebase-Predictions"><a href="#Exploring-Firebase-Predictions" class="headerlink" title="Exploring Firebase Predictions "></a><a href="https://medium.com/@hitherejoe/exploring-firebase-predictions-fa22d093f98d" target="_blank" rel="noopener">Exploring Firebase Predictions </a></h2><p>文章介绍了Firbase的一个alpha阶段的新功能,<code>Prediction</code>,可以对RemotConfig,A/B Testing,以及Notification Composer进行一些基于机器学习的预测,帮助我们更快的改进产品,提升用户体验.</p>
+<h2 id="Architecture-Components-pitfalls-—-Part-1"><a href="#Architecture-Components-pitfalls-—-Part-1" class="headerlink" title="Architecture Components pitfalls — Part 1 "></a><a href="https://medium.com/@BladeCoder/architecture-components-pitfalls-part-1-9300dd969808" target="_blank" rel="noopener">Architecture Components pitfalls — Part 1 </a></h2><p>文章介绍了Google的Architecture Components的一个陷阱,虽然ViewModel会在Activity/Fragment销毁时候自动释放,但是在在Fragment使用的时候,很多时候这个Fragment不会销毁而是detach了,而重新attach后又会创建新的Observer,会有内存泄露的风险.</p>
+<p>文章指出了好几个Approach来解决这个问题,包括最后一个用了还在试验的Data Binding直接bind我们定义的ViewModel.具体的方法可以查看详情.</p>
+<h2 id="Playing-with-elevation-in-Android"><a href="#Playing-with-elevation-in-Android" class="headerlink" title="Playing with elevation in Android "></a><a href="https://blog.usejournal.com/playing-with-elevation-in-android-91af4f3be596" target="_blank" rel="noopener">Playing with elevation in Android </a></h2><p>文章介绍了一些有趣的事情,我们可以通过给View添加<code>OutlineProvider</code>(Layout#setOutlineProvider)来控制Shadow,但是实际上可以利用<code>elevation</code>来做到一些效果,Android Material Design系统有两个光源来呈现投影,一个在屏幕最上面向下照射,另外一个在屏幕正中间垂直照射,作者展示了了他的一个项目.</p>
+<p>其使用了自定义的CardView,给其添加一个将Outline的大小设置为比Card本身小4dp的Provider,并有4dp的elevation,这样滚动的时候,越往屏幕的下放,影子就越深.</p>
+<h2 id="Grox-The-Art-of-the-State"><a href="#Grox-The-Art-of-the-State" class="headerlink" title="Grox: The Art of the State "></a><a href="https://medium.com/groupon-eng/grox-the-art-of-the-state-b5223f48d696" target="_blank" rel="noopener">Grox: The Art of the State </a></h2><p>文章介绍了一个状态管理的库<code>Grox</code>,其提供了<code>Command</code>,<code>Action</code>,<code>Store</code>的概念,Command会通过<code>actions()</code>发射该命令下的不同状态下的Action,并交给store来进行<code>dispatch</code>,而store会被Grox的静态方法<code>states</code>封装后将dispatch的Action接收到UI线程来处理UI.</p>
+<p>实际上的代码大致是这个样子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">states(store).observeOn(mainThread())</span><br><span class="line">.subscribe(this::updateUI);</span><br><span class="line"></span><br><span class="line">clicks(button)</span><br><span class="line">    .map(click -&gt; new XXXCommand())</span><br><span class="line">    .flatMap(Command::actions)</span><br><span class="line">    .subscribe(store::dispatch);</span><br></pre></td></tr></table></figure>
+<h2 id="Canvas-The-Real-Play-Ground"><a href="#Canvas-The-Real-Play-Ground" class="headerlink" title="Canvas : The Real Play Ground! "></a><a href="https://medium.com/@saurabhpant/canvas-the-real-play-ground-android-c0faa4b79943" target="_blank" rel="noopener">Canvas : The Real Play Ground! </a></h2><p>文章介绍了如何通过通Canvas画一个钟表,挺有意思,可以作为学习draw canvas的一个教程</p>
+<h2 id="RadialGradient-–-Layers"><a href="#RadialGradient-–-Layers" class="headerlink" title="RadialGradient – Layers "></a><a href="https://blog.stylingandroid.com/radialgradient-layers/" target="_blank" rel="noopener">RadialGradient – Layers </a></h2><p>文章通过一个<code>RadialGradient</code>的view在不同layer上的不同表现来介绍图层以及软硬渲染的概念.</p>
+<h2 id="Using-the-ADS1015-analog-to-digital-converter-driver-library"><a href="#Using-the-ADS1015-analog-to-digital-converter-driver-library" class="headerlink" title="Using the ADS1015 analog to digital converter driver library "></a><a href="http://blog.blundellapps.co.uk/tut-android-things-using-the-ads1015-analog-to-digital-converter-driver-library/" target="_blank" rel="noopener">Using the ADS1015 analog to digital converter driver library </a></h2><p>开发<code>ADS1015</code> AD转换器的一个IoT相关的文章,对物联网感兴趣的可以看看.</p>
+<h2 id="Adopting-Kotlin"><a href="#Adopting-Kotlin" class="headerlink" title="Adopting Kotlin "></a><a href="https://engineering.udacity.com/adopting-kotlin-c12f10fd85d1" target="_blank" rel="noopener">Adopting Kotlin </a></h2><p>文章不是一篇技术偏向的文章,更多的是从各个方面介绍了kotlin的优势,以及作者在将他的项目转到kotlin过程中的一些经验.</p>
+<h2 id="Android-Architecture-Components-Room—-Relationships"><a href="#Android-Architecture-Components-Room—-Relationships" class="headerlink" title="Android Architecture Components: Room—-Relationships "></a><a href="https://android.jlelse.eu/android-architecture-components-room-relationships-bf473510c14a" target="_blank" rel="noopener">Android Architecture Components: Room—-Relationships </a></h2><p>文章介绍了Room如何实现外键关联,进行数据库JOIN查找. 除了我们经常用的<code>@ForeignKey</code>之外,还可以通过<code>@Embedded</code>与<code>@Relation</code>来定义外键关系.</p>
+<h2 id="Clean-App-with-Kotlin-amp-Architecture-Components-Part-2"><a href="#Clean-App-with-Kotlin-amp-Architecture-Components-Part-2" class="headerlink" title="Clean App with Kotlin &amp; Architecture Components - Part 2 "></a><a href="https://blog.elpassion.com/create-a-clean-code-app-with-kotlin-coroutines-and-android-architecture-components-part-2-4f585050d7d7" target="_blank" rel="noopener">Clean App with Kotlin &amp; Architecture Components - Part 2 </a></h2><p>文章接上次通过Kotlin的Coroutines来做的一个天气应用,这次引入<code>Actor</code>与<code>Channel</code>的概念,实际上Actor类似于一个信箱管家,而Channel则是信箱(包括信道),而且具有不同种类型的信道模式,有0缓存的,有无限缓存的,也有固定缓存的,Actor会将定义的数据类型通过Channel发送给接收方,通过Channel不同的类型,可以实现不同的消息循环效果.</p>
+<h2 id="Improving-performance-with-background-data-prefetching"><a href="#Improving-performance-with-background-data-prefetching" class="headerlink" title="Improving performance with background data prefetching "></a><a href="https://engineering.instagram.com/improving-performance-with-background-data-prefetching-b191acb39898" target="_blank" rel="noopener">Improving performance with background data prefetching </a></h2><p>介绍了Instgram如何实现后台预取的,为了让用户的到更好的体验,特别是网络不好地区,他们实现了一套后台Wifi预取的逻辑.间接地,他们也实现了网络与应用使用的解耦,还节省了后台带宽,因为如果没有预取,每次开启程序都要请求主服务器抓取大量数据.</p>
+<h2 id="My-take-from-Droidcon-London-2017"><a href="#My-take-from-Droidcon-London-2017" class="headerlink" title="My take from Droidcon London 2017 "></a><a href="https://medium.com/@michele.marchetti/my-take-from-droidcon-london-2017-d870c82e41c1" target="_blank" rel="noopener">My take from Droidcon London 2017 </a></h2><p>介绍了作者有幸参加在伦敦举行的<code>Droidcon</code>大会,分享了在会上听到的诸多Presentation的概况,很多Topic,包括Kotlin Coroutines,Room,Test,Android Security等等.</p>
+<h2 id="Practical-Data-Structures-Guide-for-Android-developers"><a href="#Practical-Data-Structures-Guide-for-Android-developers" class="headerlink" title="Practical Data Structures Guide for Android developers "></a><a href="https://blog.mindorks.com/practical-data-structures-guide-for-android-developers-73fdec190802" target="_blank" rel="noopener">Practical Data Structures Guide for Android developers </a></h2><p>作者在上大学之前就接触了Android开发,但当时没有进行数据结构与算法的系统学习,致使一些基础概念不清晰而有一些不好的习惯.<br>作者在这里分析了List,Map,Set,Stack等等的数据结构,包含ArrayList与LinkedList的区别,HashMap与LinkedHashMap等等的原理.</p>
+<p>不过作者没有讲Android新的SparseArray与ArrayMap的特性.</p>
+<h2 id="How-“Effective-Java”-may-have-influenced-the-design-of-Kotlin-Part-3"><a href="#How-“Effective-Java”-may-have-influenced-the-design-of-Kotlin-Part-3" class="headerlink" title="How “Effective Java” may have influenced the design of Kotlin -  Part 3 "></a><a href="http://www.lukle.at/blog/2017/08/how-effective-java-may-have-influenced-the-design-of-kotlin%E2%80%8A-%E2%80%8Apart-3/" target="_blank" rel="noopener">How “Effective Java” may have influenced the design of Kotlin -  Part 3 </a></h2><p>接着上期介绍的Kotlin的优势,本期介绍了, 总共有5点,包括用<code>by</code>来做代理实现类的组合,还有Kotlin没有装箱类型带来的好处,等等.</p>
+<h2 id="LIBRARIES-amp-CODE"><a href="#LIBRARIES-amp-CODE" class="headerlink" title="LIBRARIES &amp; CODE"></a>LIBRARIES &amp; CODE</h2><h2 id="Rings"><a href="#Rings" class="headerlink" title="Rings "></a><a href="https://github.com/lalongooo/rings" target="_blank" rel="noopener">Rings </a></h2><p>打不开了…</p>
+<h2 id="ads1015"><a href="#ads1015" class="headerlink" title="ads1015 "></a><a href="https://github.com/blundell/ads1015" target="_blank" rel="noopener">ads1015 </a></h2><p>IoT那个AD转换器的代码.</p>
+<h2 id="kotlinconf-app"><a href="#kotlinconf-app" class="headerlink" title="kotlinconf-app "></a><a href="https://github.com/JetBrains/kotlinconf-app" target="_blank" rel="noopener">kotlinconf-app </a></h2><p>官方的Kolin会议应用,包含很多个版本,当然android版本使用kotlin编写</p>
+<h2 id="grox"><a href="#grox" class="headerlink" title="grox "></a><a href="https://github.com/groupon/grox" target="_blank" rel="noopener">grox </a></h2><p>Android State保持的一个框架,可以将你的程序改成Command/Action驱动的哦.</p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Android-Prefetching/">Android Prefetching</a> <a class="tag tag--primary tag--small t-link" href="/tags/Android-Weekly/">Android Weekly</a> <a class="tag tag--primary tag--small t-link" href="/tags/Architecture-Component/">Architecture Component</a> <a class="tag tag--primary tag--small t-link" href="/tags/Grox/">Grox</a> <a class="tag tag--primary tag--small t-link" href="/tags/Koin/">Koin</a> <a class="tag tag--primary tag--small t-link" href="/tags/Kotlin-Coroutines/">Kotlin Coroutines</a> <a class="tag tag--primary tag--small t-link" href="/tags/Room/">Room</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/11/20/Android-Weekly-Issue-283/"  data-tooltip="Android Weekly Issue #283">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/11/03/Android-Weekly-Issue-281/" data-tooltip="Android Weekly Issue #281">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/11/20/Android-Weekly-Issue-283/"  data-tooltip="Android Weekly Issue #283">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2017/11/03/Android-Weekly-Issue-281/" data-tooltip="Android Weekly Issue #281">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <i id="btn-close-shareoptions" class="fa fa-close"></i>
+    <ul class="share-options">
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/">
+                    <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
+                </a>
+            </li>
+        
+    </ul>
+</div>
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 41 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/jquery.fancybox.js"></script>
+<script src="/assets/js/jquery.fancybox-thumbs.js"></script>
+<script src="/assets/js/tranquilpeak.js"></script>
+<!--SCRIPTS END-->
+
+    
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+    </body>
+</html>

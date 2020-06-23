@@ -1,0 +1,805 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>如何正确使用Espresso来测试你的Android程序 - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+        <meta name="keywords" content="Android Espresso UI自动化 异步处理 IdlingResource Dagger">
+    
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="如何使用Android Espresso测试UI">
+<meta name="keywords" content="Android Espresso UI自动化 异步处理 IdlingResource Dagger">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="如何正确使用Espresso来测试你的Android程序">
+<meta property="og:url" content="http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="如何使用Android Espresso测试UI">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2020-06-22T09:44:59.477Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何正确使用Espresso来测试你的Android程序">
+<meta name="twitter:description" content="如何使用Android Espresso测试UI">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1538273751/espresso_wsc7bk.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1538273751/espresso_wsc7bk.jpg" />
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/font-awesome.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox-thumbs.css">
+    <link rel="stylesheet" href="/assets/css/tranquilpeak.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+    </div>
+    
+        
+            <a  class="header-right-picture "
+                href="#about">
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            如何正确使用Espresso来测试你的Android程序
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time itemprop="datePublished" datetime="2018-09-30T10:12:48+08:00">
+	
+		    9月 30, 2018
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android/">Android</a>
+
+
+    
+</div>
+
+    
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>UI测试在Android平台上一直都是一个令人头痛的事情, 由于大家平时用的很少, 加之很多文档的缺失, 如果很多东西从头摸索,势必踩坑无数.</p>
+<p>自Android24正式淘汰掉了<a href="https://developer.android.com/reference/android/test/InstrumentationTestCase" target="_blank" rel="noopener">InstrumentationTestCase</a>(位于android.test包), 推出<a href="https://developer.android.com/training/testing/espresso/" target="_blank" rel="noopener">Espresso</a>(位于android.support.test包), Google一直致力于降低UI测试的门槛.</p>
+<p>了解测试金字塔的同学可能知道,UI测试属于功能测试(Functional Test), 或者按照其他的划分也属于集成测试(Integration Test), Google推出了<a href="https://developer.android.com/training/testing/ui-automator" target="_blank" rel="noopener">UIAutomator</a>与<a href="https://developer.android.com/training/testing/espresso" target="_blank" rel="noopener">Espresso</a>来分别处理跨App间的测试(<a href="https://zh.wikipedia.org/wiki/%E9%BB%91%E7%9B%92%E6%B5%8B%E8%AF%95" target="_blank" rel="noopener">黑盒测试</a>)以及App内的测试(<a href="https://zh.wikipedia.org/wiki/%E7%99%BD%E7%9B%92%E6%B5%8B%E8%AF%95" target="_blank" rel="noopener">白盒测试</a>).</p>
+<p>测试步骤类似,分为:</p>
+<ul>
+<li>查找元素</li>
+<li>触发行为</li>
+<li>检测结果</li>
+</ul>
+<p>本文分为三部分, 第一部分简单介绍如何使用Espresso, 第二部分分析如何处理诸如异步, 依赖注入, 程序结构对UI测试的影响以及提供解决办法, 第三部分提供源码以及一些Reference的地址.</p>
+<a id="more"></a>
+<h2 id="Part-I"><a href="#Part-I" class="headerlink" title="Part I"></a>Part I</h2><h3 id="如何配置"><a href="#如何配置" class="headerlink" title="如何配置"></a>如何配置</h3><p>1.需要在gradle的dependencies里添加依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">androidTestImplementation &apos;com.android.support.test.espresso:espresso-core:3.0.2&apos;</span><br><span class="line">androidTestImplementation &apos;com.android.support.test:runner:1.0.2&apos;</span><br><span class="line">androidTestImplementation &apos;com.android.support.test:rules:1.0.2&apos;</span><br></pre></td></tr></table></figure>
+<p>2.在gradle的android.defaultConfig里指定TestRunner</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br></pre></td></tr></table></figure>
+<p>3.书写测试文件,通过<code>AndroidJUnit4</code>来跑即可,使用Activity Rule来启动你的Activity.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@Rule</span><br><span class="line">@JvmField</span><br><span class="line">var activityTestRule: ActivityTestRule&lt;MainActivity&gt; = ActivityTestRule&lt;MainActivity&gt;()</span><br></pre></td></tr></table></figure>
+<p>4.添加测试.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">onView(withText(&quot;Hello world!&quot;)).check(matches(isDisplayed()));</span><br></pre></td></tr></table></figure>
+<p>5.运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./gradlew connectedAndroidTest</span><br></pre></td></tr></table></figure>
+<p>或在IDE中进行运行.</p>
+<p>以上步骤写的比较简略, 如果第一次使用, 可参考<a href="https://developer.android.com/training/testing/espresso/setup" target="_blank" rel="noopener">官方文档</a>.</p>
+<h2 id="Part-II"><a href="#Part-II" class="headerlink" title="Part II"></a>Part II</h2><h3 id="貌似已经会了-打钩-x"><a href="#貌似已经会了-打钩-x" class="headerlink" title="貌似已经会了, 打钩[x]?"></a>貌似已经会了, 打钩[x]?</h3><p>对于简单的UI其实上面的5步已经完全足够,  这也是Espresso好用的地方,  将UI测试写的跟普通的Unit Test一样简单.</p>
+<p>但是随着你的UI变得复杂, 很多问题接踵而至.</p>
+<p>其根本原因在于, Espresso系统在处理内置UI渲染(包括WebView)的异步操作都没有问题, 它会等待页面的渲染与加载, 而你自己如果有异步逻辑, 可能测试进程不会等待其完成而结束, 导致测试失败.</p>
+<p>而采用Unit Test将无论是RxJava的Scheduler或者是Excutor替换成同一个线程的方法没法在UI Test中使用. 原因是UI操作只能在创建它的线程使用(UI 线程), 而如果你用了网络或者Room之类的数据库, 它又无法在UI线程使用, 相互矛盾, 进退两难.</p>
+<p>所以这个时候就需要使用Espresso提供的<a href="https://developer.android.com/training/testing/espresso/idling-resource" target="_blank" rel="noopener">IdleResource</a>, 来通知系统是否Idle或者Busy.</p>
+<h3 id="什么时候该使用IdleResource"><a href="#什么时候该使用IdleResource" class="headerlink" title="什么时候该使用IdleResource"></a>什么时候该使用IdleResource</h3><p>其实IdleResource的官方文档里面有指出, 如果你的测试里有使用:</p>
+<ul>
+<li>Thread.sleep()</li>
+<li>Retry</li>
+<li>CountDown …</li>
+</ul>
+<p>来保证你的测试工作正常, 那么意味着你应该使用IdleResource了.</p>
+<p>或许刚刚接触Espresso的你可能还没有意识到问题所在, 还没有使用Work Around的方法来解决问题, 换个角度来说可能更好理解.</p>
+<p>如果你所测试程序里有使用:</p>
+<ul>
+<li>Databinding</li>
+<li>LiveData</li>
+<li>通过非AsyncTask实现的异步操作</li>
+<li>Fragment跳转</li>
+<li>等等…</li>
+</ul>
+<p>那么就意味着你需要使用IdleResource来保证你的测试能顺利进行, 否则Test Case可能在程序异步操作未执行时就已经关闭了.</p>
+<h3 id="如何使用IdleResource"><a href="#如何使用IdleResource" class="headerlink" title="如何使用IdleResource"></a>如何使用IdleResource</h3><p><a href="https://developer.android.com/training/testing/espresso/idling-resource" target="_blank" rel="noopener">IdleResource</a>的三个关键接口都非常Straigtforward.</p>
+<p>1.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fun getName(): String</span><br></pre></td></tr></table></figure></p>
+<p>每一个IdleResource都应该有唯一的Name来注册到系统里, 不能重复.</p>
+<p>2.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fun isIdleNow(): Boolean</span><br></pre></td></tr></table></figure></p>
+<p>Espresso会从UI线程调用, 通过这个方法来获得是否进入Idle状态.</p>
+<p>3.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback)</span><br></pre></td></tr></table></figure></p>
+<p>当该IdleResource被使用时, Espresso会注册该callback, 当background job执行完毕后, 需要调用callback.onTransitionToIdle()通知(<strong>如果已经是Idle状态, 调用也不影响, 所以很多简单的实现都是将这个调用放在isIdleNow中, 判断已经idle就调用, 虽然google的best practice里说不要这样</strong>), 该调用会通知UI线程, 并可以在任何线程调用.</p>
+<p>在使用IdleResource的时候, 通常是通过注册Rule来驱动的, 这个就需要继承<code>TestWatcher</code>.</p>
+<p>复写它的starting与finished方法, 通过<code>IdlingRegistry.getInstance().register</code>与<code>IdlingRegistry.getInstance().unregister</code>来注册/反注册IdleReource, 当然可能需要在finished的时候drain掉所有在运行的Task.</p>
+<p>给一个简单的例子把.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">class SampleIdleResourceRule : TestWatcher() &#123;</span><br><span class="line">    private val idlingResource: IdlingResource = xxx</span><br><span class="line">    </span><br><span class="line">    override fun starting(description: Description?) &#123;</span><br><span class="line">        IdlingRegistry.getInstance().register(idlingResource)</span><br><span class="line">        super.starting(description)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    override fun finished(description: Description?) &#123;</span><br><span class="line">        //drain all the pending task here if needed.</span><br><span class="line">        IdlingRegistry.getInstance().unregister(idlingResource)</span><br><span class="line">        super.finished(description)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="举个IdleResource的例子吧"><a href="#举个IdleResource的例子吧" class="headerlink" title="举个IdleResource的例子吧."></a>举个IdleResource的例子吧.</h3><p>1.使用LiveData等Archtecture Component组件</p>
+<p>我们知道LiveData是一个订阅系统, 是必涉及后台线程, 比较方便的是它自己内部已经调用了IdleResource来增加/减少后台job, 所以直接使用系统提供的<a href="https://developer.android.com/reference/android/support/test/espresso/idling/CountingIdlingResource" target="_blank" rel="noopener">CountingTaskExecutorRule</a>.</p>
+<p>由于Resource name不能重复, 所以为了绕过这个检测, 需要继承<code>CountingTaskExecutorRule</code>来复写getName.</p>
+<p>具体可以参考google的<a href="https://github.com/googlesamples/android-architecture-components/blob/1c91038b55d52fe1006b3b4c6436003f4da29c4f/GithubBrowserSample/app/src/androidTest/java/com/android/example/github/util/TaskExecutorWithIdlingResourceRule.kt#L31" target="_blank" rel="noopener">TaskExecutorWithIdlingResourceRule</a>.</p>
+<p>Google还提供了Databinding的Rule, 可以参考.</p>
+<p>2.等待弹框结束</p>
+<p>一般情况下我们使用DialogFragment来弹框, 如果我们去check一些text被dialog遮挡, 就必须等待其消失后在进行检查.</p>
+<p>这时我们可以通过<code>findFragmentByTag</code>来检测该弹框是否dismiss.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">class DialogIdlingResource(</span><br><span class="line">        private val manager: FragmentManager, </span><br><span class="line">        private val tag: String) : IdlingResource &#123;</span><br><span class="line">    private var resourceCallback: IdlingResource.ResourceCallback? = null</span><br><span class="line"></span><br><span class="line">    override fun getName(): String = &quot;xxx&quot;</span><br><span class="line"></span><br><span class="line">    override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback?) &#123;</span><br><span class="line">        resourceCallback = callback</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun isIdleNow(): Boolean &#123;</span><br><span class="line">        val idle = manager.findFragmentByTag(tag) == null</span><br><span class="line">        if (idle) &#123;</span><br><span class="line">            resourceCallback?.onTransitionToIdle()</span><br><span class="line">        &#125;</span><br><span class="line">        return idle</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.Delegate Executors/Scheduler</p>
+<p>如果有异步处理逻辑, 大多都位于Repository/ViewModel层, 这部分会被Mock, 但也有一些UI逻辑可能会用到Excecutor. 如RecyclerView的DiffUtil, 需要传入一个Executor来做异步Diff, 这时我们就需要一个Excecutor的IdlingResource, 并把它里面的Delegate赋值给UI.</p>
+<p>这部分可以参考Google GithubBrowser Sample的<a href="https://github.com/googlesamples/android-architecture-components/blob/1c91038b55d52fe1006b3b4c6436003f4da29c4f/GithubBrowserSample/app/src/androidTest/java/com/android/example/github/util/CountingAppExecutorsRule.kt#L32" target="_blank" rel="noopener">CountingAppExecutorsRule</a>.</p>
+<h3 id="应该怎么测试-需要测试什么"><a href="#应该怎么测试-需要测试什么" class="headerlink" title="应该怎么测试, 需要测试什么?"></a>应该怎么测试, 需要测试什么?</h3><p>虽然Espresso测试是集成测试,  但是由于涉及到异步逻辑导致Test Case无法按照预期进行的问题时而存在, 且有时候无法通过IdlingResource来解决.</p>
+<p>比如涉及到多个Fragment的跳转, 就会发生在Fragment未打开时Test Case就挂掉的情况.</p>
+<p>再比如使用RxJava, 在Espresso3.x + RxJava2.x的情况下, 即便将Scheduler代理给IdlingResource也无法保证整个业务流程完整走下来, 异步操作仍无法完整运行, 具体问题可参考Jake大神RxIdler的<a href="https://github.com/square/RxIdler" target="_blank" rel="noopener">Issue</a>.</p>
+<p>所以测试起来就有一些原则需要遵守, 才能保证整个流程的可测性.</p>
+<ul>
+<li>最好对每一个Fragment进行单独测试, Mock所依赖的部分, 如网络, 数据模块, 如果涉及Fragment跳转逻辑, 通过继承来复写进行测试.</li>
+<li>如果使用了RxJava, 需要将其封装在Repository或者Presenter/ViewModel中进行整体的Mock.</li>
+<li>如果使用了Dagger2.android进行自动注入, 最好对测试部分自定义TestRunner提供一个空的Application来Disable注入, 对所测试Fragment注入对象进行手动赋值.</li>
+<li>如果Activity有注入逻辑, 最好将其解耦到Fragment, 因为Espresso的Activity是通过ActivityRule来启动, 无法进行直接手动注入.</li>
+<li>如果无法Move到Fragment, 或者不想… 那就需要在测试里构建自己的Dagger Component, 对于使用Dagger2.android自动注入的, 还需要手动创建Fake的DispatchingAndroidInjector完成手动注入.</li>
+<li>如果未使用Dagger2.android, 通过AndroidInjector来注入的, 可以忽略与注入相关的item.</li>
+</ul>
+<h3 id="能再讲的仔细一些吗"><a href="#能再讲的仔细一些吗" class="headerlink" title="能再讲的仔细一些吗?"></a>能再讲的仔细一些吗?</h3><p>1.单独测试Fragment的好处是可以解耦Fragment之间的跳转, 往往Fragment都是UI流程中的一个环节, 当逻辑完成时会跳向下一Fragment. 可以创建一个空Activity来专门用于显示该Fragment, 并且在测试的setUp里commit该Fragment.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">class TestActivity &#123;</span><br><span class="line">    fun showFragment()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@RunWith(AndroidJUnit4::class)</span><br><span class="line">class XXXFragmentTest &#123;</span><br><span class="line">    @Rule</span><br><span class="line">    @JvmField</span><br><span class="line">    val activityRule = ActivityTestRule(XXXFragment::class.java)</span><br><span class="line">    </span><br><span class="line">    @Before</span><br><span class="line">    fun init() &#123;</span><br><span class="line">        //1. init fragment</span><br><span class="line">        //2. assign mock data</span><br><span class="line">        activityRule.showFragment(xxx)  </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @Test</span><br><span class="line">    fun testXXX() &#123;</span><br><span class="line">        xxx</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2.由于常常会需要继承需要测试的Fragment来复写一些类, 对于使用Dagger.android自动注入的, 该子Fragment又未通过<code>@ContributesAndroidInjector</code>进行注册, 往往需要自定义TestRunner, 然后手动注入Fragment.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">class CustomTestRunner : AndroidJUnitRunner() &#123;</span><br><span class="line">    override fun newApplication(...) &#123;</span><br><span class="line">        return ...TestApp:class...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        testInstrumentationRunner &quot;xxx.CustomTestRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class TestApp : Application() &#123;&#125;</span><br><span class="line"></span><br><span class="line">@RunWith(AndroidJUnit4::class)</span><br><span class="line">class XXXFragmentTest &#123;</span><br><span class="line">    //activity rule</span><br><span class="line">    ...</span><br><span class="line">    val testFragment = TestFragment()</span><br><span class="line">    </span><br><span class="line">    @Before</span><br><span class="line">    fun init() &#123;</span><br><span class="line">        testFragment.xxx = mockXXX</span><br><span class="line">        ...</span><br><span class="line">        activityRule.activity.showFragment(testFragment)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @Test</span><br><span class="line">    fun testXXX() &#123;</span><br><span class="line">        onView...check(...)</span><br><span class="line">        assertTrue(testFragment.isXXXShow)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    class TestFragment : XXXFragment() &#123;</span><br><span class="line">        var isXXXShow = false</span><br><span class="line">        override fun showXXX() &#123;</span><br><span class="line">            isXXXShow = true</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.如果Activity有注入逻辑与业务逻辑, 并且不想抽到Fragment中去, 则需要创建Fake的Injector保证可以完成注入, </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">fun createFakeInjector(block: T.() -&gt; Unit): DispatchingAndroidInjector&lt;Activity&gt; &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@RunWith(AndroidJUnit4::class)</span><br><span class="line">class XXXActivityTest &#123;</span><br><span class="line">    @Rule</span><br><span class="line">    @JvmField</span><br><span class="line">    var activityRule = object : ActivityTestRule&lt;XXX&gt;(XXX::class.java) &#123;</span><br><span class="line">       val app = ...get application</span><br><span class="line">       app.dispatchingAndroidInjector = createFakeInjector&lt;XXX&gt;() &#123;</span><br><span class="line">           //手动注入</span><br><span class="line">           xxx =  mockXXX</span><br><span class="line">           `when`(xxx).thenReturn(xxx)</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>4.为了支持需要通过继承Fragment来完成测试的Case, 还需要对测试模块创建自己的Component来注册从而进行Fake Injector的创建 (类似3, 只是Application/Activity可能为Test版本).</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">Grale</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    kaptAndroidTest &apos;com.google.dagger:dagger-android-processor:2.X&apos;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@Component(modules = [</span><br><span class="line">    AndroidInjectionModule::class,</span><br><span class="line">    AndroidSupportInjectionModule::class,</span><br><span class="line">    ...主App所注册的所有Module,</span><br><span class="line">    TestActivityModule::class])</span><br><span class="line">interface TestCompnent &#123;</span><br><span class="line">    fun inject(xxx: XXX)</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Module</span><br><span class="line">abstract class TestActivityModule &#123;</span><br><span class="line">  //通过`ContributesAndroidInjector`注册你的TestActivity, 以及TestFragment  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class TestApp : Application(), HasActivityInjector &#123;</span><br><span class="line">    @Inject</span><br><span class="line">    lateinit var injector: DispatchingAndroidInjector&lt;Activity&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class TestActivity : Activity(), HasSupportFragmentInjector &#123;</span><br><span class="line">    @Inject</span><br><span class="line">    lateinit var injector: DispatchingAndroidInjector&lt;Fragment&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Part-III"><a href="#Part-III" class="headerlink" title="Part III"></a>Part III</h2><h3 id="如果还不是很明白可以查看代码"><a href="#如果还不是很明白可以查看代码" class="headerlink" title="如果还不是很明白可以查看代码"></a>如果还不是很明白可以查看代码</h3><p>Disable注入的在这里:<br><a href="https://github.com/googlesamples/android-architecture-components/tree/master/GithubBrowserSample" target="_blank" rel="noopener">Google的Demo GithubBrowser</a></p>
+<p>跟注入相关的在这里:<br><a href="https://github.com/mengdd/DribbbleClient" target="_blank" rel="noopener">自己的Demo</a></p>
+<h3 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h3><ul>
+<li><a href="https://proandroiddev.com/activity-espresso-test-with-daggers-android-injector-82f3ee564aa4" target="_blank" rel="noopener">https://proandroiddev.com/activity-espresso-test-with-daggers-android-injector-82f3ee564aa4</a></li>
+<li><a href="https://github.com/SabagRonen/dagger-activity-test-sample" target="_blank" rel="noopener">https://github.com/SabagRonen/dagger-activity-test-sample</a></li>
+<li><a href="https://github.com/googlesamples/android-architecture-components/tree/master/GithubBrowserSample" target="_blank" rel="noopener">https://github.com/googlesamples/android-architecture-components/tree/master/GithubBrowserSample</a></li>
+<li><a href="https://developer.android.com/training/testing/espresso/idling-resource" target="_blank" rel="noopener">https://developer.android.com/training/testing/espresso/idling-resource</a></li>
+<li><a href="http://blog.sqisland.com/2015/07/espresso-wait-for-dialog-to-dismiss.html" target="_blank" rel="noopener">http://blog.sqisland.com/2015/07/espresso-wait-for-dialog-to-dismiss.html</a></li>
+</ul>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Android/">Android</a> <a class="tag tag--primary tag--small t-link" href="/tags/Espresso/">Espresso</a> <a class="tag tag--primary tag--small t-link" href="/tags/UI-Automation-Test/">UI Automation Test</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/"  data-tooltip="Android程序员的Flutter学习笔记">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/07/27/Android-Weekly-Issue-319/" data-tooltip="Android Weekly Issue #319">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/"  data-tooltip="Android程序员的Flutter学习笔记">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/07/27/Android-Weekly-Issue-319/" data-tooltip="Android Weekly Issue #319">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <i id="btn-close-shareoptions" class="fa fa-close"></i>
+    <ul class="share-options">
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/">
+                    <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
+                </a>
+            </li>
+        
+    </ul>
+</div>
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 41 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/jquery.fancybox.js"></script>
+<script src="/assets/js/jquery.fancybox-thumbs.js"></script>
+<script src="/assets/js/tranquilpeak.js"></script>
+<!--SCRIPTS END-->
+
+    
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+    </body>
+</html>

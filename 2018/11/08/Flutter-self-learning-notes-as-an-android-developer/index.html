@@ -1,0 +1,814 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Android程序员的Flutter学习笔记 - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta name="description" content="Android程序员 Flutter学习笔记 Flutter self-learning notes as an android developer">
+<meta name="keywords" content="Android,Flutter">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Android程序员的Flutter学习笔记">
+<meta property="og:url" content="http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="Android程序员 Flutter学习笔记 Flutter self-learning notes as an android developer">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:image" content="http://talentprince.github.io/images/react_native.png">
+<meta property="og:image" content="http://talentprince.github.io/images/xamarin.png">
+<meta property="og:image" content="http://talentprince.github.io/images/flutter.png">
+<meta property="og:updated_time" content="2020-06-22T09:44:59.477Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android程序员的Flutter学习笔记">
+<meta name="twitter:description" content="Android程序员 Flutter学习笔记 Flutter self-learning notes as an android developer">
+<meta name="twitter:image" content="http://talentprince.github.io/images/react_native.png">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1541647409/flutter_logo_yum7hs.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1541647409/flutter_logo_yum7hs.png" />
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/font-awesome.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox-thumbs.css">
+    <link rel="stylesheet" href="/assets/css/tranquilpeak.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+    </div>
+    
+        
+            <a  class="header-right-picture "
+                href="#about">
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post" itemscope itemType="http://schema.org/BlogPosting">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title" itemprop="headline">
+            Android程序员的Flutter学习笔记
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time itemprop="datePublished" datetime="2018-11-08T11:17:10+08:00">
+	
+		    11月 08, 2018
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Flutter/">Flutter</a>
+
+
+    
+</div>
+
+    
+</div>
+    
+    <div class="post-content markdown" itemprop="articleBody">
+        <div class="main-content-wrap">
+            <p>作为忠实与较资深的Android汪, 最近抽出了一些时间研究了一下Google的亲儿子Flutter, 尚属皮毛, 只能算是个简单的记录吧.</p>
+<p>Google自2017年第一次提出Flutter, 到2018年Beta, 再加之RN的各种风波与问题, 使得Flutter的热度不断上升, 国内不少公司都公布Flutter在其产品中的应用, 如美团, 闲鱼等.</p>
+<a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Flutter作为跨平台框架, 常常被人拿出来与React Native, 以及Xamarin进行对比, 除了大家都是跨平台框架之外且能达到近乎Native的体验之外, Flutter与这两者的原理大不相同.</p>
+<p>让我们来看看这三者的结构图吧.</p>
+<p><img src="/images/react_native.png" alt="React Native"></p>
+<p><img src="/images/xamarin.png" alt="Xamarin"></p>
+<p><img src="/images/flutter.png" alt="Flutter"></p>
+<p>可能有一些复杂, 咱大致解释一下.</p>
+<p>React Native跟Xamarin都是基于mapping native代码来实现所谓的Native体验的框架, 只是RN基于JS引擎 + Bridge与native打交道, 并且在运行时进行绑定, 而Xamarin是基于微软的基于Linux的C#虚拟机mono + JNI与native进行通信.</p>
+<p>这里Android与iOS还是有差别的, 如RN在iOS上JS引擎不支持JIT, 会一定程度影响效率, Xamarin在iOS上可以直接编译成iOS平台可以执行的程序, 所以在实际运行起来的性能是一样的, 唯一的差别就是微软得更快的支持API同步.</p>
+<p>对于Flutter来说, 由于他的渲染引擎使用了Skia直绘, 加上基于C++的Dart引擎, 所以在不同平台上没有差别, 加之其实现了Android Material Design与iOS Cupertino两套UI组件, 所以即便是自绘组件, 看起来还是跟原生的一个样子.</p>
+<p>通过对三种跨平台引擎的大致了解, 我们可以看出来, 他们都达到了一定程度的Native体验, 然则各自都有一定的性能损耗, 比如RN的JS引擎加载JS, 以及Bridge通信的损耗, Xamarin Mono虚拟机与Java通信的损耗, 以及Flutter Skia渲染与Native Android渲染的差异等.</p>
+<h2 id="Flutter笔记"><a href="#Flutter笔记" class="headerlink" title="Flutter笔记"></a>Flutter笔记</h2><h3 id="如何启动一个app"><a href="#如何启动一个app" class="headerlink" title="如何启动一个app"></a>如何启动一个app</h3><p>Android需要在Manfest里面指定带有MAIN action与LAUNCHER category的Activity声明, 而Flutter只需要一行.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void main() =&gt; runApp(MyApp());</span><br></pre></td></tr></table></figure>
+<p>其中MyApp就是一个普通的Widgets(View).</p>
+<h3 id="View-vs-Widgets"><a href="#View-vs-Widgets" class="headerlink" title="View vs Widgets"></a>View vs Widgets</h3><p>Flutter没有View, 与之对应的是Widget, 并且分为StatelessWidgets与StatefulWidgets, 前者是个静态View, 后者是动态通过Data来更新的View.</p>
+<ul>
+<li>Stateless</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Text(</span><br><span class="line">  &apos;I like Flutter!&apos;,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Stateful</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">class StatefulText extends StatefulWidget &#123;</span><br><span class="line">  @override</span><br><span class="line">  State&lt;StatefulWidget&gt; createState() =&gt; _TextState();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class _TextState extends State&lt;StatefulText&gt; &#123;</span><br><span class="line">  // Default placeholder text</span><br><span class="line">  String textToShow = &quot;I Like Flutter&quot;;</span><br><span class="line"></span><br><span class="line">  void _updateText() &#123;</span><br><span class="line">    setState(() &#123;</span><br><span class="line">      // update the text</span><br><span class="line">      textToShow = &quot;Flutter is Awesome!&quot;;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  @override</span><br><span class="line">  Widget build(BuildContext context) &#123;</span><br><span class="line">      ...invoke _updateText</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际上是因为StatefulWidgets通过调用<code>State</code>的<code>setState</code>方法来触发整个Widgets树的重绘, 并且在重绘之前会调用传进去的<code>(){ ... }</code>block.</p>
+<h3 id="怎么写Layout-XML到哪里去了"><a href="#怎么写Layout-XML到哪里去了" class="headerlink" title="怎么写Layout, XML到哪里去了."></a>怎么写Layout, XML到哪里去了.</h3><p>实际上Flutter没有xml了, 并且是通过Widgets的嵌套来实现一个布局的.</p>
+<p>如:</p>
+<ul>
+<li><code>Center</code>是一个可以把子View放置在中央的容器.</li>
+<li><code>Row</code>对应的就是LinearLayout + Horizontal, <code>Column</code>对应的就是LinearLayout + Vertical, 他们都具备一个属性叫做<code>crossAxisAlignment</code>, 有点类似<code>gravity</code>, 来控制子View相对于父View的位置.</li>
+<li><code>Expanded</code>支持一个类似weight的属性, 叫<code>flex</code>. </li>
+<li><code>Container</code>是一个具有<code>decoration</code>属性的容器, 可以用来控制背景色, border, margin等等.</li>
+<li><code>Stack</code>有点像是一个特殊的RelatetiveLayout或者ConstraintLayout, <code>children</code>属性指定了它的子View, 第一个是Base View, <code>alignment</code>属性指定了后面的子View相对于BaseView的位置, 如<code>alignment: const Alignment(0.6, 0.6)</code>指定了位于BaseView右下角的位置.</li>
+<li><code>ListTile</code>是一个特殊的ListItem, 有三个属性, 分别是左边的Icon (leading), 文字 (title), 以及右边的Icon (trailing).</li>
+<li>还有诸如<code>ListView</code>, <code>GridView</code>, <code>Card</code>等等比较熟悉的Widgets.</li>
+</ul>
+<p>另外有一个类似于我们Activity的Widgets:</p>
+<ul>
+<li>叫做<code>MaterialApp</code>, 可以指定<code>theme</code>, <code>title</code>, 以及子View <code>home</code>, 还有更重要的页面跳转<code>routes</code>.</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MaterialApp(</span><br><span class="line">      title: &apos;Welcome to Flutter&apos;,</span><br><span class="line">      home: ...,</span><br><span class="line">      routes: &lt;String, WidgetBuilder&gt; ...,</span><br><span class="line">      theme: ThemeData(</span><br><span class="line">        primaryColor: Colors.white</span><br><span class="line">      ),</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+<p>还有一个类似于Fragment的:</p>
+<ul>
+<li>叫做<code>Scaffold</code>, 中文意思是<code>脚手架</code>, 它包含一个appBar (ActionBar)与一个body, appBar可以指定title与actions (类似于action button的点击事件).</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Scaffold(</span><br><span class="line">      appBar: AppBar(</span><br><span class="line">        title: Text(widget.title),</span><br><span class="line">        actions: &lt;Widget&gt;[...],</span><br><span class="line">      ),</span><br><span class="line">      body: ...,</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+<h3 id="如何从父View中Remove一个元素"><a href="#如何从父View中Remove一个元素" class="headerlink" title="如何从父View中Remove一个元素"></a>如何从父View中Remove一个元素</h3><p>答案是没有… 因为在Flutter看来, Widgets的树结构是不可以被更改的, 但是如果想更改, 则是通过StatefulWidgets的方法, 通过setState来更改Data, 触发Widgets重绘, 从而替换掉之前的Widgets.</p>
+<h3 id="喜欢画Canvas的同学怎么办"><a href="#喜欢画Canvas的同学怎么办" class="headerlink" title="喜欢画Canvas的同学怎么办?"></a>喜欢画Canvas的同学怎么办?</h3><p>Flutter同样支持, <code>CustomPaint</code>作为一个 Widgets就支持传入一个实现<code>CustomPainter</code>抽象类的参数, 而<code>CustomPainter</code>的抽象方法也类似于Android View的<code>onDraw</code>.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">void paint(Canvas canvas, Size size)</span><br><span class="line"></span><br><span class="line">bool shouldRepaint(CustomPainter oldDelegate)</span><br></pre></td></tr></table></figure>
+<h3 id="如何自定义View"><a href="#如何自定义View" class="headerlink" title="如何自定义View"></a>如何自定义View</h3><p>不用继承, 而使用类似Android ViewGroup的办法, 通过组合(composing)与封装的方法来实现, 通过小Widgets组合成需要的新Widgets.</p>
+<h3 id="页面跳转怎么办-四大组件之一的Intent跑哪里去了"><a href="#页面跳转怎么办-四大组件之一的Intent跑哪里去了" class="headerlink" title="页面跳转怎么办, 四大组件之一的Intent跑哪里去了"></a>页面跳转怎么办, 四大组件之一的Intent跑哪里去了</h3><p>貌似在讲类似于Activity的<code>MaterialApp</code>的时候剧透了… </p>
+<p>就是使用<code>Navigator</code>与<code>Routes</code>来实现界面跳转, 实际上是整个Widgets的替换.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">routes: &lt;String, WidgetBuilder&gt; &#123;</span><br><span class="line">      &apos;/a&apos;: (BuildContext context) =&gt; MyPage(title: &apos;page A&apos;),</span><br><span class="line">      &apos;/b&apos;: (BuildContext context) =&gt; MyPage(title: &apos;page B&apos;),</span><br><span class="line">      &apos;/c&apos;: (BuildContext context) =&gt; MyPage(title: &apos;page C&apos;),</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">Navigator.of(context).pushNamed(&apos;/b&apos;);</span><br></pre></td></tr></table></figure>
+<h3 id="如何处理外部的Intent"><a href="#如何处理外部的Intent" class="headerlink" title="如何处理外部的Intent"></a>如何处理外部的Intent</h3><p>实际上还是需要在Flutter App的Android壳子中注册这个filter, 然后在FlutterActivity中拿到存下来, </p>
+<p>FlutterView初始化后再通过Bridge, 官方叫<code>MethodChannel</code>从Java里获取,进行下一步逻辑.</p>
+<p>可以看个简单的例子.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">new MethodChannel(getFlutterView(), &quot;app.channel.shared.data&quot;).setMethodCallHandler(</span><br><span class="line">      new MethodCallHandler() &#123;</span><br><span class="line">        @Override</span><br><span class="line">        public void onMethodCall(MethodCall call, MethodChannel.Result result) &#123;</span><br><span class="line">          if (call.method.contentEquals(&quot;getSharedText&quot;)) &#123;</span><br><span class="line">            result.success(sharedText);</span><br><span class="line">            sharedText = null;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">      </span><br><span class="line">      </span><br><span class="line">getSharedText() async &#123;</span><br><span class="line">    var sharedData = await platform.invokeMethod(&quot;getSharedText&quot;);</span><br><span class="line">    if (sharedData != null) &#123;</span><br><span class="line">      setState(() &#123;</span><br><span class="line">        dataShared = sharedData;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="常用的startActivityForResult怎么办"><a href="#常用的startActivityForResult怎么办" class="headerlink" title="常用的startActivityForResult怎么办."></a>常用的startActivityForResult怎么办.</h3><p>这个Flutter有完全对应的办法, 而且用起来很方便, 结合之前说的页面跳转:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Map xxx = await Navigator.of(context).pushNamed(&apos;/xxx&apos;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Navigator.of(context).pop(&#123;xxx&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="异步怎么办-runOnUiThread-哪里去了"><a href="#异步怎么办-runOnUiThread-哪里去了" class="headerlink" title="异步怎么办, runOnUiThread()哪里去了"></a>异步怎么办, runOnUiThread()哪里去了</h3><p>Flutter有点像JS, 是一个单线程模式, 所以只是通过模拟来构建简单的异步, 关键字就是类似于kotlin coroutines一样, 通过<code>await</code>+<code>async</code>来处理.</p>
+<p>如:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">loadData() async &#123;</span><br><span class="line">    response = await http.get(xxx);</span><br><span class="line">    setState(() &#123;xxx&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但是由于它的单线程, 所以无法做很长的阻塞操作, 像http请求的延迟正常情况可能都是毫秒级的, 但是数据的处理等, 可能就得秒级了.</p>
+<p>这也是RN在线程方面的做android程序的一个痛点, Flutter采用了比较容易想到的曲线救国的办法, 提供了一个叫<code>Isolate</code>的对象, 它实际是一个基于socket的数据通道, 相当于把数据放在一个独立的进程进行处理, 然后再通过socket发送回程序进程, 还记得进程间通信办法之一的<code>管道</code>吗…</p>
+<p>具体API可以参考文档<a href="https://flutter.io/docs/get-started/flutter-for/android-devs" target="_blank" rel="noopener">1…</a>,<a href="https://docs.flutter.io/flutter/dart-isolate/Isolate-class.html" target="_blank" rel="noopener">2…</a>.</p>
+<h3 id="Flutter-替代OkHttp的网络库"><a href="#Flutter-替代OkHttp的网络库" class="headerlink" title="Flutter 替代OkHttp的网络库"></a>Flutter 替代OkHttp的网络库</h3><p>自带了http库, 直接<code>http.get(url)</code>, 在线程部分的代码实例里也有涉及.</p>
+<p>通过类似gradle的文件<code>pubspec.yaml</code>引入.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies:</span><br><span class="line">  ...</span><br><span class="line">  http: ^0.12</span><br></pre></td></tr></table></figure>
+<p><code>^</code>表示不升大版本, 并取最新版本, 比gradle的+要范围更小.</p>
+<h3 id="常见的LCE-Loading-Content-Error-里面的Loading怎么show"><a href="#常见的LCE-Loading-Content-Error-里面的Loading怎么show" class="headerlink" title="常见的LCE(Loading Content Error)里面的Loading怎么show"></a>常见的LCE(Loading Content Error)里面的Loading怎么show</h3><p>Flutter有一个widget叫做<code>ProgressIndicator</code>, 比如我们期望有一个转圈圈的Loading界面在数据加载出来之前.</p>
+<p>我们就可以通过StatefulWidgets, 根据数据, 或者List Widgets的个数 (如果是显示一个List的话)来判断是否显示Loading, 使用子类<code>CircularProgressIndicator</code>, 来替换页面的Widgets.</p>
+<p>当然也是通过setState(() {…})来触发界面刷新的, 可以在initState()内触发加载数据的异步操作.</p>
+<h3 id="不同分辨率的图片资源怎么放"><a href="#不同分辨率的图片资源怎么放" class="headerlink" title="不同分辨率的图片资源怎么放"></a>不同分辨率的图片资源怎么放</h3><p>这个有点像iOS了, 即有1x,2x,3x:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">images/my_icon.png       // Base: 1.0x image</span><br><span class="line">images/2.0x/my_icon.png  // 2.0x image</span><br><span class="line">images/3.0x/my_icon.png  // 3.0x image</span><br></pre></td></tr></table></figure>
+<p>不一样的一点还需要添加到类似gradle的文件<code>pubspec.yaml</code>里.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">assets:</span><br><span class="line"> - images/my_icon.jpeg</span><br></pre></td></tr></table></figure>
+<h3 id="字符串怎么存储"><a href="#字符串怎么存储" class="headerlink" title="字符串怎么存储"></a>字符串怎么存储</h3><p>Flutter没有像Android的<code>string.xml</code>的东西, 目前来说最好的就就是存成静态字符串.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class Strings &#123;</span><br><span class="line">  static String welcomeMessage = &quot;Welcome To Flutter&quot;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Text(Strings.welcomeMessage)</span><br></pre></td></tr></table></figure>
+<h3 id="Gradle变成什么了"><a href="#Gradle变成什么了" class="headerlink" title="Gradle变成什么了"></a>Gradle变成什么了</h3><p>前面说网络库, 图片资源的时候提到过, 提供了一个叫<code>pubspec.yaml</code>的文件, 具体支持的规则可以查看<a href="https://www.dartlang.org/tools/pub/pubspec" target="_blank" rel="noopener">这个文档</a>.</p>
+<h3 id="Fragment与Activity呢"><a href="#Fragment与Activity呢" class="headerlink" title="Fragment与Activity呢?"></a>Fragment与Activity呢?</h3><p>之前做过类比, 如<code>MaterialApp</code>有点类似于Activity, 而<code>Scaffold</code>都点类似Fragment, 实际上他们两个都是Flutter的Widgets, 也就是说其实只有View的概念了.</p>
+<h3 id="还有生命周期吗"><a href="#还有生命周期吗" class="headerlink" title="还有生命周期吗?"></a>还有生命周期吗?</h3><p>Flutter有一个叫做<code>WidgetsBinding</code>的可以提供类似生命周期的回调.</p>
+<p>四种状态<code>inactive</code> (iOS专用), <code>paused</code>(相当于onPause, 退后台), <code>resumed</code>(相当于onPostResume, 到前台), <code>suspending</code>(android专用, 相当于onStop).</p>
+<p>一般在StatefulWidgets的State中注册与反注册.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@override</span><br><span class="line"> void initState() &#123;</span><br><span class="line">   super.initState();</span><br><span class="line">   WidgetsBinding.instance.addObserver(this);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> @override</span><br><span class="line"> void dispose() &#123;</span><br><span class="line">   WidgetsBinding.instance.removeObserver(this);</span><br><span class="line">   super.dispose();</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ScrollView-vs-ListView"><a href="#ScrollView-vs-ListView" class="headerlink" title="ScrollView vs ListView"></a>ScrollView vs ListView</h3><p>Flutter没有ScrollView, 合并到了ListView, 通过ListView.builder创建的ListView提供了View复用的逻辑.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ListView.builder(</span><br><span class="line">          itemCount: widgets.length,</span><br><span class="line">          itemBuilder: (BuildContext context, int position) &#123;</span><br><span class="line">            return Text(xxx);</span><br><span class="line">          &#125;))</span><br></pre></td></tr></table></figure>
+<p>其中itemBuilder有点像Android ListView的getView, 官方文档说它会自动回收Element给你, 但是事实上每次你都需要根据position生成新的Widgets, 所以呢应该是Flutter在内部回收了之前的Widgets并在你重新创建的时候又用上了.</p>
+<p>BTW, 通过ListView构造来显示就不具备这种特性, 所以大量数据需要用Builder.</p>
+<h3 id="Flutter横竖屏怎么玩"><a href="#Flutter横竖屏怎么玩" class="headerlink" title="Flutter横竖屏怎么玩."></a>Flutter横竖屏怎么玩.</h3><p>因为它实际上还是借助了Android程序的壳子, 所以如果AndroidManifect定义了<code>android:configChanges=&quot;orientation|screenSize&quot;</code>, 则Flutter会自己hanlde.</p>
+<h3 id="怎么处理Gesture"><a href="#怎么处理Gesture" class="headerlink" title="怎么处理Gesture"></a>怎么处理Gesture</h3><p>Flutter提供了<code>GestureDetector</code>, 它相当于一个Container, 将我们期望接收手势的Widgets放进去, 再实现事件回调就行了.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GestureDetector(</span><br><span class="line">        child: FlutterLogo(</span><br><span class="line">          size: 200.0,</span><br><span class="line">        ),</span><br><span class="line">        onTap: () &#123;</span><br><span class="line">          print(&quot;tap&quot;);</span><br><span class="line">        &#125;,</span><br><span class="line">      )</span><br></pre></td></tr></table></figure>
+<p>它同样支持其他的手势, 如<code>onDoubleTap</code>等等等.</p>
+<h3 id="字体怎么弄"><a href="#字体怎么弄" class="headerlink" title="字体怎么弄"></a>字体怎么弄</h3><p>首先需要在<code>pubspec.yaml</code>里面配置需要的字体库:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fonts:</span><br><span class="line">   - family: MyCustomFont</span><br><span class="line">     fonts:</span><br><span class="line">       - asset: fonts/MyCustomFont.ttf</span><br><span class="line">       - style: italic</span><br></pre></td></tr></table></figure>
+<p>然后在Text的<code>style</code>属性进行配置.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Text(</span><br><span class="line">        &apos;This is a custom font text&apos;,</span><br><span class="line">        style: TextStyle(fontFamily: &apos;MyCustomFont&apos;),</span><br><span class="line">      )</span><br></pre></td></tr></table></figure>
+<h3 id="Hint哪里去了-错误信息怎么输出"><a href="#Hint哪里去了-错误信息怎么输出" class="headerlink" title="Hint哪里去了, 错误信息怎么输出"></a>Hint哪里去了, 错误信息怎么输出</h3><p>对于输入框的Hint基本一致, 可能就是换了个名字, 一看便知.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TextField(</span><br><span class="line">    decoration: InputDecoration(hintText: &quot;This is a hint&quot;, errorText: _getErrorText()),</span><br><span class="line">  )</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Flutter在视图渲染上另辟蹊径, 性能优势凸显, 在跨平台框架属于一匹黑马, 又有Google撑腰, 值得在Mobile勤耕多年的同学入手. </p>
+<p>由于作者曾经从事过2年的Webkit开发工作, 拜读了Flutter的渲染模式, 很像是Webkit/Chrome/Blink的思路, 通过查证, 起草者确实有大批同样的人, 如果你还没有入坑RN, 或许Flutter可以作为跨平台方案学习的首选哦. </p>
+<p>同样Google自己也有很多Plugin去支持更多扩展功能, 如GPS, Camera, SharePreference, Database. 还例如Firebase这种亲儿子级的服务也是全面支持Flutter. 这些都可以通过<a href="https://pub.dartlang.org" target="_blank" rel="noopener">Dartlang</a>来查询.</p>
+<p>当然也可以自己去开发需要的Plugin来适配需要的功能, 基于的技术就是上面有提的<code>MethodChannel</code>, NDK的支持也是同样的道理.</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://flutter.io/docs/get-started/flutter-for/android-devs" target="_blank" rel="noopener">https://flutter.io/docs/get-started/flutter-for/android-devs</a></p>
+
+            
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Android/">Android</a> <a class="tag tag--primary tag--small t-link" href="/tags/Flutter/">Flutter</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/12/28/The-year-that-was-2018/"  data-tooltip="The year that was 2018">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/" data-tooltip="如何正确使用Espresso来测试你的Android程序">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/12/28/The-year-that-was-2018/"  data-tooltip="The year that was 2018">
+                
+                    <i class="fa fa-angle-left"></i>
+                    <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                </a>
+            </li>
+            <li class="post-action">
+                
+                    <a class="post-action-btn btn btn--default tooltip--top" href="/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/" data-tooltip="如何正确使用Espresso来测试你的Android程序">
+                
+                    <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a class="post-action-btn btn btn--default btn-open-shareoptions"  href="#btn-open-shareoptions">
+                <i class="fa fa-share-alt"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-facebook-official"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-twitter"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a class="post-action-btn btn btn--default" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-google-plus"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#">
+            
+                <i class="fa fa-list"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+    <i id="btn-close-shareoptions" class="fa fa-close"></i>
+    <ul class="share-options">
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-facebook-official"></i><span>分享到 Facebook</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-twitter"></i><span>分享到 Twitter</span>
+                </a>
+            </li>
+        
+            
+            
+            <li class="share-option">
+                <a class="share-option-btn" target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/">
+                    <i class="fa fa-google-plus"></i><span>分享到 Google+</span>
+                </a>
+            </li>
+        
+    </ul>
+</div>
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 41 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/jquery.fancybox.js"></script>
+<script src="/assets/js/jquery.fancybox-thumbs.js"></script>
+<script src="/assets/js/tranquilpeak.js"></script>
+<!--SCRIPTS END-->
+
+    
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+    </body>
+</html>

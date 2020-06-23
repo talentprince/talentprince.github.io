@@ -1,0 +1,702 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>标签: Clean Architecture - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+    
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+    
+    <meta property="og:type" content="blog">
+<meta property="og:title" content="Weyoung&#39;s Blog">
+<meta property="og:url" content="http://talentprince.github.io/tags/Clean-Architecture/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:locale" content="zh-cn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Weyoung&#39;s Blog">
+    
+    
+        
+    
+    
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/font-awesome.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox.css">
+    <link rel="stylesheet" href="/assets/css/jquery.fancybox-thumbs.css">
+    <link rel="stylesheet" href="/assets/css/tranquilpeak.css">
+    <!--STYLES END-->
+    
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="1">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a class="header-title-link" href="/ ">Weyoung&#39;s Blog</a>
+    </div>
+    
+        
+            <a  class="header-right-picture "
+                href="#about">
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="1">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/ "
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-home"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-categories"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-bookmark"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-tags"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-tags"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/all-archives"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-archive"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link open-algolia-search"
+                             href="#search"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-search"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="#about"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-question"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a  class="sidebar-button-link "
+                             href="/atom.xml"
+                            
+                        >
+                    
+                        <i class="sidebar-button-icon fa fa-lg fa-rss"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="1"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+    <section class="postShorten-group main-content-wrap">
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2017/12/31/Android-Weekly-Issue-289/">
+                            Android Weekly Issue #289
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2017-12-31T11:36:24+08:00">
+	
+		    12月 31, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>December 24th, 2017</p>
+<h2 id="Android-Weekly-Issue-289"><a href="#Android-Weekly-Issue-289" class="headerlink" title="Android Weekly Issue #289"></a><a href="http://androidweekly.net/issues/issue-289" target="_blank" rel="noopener">Android Weekly Issue #289</a></h2><p>今年最后一篇, 包含了可以上传log记录的HyperLog,以及Android的面试技巧,还有Model的分层,以及如何迁移到Room.<br>还有比较炫酷的一个Path动画的实现方法值得去看.剩下的多是一些入门介绍,如kotlin,firebase messaging,contraintset animation等.</p>
+                    
+                        <a href="/2017/12/31/Android-Weekly-Issue-289/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+            <a href="/2017/12/31/Android-Weekly-Issue-289/">
+                <div class="postShorten-thumbnailimg">
+                    <img alt="" itemprop="image" src=""/>
+                </div>
+            </a>
+            
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2017/12/17/Android-Weekly-Issue-287/">
+                            Android Weekly Issue #287
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2017-12-17T14:49:48+08:00">
+	
+		    12月 17, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>December 10th, 2017</p>
+<h2 id="Android-Weekly-Issue-287"><a href="#Android-Weekly-Issue-287" class="headerlink" title="Android Weekly Issue #287"></a><a href="http://androidweekly.net/issues/issue-287" target="_blank" rel="noopener">Android Weekly Issue #287</a></h2><p>圣诞节快要来了,小编也偷懒了,本期内容包括如何通过AS添加网络字体库,以及如何使用Dagger.Android等实现Clean Architecture,还包含一篇Android安全系列的文章,介绍如何实现长数据的加密.</p>
+<p>关于Kotlin的技巧以及系统数据库的替代品,也有各有两篇系列文章,值得一看.</p>
+                    
+                        <a href="/2017/12/17/Android-Weekly-Issue-287/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+            <a href="/2017/12/17/Android-Weekly-Issue-287/">
+                <div class="postShorten-thumbnailimg">
+                    <img alt="" itemprop="image" src=""/>
+                </div>
+            </a>
+            
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2017/10/25/Android-Weekly-Issue-280/">
+                            Android Weekly Issue #280
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2017-10-25T08:47:11+08:00">
+	
+		    10月 25, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>October 22nd, 2017</p>
+<h2 id="Android-Weekly-Issue-280"><a href="#Android-Weekly-Issue-280" class="headerlink" title="Android Weekly Issue #280"></a><a href="http://androidweekly.net/issues/issue-280" target="_blank" rel="noopener">Android Weekly Issue #280</a></h2><p>本期主要内容包含几篇关于迁移kotlin以及kotlin帮助提升test与其他实践的文章,还包含迁移过程遇到的一些坑的总结,以及为什么要迁移的方法论.还包含Clean Architecture的HighLevel分析,以及为何要坚持Native App开发的讨论分析.</p>
+<p>比较有意思的是开启文本大小测试模式,文字都变成了火星文,帮助你测试多语言环境truncate的问题.</p>
+<p>Lib部分有一个比较炫酷的开源App, Ribble, 可以作为学习Modern Android开发的playground.</p>
+                    
+                        <a href="/2017/10/25/Android-Weekly-Issue-280/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+            <a href="/2017/10/25/Android-Weekly-Issue-280/">
+                <div class="postShorten-thumbnailimg">
+                    <img alt="" itemprop="image" src=""/>
+                </div>
+            </a>
+            
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-right" itemscope itemType="http://schema.org/BlogPosting">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title" itemprop="headline">
+                    
+                        <a class="link-unstyled" href="/2017/10/20/Android-Weekly-Issue-279/">
+                            Android Weekly Issue #279
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time itemprop="datePublished" datetime="2017-10-20T12:42:58+08:00">
+	
+		    10月 20, 2017
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-excerpt" itemprop="articleBody">
+                    <p>October 15th, 2017</p>
+<h2 id="Android-Weekly-Issue-279"><a href="#Android-Weekly-Issue-279" class="headerlink" title="Android Weekly Issue #279"></a><a href="http://androidweekly.net/issues/issue-279" target="_blank" rel="noopener">Android Weekly Issue #279</a></h2><p>本期主要内容包含与<code>Clean Architecture</code>相关的两篇(包结构,离线app),IoT,Google AI (<code>DialogFlow</code>),以及<code>Kotlin Coroutines</code>的相关知识,还包含如何使用Kotlin以及RxJava2提升编码效能的文章,以及Dagger与Firbase配置的文章,以及一篇有意思的制作世界上最小APK的文章.</p>
+<p>代码主要看点在于Kotlin Coroutines.</p>
+                    
+                        <a href="/2017/10/20/Android-Weekly-Issue-279/" class="postShorten-excerpt_link link">
+                            阅读全文
+                        </a>
+                        
+                    
+                </div>
+            
+        </div>
+        
+            <a href="/2017/10/20/Android-Weekly-Issue-279/">
+                <div class="postShorten-thumbnailimg">
+                    <img alt="" itemprop="image" src=""/>
+                </div>
+            </a>
+            
+        
+    </article>
+    
+    <div class="pagination-bar">
+    <ul class="pagination">
+        
+        
+        <li class="pagination-number">第 1 页 共 1 页</li>
+    </ul>
+</div>
+
+</section>
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-remove"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>author.bio</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>author.job</p>
+
+            </div>
+        
+        
+    </div>
+</div>
+
+        <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-close"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="https://www.algolia.com/static_assets/images/press/downloads/algolia-light.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/">
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/">
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/">
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/">
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/">
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/">
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/">
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a class="link-unstyled" href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/">
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 41 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/jquery.fancybox.js"></script>
+<script src="/assets/js/jquery.fancybox-thumbs.js"></script>
+<script src="/assets/js/tranquilpeak.js"></script>
+<!--SCRIPTS END-->
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment-with-locales.min.js"></script>
+    <script src="//cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script>
+    <script>
+        var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+        var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+    </body>
+</html>
