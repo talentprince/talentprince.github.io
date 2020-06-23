@@ -455,11 +455,11 @@
     
       <category term="Kotlin" scheme="http://talentprince.github.io/tags/Kotlin/"/>
     
-      <category term="Room" scheme="http://talentprince.github.io/tags/Room/"/>
-    
       <category term="Android Weekly" scheme="http://talentprince.github.io/tags/Android-Weekly/"/>
     
       <category term="Clean Architecture" scheme="http://talentprince.github.io/tags/Clean-Architecture/"/>
+    
+      <category term="Room" scheme="http://talentprince.github.io/tags/Room/"/>
     
       <category term="Android Notification" scheme="http://talentprince.github.io/tags/Android-Notification/"/>
     
@@ -583,9 +583,9 @@
     
       <category term="Kotlin" scheme="http://talentprince.github.io/tags/Kotlin/"/>
     
-      <category term="Kotlin Coroutines" scheme="http://talentprince.github.io/tags/Kotlin-Coroutines/"/>
-    
       <category term="Android Weekly" scheme="http://talentprince.github.io/tags/Android-Weekly/"/>
+    
+      <category term="Kotlin Coroutines" scheme="http://talentprince.github.io/tags/Kotlin-Coroutines/"/>
     
       <category term="RxJava2" scheme="http://talentprince.github.io/tags/RxJava2/"/>
     
