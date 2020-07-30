@@ -225,6 +225,1204 @@
     <section class="postShorten-group main-content-wrap">
     
     
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2020/07/30/Android-Performance-Enhance/"
+                            aria-label=": Android性能优化总结"
+                        >
+                            Android性能优化总结
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2020-07-30T18:28:53+08:00">
+	
+		    7月 30, 2020
+    	
+    </time>
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.<br>期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.</p>
+<ul>
+<li>性能优化工具<ul>
+<li>TraceView<ul>
+<li>图形化界面</li>
+<li>track所有线程, 消耗大</li>
+<li>Debug.start/stopMethodTracing开启与停止生成文件</li>
+<li>AS的CPU Profile Trace Method就是这个</li>
+<li>系统函数黄色, 第三方蓝色, 自己绿色</li>
+<li>四个图表来查看<ul>
+<li>Call Chart<ul>
+<li>顺序的函数调用关系与时间, 由上到下</li>
+</ul>
+</li>
+<li>Flame Chart<ul>
+<li>函数调用时间汇总, 有下到上</li>
+</ul>
+</li>
+<li>Top Down<ul>
+<li>由根函数开始做树状图</li>
+</ul>
+</li>
+<li>Bottom Down<ul>
+<li>由叶子函数开始做树状图</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>时间<ul>
+<li>Wall Clock Time<ul>
+<li>表示真实运行时间, 包括Sleep, CPU切换</li>
+</ul>
+</li>
+<li>Thread Time<ul>
+<li>线程占用CPU的时间, 小于真实运行时间</li>
+</ul>
+</li>
+<li>Self Time<ul>
+<li>函数除第三方调用耗时以外的时间消耗</li>
+</ul>
+</li>
+<li>Children Time<ul>
+<li>函数第三方调用消耗</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Systrace<ul>
+<li>主要检测CPU各个内核使用情况</li>
+<li>消耗小, 只拿埋的点数据</li>
+<li>python脚本, 通过Trace/TraceCompat打tag</li>
+<li>CPU time才是优化的方向, 如果耗时过长, 可以通过多线程处理</li>
+<li>灰色:睡眠, 蓝色:可以运行, 绿色:正在运行, 红色:内核睡眠, 橙色:IO睡眠</li>
+<li>w:放大, s:缩小, a:左移, d:右移, f:放大, m:选中</li>
+<li>查看frame中F的间隔, 大于16ms可能就有卡顿, 再通过traceview或者CPU Profile来进行追踪</li>
+<li>4.3(18)以上加入了Java的Trace, 6.0(23)加入了Native Tracce, 低版本Native可以通过JNI来获取</li>
+</ul>
+</li>
+<li>CPU Profiler<ul>
+<li>3.0以上AS使用Profiler取代了Monitor</li>
+<li>CPU时间轴最上面有事件时间轴, 7.1(25)及一下版本必须在Config里面勾选Advanced profiling, 重新编译, 注入监控逻辑才能有, 附带的还有一些内存的监控</li>
+<li>Trace Method<ul>
+<li>给方法调用前后记录时间戳, 有运行开销</li>
+</ul>
+</li>
+<li>Sample Java Method<ul>
+<li>通过不断的捕获堆栈</li>
+</ul>
+</li>
+<li>System Trace<ul>
+<li>使用systrace获取更加详细的</li>
+<li>必须在7.0 (24)以上的机器才具备</li>
+<li>在代码中添加检测代码进行标记<ul>
+<li>C使用trace.h原生跟踪</li>
+<li>Java使用Trace</li>
+</ul>
+</li>
+<li>9.0 (28)以上手机里也可开启systrace </li>
+</ul>
+</li>
+<li>Sample C++ Function<ul>
+<li>8.0 (26)以上</li>
+<li>使用simpleperf进行采样</li>
+<li>如果想指定参数, 命令行使用simpleperf</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>启动速度优化<ul>
+<li>时间测量<ul>
+<li>AOP AspectJ<ul>
+<li>Join Points <ul>
+<li>切入点<ul>
+<li>函数调用,执行</li>
+<li>get/set</li>
+<li>init</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Cut Point<ul>
+<li>带条件的切入点</li>
+</ul>
+</li>
+<li>Advice<ul>
+<li>Hook, 插入位置<ul>
+<li>Before</li>
+<li>After</li>
+<li>Around</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>语法<ul>
+<li>@Aspect</li>
+<li>@Before(“excution (* android.app.Activity.on**(..))”) public xx(JointPoint joinPoint) {}</li>
+<li>@Around(“call(* package.**(..))”) public xx(ProceedingJoinPoint joinPoint) {}</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过AMS<ul>
+<li>adb logcat -s ActivityManager | grep “Displayed”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>启动器多线程<ul>
+<li>Task</li>
+<li>有向无环图</li>
+</ul>
+</li>
+<li>延迟初始化<ul>
+<li>View显示第一帧启动初始化任务<ul>
+<li>ViewTreeObserver.addOnDrawListener</li>
+</ul>
+</li>
+<li>IdleHandler<ul>
+<li>Looper.queue.addIdleHandler</li>
+<li>return true handler被移除, return false handler继续停留</li>
+<li>结合第一帧, 封装一个Dispatcher, 将初始化任务加入, 注册IdleHandler</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>提前异步读取SharePreference<ul>
+<li>在Multi dex install之前</li>
+</ul>
+</li>
+<li>启动阶段不启动子进程</li>
+<li>提前异步类加载<ul>
+<li>在Multi dex install之前</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>内存优化<ul>
+<li>常用工具<ul>
+<li>离线<ul>
+<li>Memory Profile</li>
+<li>Memory Analyser</li>
+<li>LeakCanary</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Java内存分配<ul>
+<li>方法区<ul>
+<li>静态变量</li>
+<li>方法信息</li>
+<li>所有线程共享</li>
+</ul>
+</li>
+<li>虚拟机栈</li>
+<li>本地方法栈(native)</li>
+<li>堆</li>
+<li>程序计数器<ul>
+<li>函数执行多多少行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Java内存回收<ul>
+<li>标记清除法<ul>
+<li>先标记再统一回收</li>
+<li>效率低, 内存不连续</li>
+</ul>
+</li>
+<li>复制算法<ul>
+<li>划分多个块</li>
+<li>一块用完后复制存活到另一块</li>
+<li>再清除另一块</li>
+<li>效率高, 但浪费</li>
+</ul>
+</li>
+<li>标记整理<ul>
+<li>存活对象向一端移动</li>
+<li>清理其他内存</li>
+<li>不浪费, 也没碎片</li>
+</ul>
+</li>
+<li>分代收集<ul>
+<li>新生代存活低, 复制</li>
+<li>老年代存活高, 标记整理</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Android内存管理<ul>
+<li>内存弹性分配, 根据设备</li>
+<li>OOM, 内存不足或者可用不足</li>
+<li>Dalvik<ul>
+<li>固定回收算法</li>
+</ul>
+</li>
+<li>Art<ul>
+<li>运行期选择<ul>
+<li>前台<ul>
+<li>标记清除</li>
+</ul>
+</li>
+<li>后台<ul>
+<li>标记整理</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Low Memory Killer<ul>
+<li>进程分类<ul>
+<li>根据优先级Kill</li>
+<li>前台,可见,服务,后台,空进程</li>
+</ul>
+</li>
+<li>回收收益<ul>
+<li>根据需要回收的量级</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>内存抖动与OOM<ul>
+<li>原因 <ul>
+<li>频繁创建对象, 会造成内存碎片与不足</li>
+<li>内存碎片化会导致无法分配出来可用内存导致OOM</li>
+</ul>
+</li>
+<li>Memory Profiler分析<ul>
+<li>锯齿状</li>
+<li>Record查看内存活动情况<ul>
+<li>Allocate 分类instance个数</li>
+<li>Shallow 自身占用内存大小</li>
+<li>Retained 持有对象总大小</li>
+</ul>
+</li>
+<li>追踪可疑内存allocate位置</li>
+</ul>
+</li>
+<li>CPU Profile分析<ul>
+<li>查看频繁调用方法的地方<ul>
+<li>内存泄露</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>定义<ul>
+<li>内存中存在没有用的对象 </li>
+</ul>
+</li>
+<li>表象<ul>
+<li>内存抖动 (因为GC), 可用内存逐渐减少</li>
+</ul>
+</li>
+<li>危害<ul>
+<li>GC频繁, 卡顿, 甚至OOM</li>
+</ul>
+</li>
+<li>用Memory Profiler检测内存是否泄漏, 并dump java内存堆栈</li>
+<li>用Memory Analyzer(MAT)分析<ul>
+<li>需要进行转换 hprof-conv</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Memory Analyzer<ul>
+<li>Overview<ul>
+<li>饼图</li>
+<li>Top Consumer<ul>
+<li>可查看Biggest Object</li>
+</ul>
+</li>
+<li>Leak Suspect<ul>
+<li>自动化分析泄露引用树</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Histogram<ul>
+<li>以类来列表</li>
+<li>右键Group by package 以包名摆放</li>
+<li>检查Objects, 存在个数</li>
+<li>可疑对象右键可选List Object -&gt; with incoming ref</li>
+</ul>
+</li>
+<li>dominator tree<ul>
+<li>以对象列表</li>
+<li>Percentage<ul>
+<li>查看占比大的</li>
+<li>同样通过List Object -&gt; with incoming ref</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>OQL<ul>
+<li>对象数据库</li>
+<li>可使用select * FROM className</li>
+</ul>
+</li>
+<li>thread overview<ul>
+<li>查看各个线程</li>
+</ul>
+</li>
+<li>Unreachable Objects Histogram<ul>
+<li>已经可回收的对象</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Bitmap内存模型<ul>
+<li>Api10之前, 像素存在Native, 对象存在Dalvik<ul>
+<li>native回收时机不够</li>
+</ul>
+</li>
+<li>Api10之后全部放Dalvik</li>
+<li>Api26更改机制, 全部放Native, Bitmap回收后通知Native层</li>
+<li>计算大小<ul>
+<li>getByteCount</li>
+<li>h <em> w </em> density, res要考虑压缩比例</li>
+</ul>
+</li>
+<li>ARTHook<ul>
+<li>Epic<ul>
+<li>Hook Java方法</li>
+<li>4.0 - 9.0</li>
+<li>继承XC_MethodHook</li>
+<li>DexposedBridge.hookXX用于注册</li>
+<li>DexposedBridge.findXX用于查找</li>
+</ul>
+</li>
+<li>无侵入性</li>
+<li>基于Dexposed来hook</li>
+<li>Hook了ArtMethod指向的函数指令, 指向自己的片段</li>
+<li>兼容性问题大, 开源不能带入线上环境</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线上内存问题解决一般方案<ul>
+<li>检测内存使用达到一定程度, 使用Debug.dumpHprofData()</li>
+<li>文件太大, 不易上传, 虽然可裁剪</li>
+</ul>
+</li>
+<li>完整方案<ul>
+<li>监控待机内存, 重点模块内存, OOM率<ul>
+<li>ActivityManager#getProcessMemoryInfo</li>
+<li>Debug.MemoryInfo#getMemoryStat</li>
+<li>读取</li>
+</ul>
+</li>
+<li>整机或者重点模块GC次数, GC时间<ul>
+<li>Debug.startAllocCounting</li>
+<li>Debug.getGlobalAllocCount() &lt; 6.0</li>
+<li>Debug.getRuntimeStat(“art.gc.gc-xxx”) &gt; 6.0</li>
+</ul>
+</li>
+<li>增强型LeakCanary<ul>
+<li>ResourceCanary</li>
+<li>自己找怀疑点</li>
+<li>只分析Retain size大的</li>
+<li>对象裁剪, 不全加入内存</li>
+</ul>
+</li>
+<li>开LargeHeap</li>
+<li>onTrimMemory/onLowMemory, 自我释放</li>
+<li>使用SparseArray</li>
+<li>谨慎使用SharedPreference</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>布局优化<ul>
+<li>16ms发送VSync触发渲染</li>
+<li>手机刷新频率一般是60Hz</li>
+<li>Systrace查看帧率<ul>
+<li>Frames</li>
+<li>会给出一些Alert</li>
+</ul>
+</li>
+<li>LayoutInspector查看布局层次</li>
+<li>Choreographer<ul>
+<li>API 16以上</li>
+<li>可以获取FPS</li>
+<li>Choreographer.getInstance().postFrameCallback</li>
+</ul>
+</li>
+<li>原生布局加载优化<ul>
+<li>读取资源使用IO<ul>
+<li>?X2C?Async?</li>
+</ul>
+</li>
+<li>创建View使用反射<ul>
+<li>LayoutInflater.Factory/2<ul>
+<li>创建一个Hook</li>
+<li>全局替换自定义View的创建</li>
+<li>LayoutInflaterCompat.setFactory2</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>AsyncLayoutInflater<ul>
+<li>内部没有用Compat, 不能用Factory</li>
+<li>View不能有创建Handler或者使用myLooper, 因为没调用prepare</li>
+<li>不支持Fragment, 这个通过privateFactory构建的</li>
+<li>父布局的generateLayoutParams必须线程安全</li>
+<li>默认queue的size只有10</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取界面打开耗时<ul>
+<li>Hook setContentView <ul>
+<li>AspectJ<ul>
+<li>excution setContentView</li>
+</ul>
+</li>
+<li>ARTHook<ul>
+<li>DexposedBridge.findAndHookMethod</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取每一个控件耗时<ul>
+<li>LayoutInflater.Factory/2</li>
+</ul>
+</li>
+<li>X2C<ul>
+<li>XML通过Apt转换为Java</li>
+<li>@Xml让Java知道XML</li>
+<li>X2C.setContentView</li>
+<li>有的xml属性Java不支持</li>
+<li>如果想要使用Compat的View做兼容, 需要自己修改X2C</li>
+</ul>
+</li>
+<li>视图绘制优化<ul>
+<li>减少层级</li>
+<li>宽而浅, 避免前而深<ul>
+<li>由上到下元素尽量在一个Group内</li>
+<li>由左到右, 布局深度更浅</li>
+</ul>
+</li>
+<li>不嵌套RelativeLayout</li>
+<li>不在嵌套的LinearLayout里使用weight</li>
+<li>多使用merge</li>
+<li>避免过度绘制<ul>
+<li>去掉多余背景色</li>
+<li>减少复杂shape使用</li>
+<li>不免空间重叠</li>
+<li>自定义View使用clipReact屏蔽遮盖view绘制</li>
+</ul>
+</li>
+<li>使用ViewStud延迟</li>
+<li>onDraw不要创建大对象</li>
+</ul>
+</li>
+<li>所使用的工具<ul>
+<li>Choreographer -&gt; 帧率 线上</li>
+<li>AOP, ArtHook -&gt; 统计耗时 线上</li>
+<li>Systrace -&gt; 每一帧的耗时 线下</li>
+<li>Layout Inspector -&gt; 布局层级 线下</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>App卡顿优化<ul>
+<li>代码, 内存, 绘制, IO …</li>
+<li>工具<ul>
+<li>CPU Profiler<ul>
+<li>Debug.startMethodTracing</li>
+<li>Debug.stopMethodTracing</li>
+<li>开销大</li>
+</ul>
+</li>
+<li>Systrace<ul>
+<li>API 18</li>
+<li>TraceCompat</li>
+<li>systrace.py -t 10 [options] [categories]</li>
+<li>轻量级, 开销小</li>
+<li>CPU利用率可视, 帧卡顿给出建议</li>
+</ul>
+</li>
+<li>StrictMode<ul>
+<li>运行时检测</li>
+<li>线程策略<ul>
+<li>自定义耗时调用<ul>
+<li>detectCustomSlowCalls()</li>
+</ul>
+</li>
+<li>磁盘读写<ul>
+<li>detectDiskReads</li>
+</ul>
+</li>
+<li>网络请求<ul>
+<li>detectNetwork</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>虚拟机策略<ul>
+<li>Activity泄露<ul>
+<li>detectActivityLeaks</li>
+</ul>
+</li>
+<li>Sqlite泄露<ul>
+<li>detectLeakedSqlLiteObjects</li>
+</ul>
+</li>
+<li>实例数检测<ul>
+<li>setClassInstanceLimit</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线上自动化监测<ul>
+<li>原理<ul>
+<li>Looper在dispathMessage的时候前后都会调用mLogging, 可用于监控耗时</li>
+<li>通过seetMessageLogging</li>
+</ul>
+</li>
+<li>AndroidPerformanceMonitor<ul>
+<li>基于之上的原理, 时间超了就说明卡了</li>
+<li>BlockCanary</li>
+<li>非浸入</li>
+<li>不足与优化<ul>
+<li>只有T2时刻的堆栈, 可能不能表现卡顿原因</li>
+<li>优化方案就是高频多次采集</li>
+<li>对多次卡顿堆栈进行去重, 减少数据量</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ANR<ul>
+<li>ActivityManagerService里定义了<ul>
+<li>KeyDispatchTimeout 5s</li>
+<li>BroadcastTimeout 前台10s, 后台60s</li>
+<li>ServiceTimeout 前台20s, 后台200s</li>
+</ul>
+</li>
+<li>ANR弹出会多余5s, 因为要写入堆栈信息</li>
+<li>导入/data/anr/traces.txt分析</li>
+<li>线上ANR监控<ul>
+<li>低版本通过FileObserver监控文件变化</li>
+<li>ANR-Wartchdog<ul>
+<li>自有线程向UIhandler发消息</li>
+<li>然后Sleep等待计数器增加</li>
+<li>如果醒来发现没有增加, 说明ANR了, 就抛异常, 并且打印主线程堆栈信息</li>
+<li>可以复写Listener, 自己处理异常</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>单点卡顿监控:<ul>
+<li>AspectJ与ArtHook<ul>
+<li>AspectJ只能往自己或者lib里方法, 不支持系统方法</li>
+<li>ArtHook则可以在系统方法调用的时候进行hook</li>
+</ul>
+</li>
+<li>IPC问题监控<ul>
+<li>关注点<ul>
+<li>IPC调用类型, package manager等</li>
+<li>次数, 耗时</li>
+<li>堆栈, 发生的线程</li>
+</ul>
+</li>
+<li>adb监控<ul>
+<li>adb shell am trace-ipc start</li>
+<li>adb shell am trace-ipc stop –dump-file xxx.txt</li>
+</ul>
+</li>
+<li>Hook IPC数据传输<ul>
+<li>BinderProxy#transact</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>IO, DB, View绘制</li>
+</ul>
+</li>
+<li>界面秒开<ul>
+<li>轻量级AOP框架, Lancet<ul>
+<li>编译速度快, 增量编译</li>
+<li>API简单, 没有多余的代码插入Apk中, 只有自己hook的</li>
+<li>API<ul>
+<li>@Proxy 对系统API进行Hook, 传入方法名</li>
+<li>@TargetClass 指定Hook所在的<ul>
+<li>scope<ul>
+<li>SELF </li>
+<li>DIRECT SELF+直接子类</li>
+<li>ALL SELF+所有子类</li>
+<li>LEAF 叶子节点</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>@Insert 操作App或者lib的类<ul>
+<li>mayCreateSuper<ul>
+<li>true 如果方法不存在, 就创建</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Origin.call() 调用原有方法</li>
+</ul>
+</li>
+<li>检测onWindowFocusChange - onCreate就是页面打开时间</li>
+<li>监控生命周期函数耗时, 以及生命周期函数之间转换的耗时</li>
+</ul>
+</li>
+<li>思路<ul>
+<li>Systracce分析</li>
+<li>异步+延迟初始化</li>
+<li>异步Inflate, X2C, 绘制优化</li>
+<li>提前获取数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>监控盲区<ul>
+<li>只知道耗时了, 不知道具体做了什么</li>
+<li>线上也不好操作</li>
+<li>线下检测<ul>
+<li>TraceView可以查看每一个线程都做了什么</li>
+<li>还可以监控系统调用</li>
+<li>GC可以通过log或者通过systrace的HeapTaskDaemon线程查看</li>
+</ul>
+</li>
+<li>线上检测<ul>
+<li>使用定制化的Handler监控sendMessage跟dispatchMessage</li>
+<li>sendMessage保存msg记录时间, 调用栈, dispatchMessage拿出msg, 检测耗时, 上报调用栈</li>
+<li>使用gradle插件编译期替换bytecode</li>
+<li>didi的DroidAssist方便替换</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>卡顿优化不同阶段<ul>
+<li>线下通过系统工具定位, 通过异步或者延时解决</li>
+<li>线上自动化卡顿方案, 通过消息机制捕获上报, 包括ANR上报<ul>
+<li>改进方案, 高频采集, 分析重复堆栈  </li>
+</ul>
+</li>
+<li>线下监控与线上监控工具建设<ul>
+<li>线下关注提前暴露, 线上关注自动化, 全面性, 灵敏度</li>
+<li>对于达不到阈值的小卡顿, 线下AOP对一些耗时代码hook, 如IPC, IO等, 分析数据</li>
+<li>线下Hook Handler的两个方法, 统计时间与堆栈信息</li>
+<li>线上还监控秒开时间, 生命周期之间耗时</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线程调度<ul>
+<li>普通CPU调度采用公平分配</li>
+<li>Jvm线程调度根据优先级分配时间片</li>
+<li>Android调度是抢占式<ul>
+<li>nice<ul>
+<li>在Process中定义</li>
+<li>越小优先级越高</li>
+<li>默认是0</li>
+</ul>
+</li>
+<li>cgroup<ul>
+<li>根据群组调用, 防止很多后台压制前台</li>
+<li>优先级低的线程会进后台group</li>
+<li>不在前台运行的程序的线程也会进去</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线程太多会导致CPU频繁切换, 降低效率</li>
+<li>工作量与优先级应该成反比</li>
+<li>线程有继承性, 在UI线程创建的子线程就会抢占UI线程的时间片</li>
+<li>线程执行的过程中, 也可以改名字与优先级</li>
+<li>为了让子库做到线程收敛, 可提供一个setExecutor的方法统一设置</li>
+<li>分类设置线程池<ul>
+<li>如果IO密集型, 不消耗CPU, 线程池可以设置的很大</li>
+<li>CPU密集型的线程大小要与核心数相关</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>网络优化<ul>
+<li>维度<ul>
+<li>流量消耗<ul>
+<li>一段时间的消耗, 不同网络类型, 前台后台</li>
+<li>流量消耗均值, 异常率, 流量消耗多, 次数多, 文件大等</li>
+<li>所有网络请求Request/Response本地监控</li>
+</ul>
+</li>
+<li>质量监控<ul>
+<li>请求时长, 成功率, 失败率, Top失败接口</li>
+</ul>
+</li>
+<li>其他消耗<ul>
+<li>成本, 带宽, CDN</li>
+<li>耗电</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>工具<ul>
+<li>NetworkProfiler<ul>
+<li>监控发送接收, 连接数</li>
+<li>手动需要开启高级分析 (API小于26)</li>
+<li>只支持URLConnection与OkHttp</li>
+</ul>
+</li>
+<li>抓包工具<ul>
+<li>Charles (mac)</li>
+<li>Fiddler (windows)</li>
+<li>WireShark (底层抓包)</li>
+<li>Stetho (chrome)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取流量消耗<ul>
+<li>本地测试<ul>
+<li>流量管理关闭其他app</li>
+<li>抓包工具只允许本App联网</li>
+</ul>
+</li>
+<li>线上获取<ul>
+<li>TrafficStats API8(2.2)之后 重启之后的流量数据<ul>
+<li>getUidRxBytes</li>
+<li>getTotalTxBytes</li>
+</ul>
+</li>
+<li>NetworkStatsManager API23(6.0)之后<ul>
+<li>querySummary 返回bucket, 判断uid过滤本app数据</li>
+<li>bucket getRxBytes getTxBytes</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>前台与后台<ul>
+<li>定时+统计+前后台标记</li>
+<li>每隔30s进行统计一次</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>网络优化<ul>
+<li>添加配置使用http缓存<ul>
+<li>NonetworkIntercepter, 无网环境打开Force Cache</li>
+</ul>
+</li>
+<li>增量更新</li>
+<li>数据gzip压缩</li>
+<li>etag</li>
+<li>图片压缩后上传<ul>
+<li>Luban</li>
+</ul>
+</li>
+<li>合并网络请求<ul>
+<li>批量上传, 如上报数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>图片相关<ul>
+<li>先试用缩略图</li>
+<li>使用webp</li>
+</ul>
+</li>
+<li>质量相关<ul>
+<li>成功率与速度</li>
+<li>dns优化<ul>
+<li>使用HttpDns绕过运营, 不使用dns53端口而使用80</li>
+<li>阿里云 httpdns.aar</li>
+<li>通过实现Dns接口设置给okhttp</li>
+</ul>
+</li>
+<li>http版本<ul>
+<li>1.0 tcp不复用</li>
+<li>1.1 长连接, 复用, tcp上的http是按顺序</li>
+<li>2.0 tcp上的http同时发送多个请求, 类似于spdy</li>
+</ul>
+</li>
+<li>监控<ul>
+<li>请求耗时, 成功率, 错误码<ul>
+<li>添加okhttp EventListener, 监控每个环节</li>
+<li>通过EventListenerFactory加入okhttp </li>
+</ul>
+</li>
+<li>图片加载每一步耗时<ul>
+<li>Fresco 设置RequestListener      </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>容灾, 如果多次连接不上, 就不要请求了</li>
+<li>cdn加速, 更新则需要清缓存</li>
+<li>减少传输量, 时机, 频率</li>
+<li>Okhttp请求池<ul>
+<li>Dispatcher</li>
+<li>okhttp限制了同域名最多请求个数为5, 如果单域名, 可以增加</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>体系化<ul>
+<li>线下测试<ul>
+<li>只开本App</li>
+<li>请求有误, 多余, 切网, 弱网, 无网</li>
+</ul>
+</li>
+<li>线上监控<ul>
+<li>服务端<ul>
+<li>请求耗时, 地域, 时间段, 版本, 机型</li>
+<li>失败率, 包括业务失败与请求失败</li>
+<li>统计Top失败接口</li>
+</ul>
+</li>
+<li>客户端<ul>
+<li>接口每一步信息, 包括DNS解析, 连接建立, 请求包大小等</li>
+<li>请求次数, 包大小, 失败原因</li>
+<li>图片监控</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>异常监控<ul>
+<li>服务器防刷</li>
+<li>大文件预警 </li>
+<li>异常兜底, 一定时间错误次数太多, 就不能访问, 或重试次数增加</li>
+<li>单点问题查看日志分析</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>电量优化<ul>
+<li>统计电量消耗<ul>
+<li>系统电量排行</li>
+<li>通过注册Action_Battery_Changed广播</li>
+<li>Battery Histrian 5.0+ 线下使用</li>
+</ul>
+</li>
+<li>测试<ul>
+<li>复杂运算, 视频</li>
+<li>传感器相关, 耗电, 发热, 使用时长等</li>
+<li>后台静默</li>
+</ul>
+</li>
+<li>Battery Histrian<ul>
+<li>基于dumpsys, 试用前先重置电量, 再开启电量统计, 再通过adb导出<ul>
+<li>adb shell dumpsys batterystats –reset</li>
+<li>adb shell dumpsys batterystats –enable full-wake-history</li>
+<li>adb bugreport bugreport.zip</li>
+</ul>
+</li>
+<li>可以通过docker安装histrain, 或者上<a href="http://bathist.ef.lc" target="_blank" rel="noopener">http://bathist.ef.lc</a></li>
+</ul>
+</li>
+<li>运行时能耗<ul>
+<li>能耗设定<ul>
+<li>adb pull /system/framework/framework-res.apk</li>
+<li>反编译找到power_profile拿到能耗</li>
+<li>能耗是厂家设置的, 可以帮助分析哪些比较耗电</li>
+</ul>
+</li>
+<li>AOP统计耗电组件调用时间, 次数<ul>
+<li>使用Lacent @Insert @TargetClass</li>
+<li>对于WakeLock, Thread.run</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>总结<ul>
+<li>降低CPU时间片占用, 通过traceview, cpuprofiler, 降低后台工作</li>
+<li>网络请求合并, 数据压缩</li>
+<li>不要轮询进行操作业务</li>
+<li>定位使用低精度, 网络定位, 使用完立即关闭</li>
+<li>耗电操作后台关闭, 如动画</li>
+<li>WakeLock及时释放, 设置超时时间, 释放最好写到finally中</li>
+<li>如需要保持长亮, 可使用KeepScreenOn</li>
+<li>使用JobScheduler/WorkManager, 设置运行场景</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>APK瘦身<ul>
+<li>头部App都出Lite版, 提升转化率</li>
+<li>Apk组成<ul>
+<li>classes.dex 代码</li>
+<li>资源 res, asserts, resource.arsc</li>
+<li>so相关 lib</li>
+</ul>
+</li>
+<li>分析工具<ul>
+<li>apktool 反编译</li>
+<li>analyze apk studio自带</li>
+<li>nimbledroid.com 分析网站<ul>
+<li>文件大小排行</li>
+<li>dex, sdk方法数</li>
+<li>启动时间, 内存占用</li>
+</ul>
+</li>
+<li>classyshark github开源<ul>
+<li>支持apk, jar, class, so</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>代码优化<ul>
+<li>混淆</li>
+<li>第三方库统一, 选小库<ul>
+<li>android methods count插件</li>
+<li>可以引入第三方库的部分模块, 或者修改源码剥离</li>
+</ul>
+</li>
+<li>移除无用代码<ul>
+<li>通过AOP统计activity是否还在被用</li>
+<li>通过AOP看看类的构造还有没有被调用<ul>
+<li>@After(excution(xxx.new(..)))</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>资源优化<ul>
+<li>无用资源<ul>
+<li>右键refactor-&gt;remove unused resources</li>
+<li>或者通过Analyze里面run inspect by name, 搜unused</li>
+</ul>
+</li>
+<li>图片压缩<ul>
+<li>tinypng.com及tinypngplugin</li>
+<li>jpeg比png小很多</li>
+</ul>
+</li>
+<li>资源混淆<ul>
+<li>AndResGuard github项目</li>
+<li>gradle引入插件, 添加配置</li>
+<li>通过gradle task resguardRelease</li>
+<li>会将resource.resc中的名字变短</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>图片保留一份 如xdpi</li>
+<li>资源放远端</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>so瘦身<ul>
+<li>加解密, 音视频一般都是用so</li>
+<li>在lib设置abifilters设置支持架构, 一般留armeabi, 兼容其他, 但是不会优化</li>
+<li>可以把对性能要求高的so单独加入到armeabi中, 通过代码逻辑进行加载</li>
+<li>so动态下载</li>
+<li>插件化<ul>
+<li>atalas</li>
+<li>replugin</li>
+</ul>
+</li>
+<li>CI监控大小变化</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>稳定性优化<ul>
+<li>维度<ul>
+<li>Crash</li>
+<li>性能</li>
+<li>业务高可用</li>
+</ul>
+</li>
+<li>重要的是在于预防</li>
+<li>Crash率<ul>
+<li>UV评估影响范围, PV评估影响程度</li>
+<li>启动Crash, 启动10秒后crash</li>
+<li>优先解决新增crash (增量与存量)</li>
+<li>99.8%是底线 万分之更优秀</li>
+</ul>
+</li>
+<li>业务高可用<ul>
+<li>主流程核心路径监控<ul>
+<li>AOP采集, 统一上传</li>
+<li>阈值报警, 趋势报警, 特定指标报警</li>
+</ul>
+</li>
+<li>异常监控<ul>
+<li>catch的代码块</li>
+<li>异常逻辑, 一些逻辑返回false, 一些参数为空, 进行上报</li>
+</ul>
+</li>
+<li>兜底<ul>
+<li>关闭功能</li>
+<li>跳转分发中心, 不要进入有错误的页面</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>容灾<ul>
+<li>功能开关, remote toggle</li>
+<li>统跳中心, 重定向到临时界面或其他</li>
+<li>热修复<ul>
+<li>tinker (把修复的dex里的elements放在host的pathlist中elements之前)</li>
+<li>andfix (method hook, dalvik修改函数指向, art hook entrypoint)</li>
+<li>robust (跟instant-run一样插装在diapatch)</li>
+<li>如果rn之类的, 可以直接升级</li>
+</ul>
+</li>
+<li>安全模式<ul>
+<li>多次启动失败, 就重置app</li>
+<li>太严重则需要阻塞热修</li>
+<li>服务器多次失败, 网络库可以拒绝继续发送请求, 保护服务器</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>长效治理<ul>
+<li>开发阶段<ul>
+<li>增强编码功底, codereview等</li>
+<li>架构优化, 能力收敛, 如界面切换用路由, 统一容错, 统一网络库, 统一网络错误处理</li>
+<li>容错测试, 如服务器宕机, 脏数据, 特殊机型等边界</li>
+<li>云测平台</li>
+</ul>
+</li>
+<li>合代码<ul>
+<li>编译检测, 静态扫描</li>
+<li>合入跟主干一样的分支, 预编译, 防止代码冲突</li>
+<li>主流程回归测试, 自动化执行</li>
+</ul>
+</li>
+<li>发布环节<ul>
+<li>多轮灰度, 筛选忠实用户</li>
+<li>针对低于, 版本定向灰度</li>
+<li>灵敏监控, 热修, 容灾等UI</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>列表页卡顿<ul>
+<li>图片不要太大</li>
+<li>滑动过程中停止图片加载</li>
+<li>列表页用线程池, 并设置为background, 不抢占UI</li>
+<li>TextView优化<ul>
+<li>BoringLayout 单行, StaticLayout 多行, DynamicLayout 可编辑</li>
+<li>异步创建StaticLayout</li>
+<li>可以使用facebook的TextLayoutBuilder优化</li>
+</ul>
+</li>
+<li>使用StringBuilder拼接而不是直接+<ul>
+<li>常量直接拼接性能最高, jvm直接拼好</li>
+<li>变量拼接使用StringBuilder更好, 虽然直接拼接也会转换builder, 但还会多一些临时变量</li>
+<li>循环内不要使用拼接, 因为会每次循环都创建出一个StringBuidler</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>储存优化<ul>
+<li>SP优化<ul>
+<li>系统SP问题<ul>
+<li>初始化慢, 虽然异步, 但UI线程需要等</li>
+<li>写入慢, 全量写入</li>
+<li>卡顿, apply会与丢失的可能, 而且SP在一些时候, 如onPause进行写入磁盘</li>
+</ul>
+</li>
+<li>使用腾讯MMKV取代<ul>
+<li>mmap+文件锁</li>
+<li>增量写入, 使用protobuffer</li>
+<li>支持sp迁移</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>日志优化<ul>
+<li>mmap 内存映射文件</li>
+<li>使用微信的Xlog或者美团的Logan</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>常用数据缓存</li>
+<li>文件流缓存4-8K</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Webview异常监控<ul>
+<li>webview优化<ul>
+<li>容器预热, 资源预加载</li>
+<li>参考VasSonic</li>
+</ul>
+</li>
+<li>检测白屏<ul>
+<li>通过getBitmapFromView</li>
+<li>用每一个像素点对比第一个</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2020/07/30/Android-Performance-Enhance/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                评论和共享
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+            <a
+                href="/2020/07/30/Android-Performance-Enhance/"
+                aria-label=": Android性能优化总结"
+            >
+                <div class="postShorten-thumbnailimg">
+                    <img alt="" src="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png"/>
+                </div>
+            </a>
+            
+        
+    </article>
+    
+    
     <article class="postShorten postShorten--thumbnailimg-right">
         <div class="postShorten-wrap">
             
@@ -791,68 +1989,6 @@
         
     </article>
     
-    
-    <article class="postShorten postShorten--thumbnailimg-right">
-        <div class="postShorten-wrap">
-            
-            <div class="postShorten-header">
-                <h1 class="postShorten-title">
-                    
-                        <a
-                            class="link-unstyled"
-                            href="/2018/07/08/Android-Weekly-Issue-317/"
-                            aria-label=": Android Weekly Issue #317"
-                        >
-                            Android Weekly Issue #317
-                        </a>
-                    
-                </h1>
-                <div class="postShorten-meta">
-    <time datetime="2018-07-08T19:00:01+08:00">
-	
-		    7月 08, 2018
-    	
-    </time>
-    
-        <span>发布在 </span>
-        
-    <a class="category-link" href="/categories/Android-Weekly/">Android Weekly</a>
-
-
-    
-</div>
-
-            </div>
-            
-                <div class="postShorten-excerpt">
-                    <p>July 8th, 2018</p>
-<h2 id="Android-Weekly-Issue-317"><a href="#Android-Weekly-Issue-317" class="headerlink" title="Android Weekly Issue #317"></a><a href="http://androidweekly.net/issues/issue-317" target="_blank" rel="noopener">Android Weekly Issue #317</a></h2><p>本期主要内容包括”重磅”的Udacity放弃RN(其实是因为他们RN写的那个Feature不要了),还包括如七部使用Google Page Lib,如何用Room设计与创建可维护的数据库等Code Guide的文章,以及Android P字体渲染,放大镜,Google新版Universal Music Play Sample,还有Retrofit如何工作,如何通过Kotlin Extension Generation来改善Dagger Butterknife使用体验,等等.</p>
-                    
-                        <a
-                            href="/2018/07/08/Android-Weekly-Issue-317/"
-                            class="postShorten-excerpt_link link"
-                            aria-label=": Android Weekly Issue #317"
-                        >
-                            阅读全文
-                        </a>
-                        
-                    
-                </div>
-            
-        </div>
-        
-            <a
-                href="/2018/07/08/Android-Weekly-Issue-317/"
-                aria-label=": Android Weekly Issue #317"
-            >
-                <div class="postShorten-thumbnailimg">
-                    <img alt="" src="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988405/317_vuwbrb.jpg"/>
-                </div>
-            </a>
-            
-        
-    </article>
-    
     <div class="pagination-bar">
     <ul class="pagination">
         
@@ -1295,7 +2431,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 41 篇文章
+                找到 42 篇文章
             </p>
         </div>
     </div>

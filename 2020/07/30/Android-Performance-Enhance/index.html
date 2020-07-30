@@ -1,0 +1,2107 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Android性能优化总结 - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.\n\n性能优化工具\nTraceView\n图形化界面\ntrack所有线程, 消耗大\nDebug.start/stopMethodTracing开启与停止生成文件\nAS的CPU Profile Trace Method就是这个\n系统函数黄色, 第三方蓝色, 自己绿色\n四个图表来查看\nCall Chart\n顺序的函数调用关系与时间, 由上到下\n\n\nFlame Chart\n函数调用时间汇总, 有下到上\n\n\nTop Down\n由根函数开始做树状图\n\n\nBottom Down\n由叶子函数开始做树状图\n\n\n\n\n时间\nWall Clock Time\n表示真实运行时间, 包括Sleep, CPU切换\n\n\nThread Time\n线程占用CPU的时间, 小于真实运行时间\n\n\nSelf Time\n函数除第三方调用耗时以外的时间消耗\n\n\nChildren Time\n函数第三方调用消耗\n\n\n\n\n\n\nSystrace\n主要检测CPU各个内核使用情况\n消耗小, 只拿埋的点数据\npython脚本, 通过Trace/TraceCompat打tag\nCPU time才是优化的方向, 如果耗时过长, 可以通过多线程处理\n灰色:睡眠, 蓝色:可以运行, 绿色:正在运行, 红色:内核睡眠, 橙色:IO睡眠\nw:放大, s:缩小, a:左移, d:右移, f:放大, m:选中\n查看frame中F的间隔, 大于16ms可能就有卡顿, 再通过traceview或者CPU Profile来进行追踪\n4.3(18)以上加入了Java的Trace, 6.0(23)加入了Native Tracce, 低版本Native可以通过JNI来获取\n\n\nCPU Profiler\n3.0以上AS使用Profiler取代了Monitor\nCPU时间轴最上面有事件时间轴, 7.1(25)及一下版本必须在Config里面勾选Advanced profiling, 重新编译, 注入监控逻辑才能有, 附带的还有一些内存的监控\nTrace Method\n给方法调用前后记录时间戳, 有运行开销\n\n\nSample Java Method\n通过不断的捕获堆栈\n\n\nSystem Trace\n使用systrace获取更加详细的\n必须在7.0 (24)以上的机器才具备\n在代码中添加检测代码进行标记\nC使用trace.h原生跟踪\nJava使用Trace\n\n\n9.0 (28)以上手机里也可开启systrace \n\n\nSample C++ Function\n8.0 (26)以上\n使用simpleperf进行采样\n如果想指定参数, 命令行使用simpleperf\n\n\n\n\n\n\n启动速度优化\n时间测量\nAOP AspectJ\nJoin Points \n切入点\n函数调用,执行\nget/set\ninit\n\n\n\n\nCut Point\n带条件的切入点\n\n\nAdvice\nHook, 插入位置\nBefore\nAfter\nAround\n\n\n\n\n语法\n@Aspect\n@Before(“excution (* android.app.Activity.on**(..))”) public xx(JointPoint joinPoint) {}\n@Around(“call(* package.**(..))”) public xx(ProceedingJoinPoint joinPoint) {}\n\n\n\n\n通过AMS\nadb logcat -s ActivityManager | grep “Displayed”\n\n\n\n\n启动器多线程\nTask\n有向无环图\n\n\n延迟初始化\nView显示第一帧启动初始化任务\nViewTreeObserver.addOnDrawListener\n\n\nIdleHandler\nLooper.queue.addIdleHandler\nreturn true handler被移除, return false handler继续停留\n结合第一帧, 封装一个Dispatcher, 将初始化任务加入, 注册IdleHandler\n\n\n\n\n提前异步读取SharePreference\n在Multi dex install之前\n\n\n启动阶段不启动子进程\n提前异步类加载\n在Multi dex install之前\n\n\n\n\n内存优化\n常用工具\n离线\nMemory Profile\nMemory Analyser\nLeakCanary\n\n\n\n\nJava内存分配\n方法区\n静态变量\n方法信息\n所有线程共享\n\n\n虚拟机栈\n本地方法栈(native)\n堆\n程序计数器\n函数执行多多少行\n\n\n\n\nJava内存回收\n标记清除法\n先标记再统一回收\n效率低, 内存不连续\n\n\n复制算法\n划分多个块\n一块用完后复制存活到另一块\n再清除另一块\n效率高, 但浪费\n\n\n标记整理\n存活对象向一端移动\n清理其他内存\n不浪费, 也没碎片\n\n\n分代收集\n新生代存活低, 复制\n老年代存活高, 标记整理\n\n\n\n\nAndroid内存管理\n内存弹性分配, 根据设备\nOOM, 内存不足或者可用不足\nDalvik\n固定回收算法\n\n\nArt\n运行期选择\n前台\n标记清除\n\n\n后台\n标记整理\n\n\n\n\n\n\nLow Memory Killer\n进程分类\n根据优先级Kill\n前台,可见,服务,后台,空进程\n\n\n回收收益\n根据需要回收的量级\n\n\n\n\n\n\n内存抖动与OOM\n原因 \n频繁创建对象, 会造成内存碎片与不足\n内存碎片化会导致无法分配出来可用内存导致OOM\n\n\nMemory Profiler分析\n锯齿状\nRecord查看内存活动情况\nAllocate 分类instance个数\nShallow 自身占用内存大小\nRetained 持有对象总大小\n\n\n追踪可疑内存allocate位置\n\n\nCPU Profile分析\n查看频繁调用方法的地方\n内存泄露\n\n\n\n\n定义\n内存中存在没有用的对象 \n\n\n表象\n内存抖动 (因为GC), 可用内存逐渐减少\n\n\n危害\nGC频繁, 卡顿, 甚至OOM\n\n\n用Memory Profiler检测内存是否泄漏, 并dump java内存堆栈\n用Memory Analyzer(MAT)分析\n需要进行转换 hprof-conv\n\n\n\n\nMemory Analyzer\nOverview\n饼图\nTop Consumer\n可查看Biggest Object\n\n\nLeak Suspect\n自动化分析泄露引用树\n\n\n\n\nHistogram\n以类来列表\n右键Group by package 以包名摆放\n检查Objects, 存在个数\n可疑对象右键可选List Object -&gt; with incoming ref\n\n\ndominator tree\n以对象列表\nPercentage\n查看占比大的\n同样通过List Object -&gt; with incoming ref\n\n\n\n\nOQL\n对象数据库\n可使用select * FROM className\n\n\nthread overview\n查看各个线程\n\n\nUnreachable Objects Histogram\n已经可回收的对象\n\n\n\n\nBitmap内存模型\nApi10之前, 像素存在Native, 对象存在Dalvik\nnative回收时机不够\n\n\nApi10之后全部放Dalvik\nApi26更改机制, 全部放Native, Bitmap回收后通知Native层\n计算大小\ngetByteCount\nh  w  density, res要考虑压缩比例\n\n\nARTHook\nEpic\nHook Java方法\n4.0 - 9.0\n继承XC_MethodHook\nDexposedBridge.hookXX用于注册\nDexposedBridge.findXX用于查找\n\n\n无侵入性\n基于Dexposed来hook\nHook了ArtMethod指向的函数指令, 指向自己的片段\n兼容性问题大, 开源不能带入线上环境\n\n\n\n\n线上内存问题解决一般方案\n检测内存使用达到一定程度, 使用Debug.dumpHprofData()\n文件太大, 不易上传, 虽然可裁剪\n\n\n完整方案\n监控待机内存, 重点模块内存, OOM率\nActivityManager#getProcessMemoryInfo\nDebug.MemoryInfo#getMemoryStat\n读取\n\n\n整机或者重点模块GC次数, GC时间\nDebug.startAllocCounting\nDebug.getGlobalAllocCount() &lt; 6.0\nDebug.getRuntimeStat(“art.gc.gc-xxx”) &gt; 6.0\n\n\n增强型LeakCanary\nResourceCanary\n自己找怀疑点\n只分析Retain size大的\n对象裁剪, 不全加入内存\n\n\n开LargeHeap\nonTrimMemory/onLowMemory, 自我释放\n使用SparseArray\n谨慎使用SharedPreference\n\n\n\n\n布局优化\n16ms发送VSync触发渲染\n手机刷新频率一般是60Hz\nSystrace查看帧率\nFrames\n会给出一些Alert\n\n\nLayoutInspector查看布局层次\nChoreographer\nAPI 16以上\n可以获取FPS\nChoreographer.getInstance().postFrameCallback\n\n\n原生布局加载优化\n读取资源使用IO\n?X2C?Async?\n\n\n创建View使用反射\nLayoutInflater.Factory/2\n创建一个Hook\n全局替换自定义View的创建\nLayoutInflaterCompat.setFactory2\n\n\n\n\nAsyncLayoutInflater\n内部没有用Compat, 不能用Factory\nView不能有创建Handler或者使用myLooper, 因为没调用prepare\n不支持Fragment, 这个通过privateFactory构建的\n父布局的generateLayoutParams必须线程安全\n默认queue的size只有10\n\n\n\n\n获取界面打开耗时\nHook setContentView \nAspectJ\nexcution setContentView\n\n\nARTHook\nDexposedBridge.findAndHookMethod\n\n\n\n\n\n\n获取每一个控件耗时\nLayoutInflater.Factory/2\n\n\nX2C\nXML通过Apt转换为Java\n@Xml让Java知道XML\nX2C.setContentView\n有的xml属性Java不支持\n如果想要使用Compat的View做兼容, 需要自己修改X2C\n\n\n视图绘制优化\n减少层级\n宽而浅, 避免前而深\n由上到下元素尽量在一个Group内\n由左到右, 布局深度更浅\n\n\n不嵌套RelativeLayout\n不在嵌套的LinearLayout里使用weight\n多使用merge\n避免过度绘制\n去掉多余背景色\n减少复杂shape使用\n不免空间重叠\n自定义View使用clipReact屏蔽遮盖view绘制\n\n\n使用ViewStud延迟\nonDraw不要创建大对象\n\n\n所使用的工具\nChoreographer -&gt; 帧率 线上\nAOP, ArtHook -&gt; 统计耗时 线上\nSystrace -&gt; 每一帧的耗时 线下\nLayout Inspector -&gt; 布局层级 线下\n\n\n\n\nApp卡顿优化\n代码, 内存, 绘制, IO …\n工具\nCPU Profiler\nDebug.startMethodTracing\nDebug.stopMethodTracing\n开销大\n\n\nSystrace\nAPI 18\nTraceCompat\nsystrace.py -t 10 [options] [categories]\n轻量级, 开销小\nCPU利用率可视, 帧卡顿给出建议\n\n\nStrictMode\n运行时检测\n线程策略\n自定义耗时调用\ndetectCustomSlowCalls()\n\n\n磁盘读写\ndetectDiskReads\n\n\n网络请求\ndetectNetwork\n\n\n\n\n虚拟机策略\nActivity泄露\ndetectActivityLeaks\n\n\nSqlite泄露\ndetectLeakedSqlLiteObjects\n\n\n实例数检测\nsetClassInstanceLimit\n\n\n\n\n\n\n\n\n线上自动化监测\n原理\nLooper在dispathMessage的时候前后都会调用mLogging, 可用于监控耗时\n通过seetMessageLogging\n\n\nAndroidPerformanceMonitor\n基于之上的原理, 时间超了就说明卡了\nBlockCanary\n非浸入\n不足与优化\n只有T2时刻的堆栈, 可能不能表现卡顿原因\n优化方案就是高频多次采集\n对多次卡顿堆栈进行去重, 减少数据量\n\n\n\n\n\n\nANR\nActivityManagerService里定义了\nKeyDispatchTimeout 5s\nBroadcastTimeout 前台10s, 后台60s\nServiceTimeout 前台20s, 后台200s\n\n\nANR弹出会多余5s, 因为要写入堆栈信息\n导入/data/anr/traces.txt分析\n线上ANR监控\n低版本通过FileObserver监控文件变化\nANR-Wartchdog\n自有线程向UIhandler发消息\n然后Sleep等待计数器增加\n如果醒来发现没有增加, 说明ANR了, 就抛异常, 并且打印主线程堆栈信息\n可以复写Listener, 自己处理异常\n\n\n\n\n\n\n单点卡顿监控:\nAspectJ与ArtHook\nAspectJ只能往自己或者lib里方法, 不支持系统方法\nArtHook则可以在系统方法调用的时候进行hook\n\n\nIPC问题监控\n关注点\nIPC调用类型, package manager等\n次数, 耗时\n堆栈, 发生的线程\n\n\nadb监控\nadb shell am trace-ipc start\nadb shell am trace-ipc stop –dump-file xxx.txt\n\n\nHook IPC数据传输\nBinderProxy#transact\n\n\n\n\nIO, DB, View绘制\n\n\n界面秒开\n轻量级AOP框架, Lancet\n编译速度快, 增量编译\nAPI简单, 没有多余的代码插入Apk中, 只有自己hook的\nAPI\n@Proxy 对系统API进行Hook, 传入方法名\n@TargetClass 指定Hook所在的\nscope\nSELF \nDIRECT SELF+直接子类\nALL SELF+所有子类\nLEAF 叶子节点\n\n\n\n\n@Insert 操作App或者lib的类\nmayCreateSuper\ntrue 如果方法不存在, 就创建\n\n\n\n\nOrigin.call() 调用原有方法\n\n\n检测onWindowFocusChange - onCreate就是页面打开时间\n监控生命周期函数耗时, 以及生命周期函数之间转换的耗时\n\n\n思路\nSystracce分析\n异步+延迟初始化\n异步Inflate, X2C, 绘制优化\n提前获取数据\n\n\n\n\n监控盲区\n只知道耗时了, 不知道具体做了什么\n线上也不好操作\n线下检测\nTraceView可以查看每一个线程都做了什么\n还可以监控系统调用\nGC可以通过log或者通过systrace的HeapTaskDaemon线程查看\n\n\n线上检测\n使用定制化的Handler监控sendMessage跟dispatchMessage\nsendMessage保存msg记录时间, 调用栈, dispatchMessage拿出msg, 检测耗时, 上报调用栈\n使用gradle插件编译期替换bytecode\ndidi的DroidAssist方便替换\n\n\n\n\n卡顿优化不同阶段\n线下通过系统工具定位, 通过异步或者延时解决\n线上自动化卡顿方案, 通过消息机制捕获上报, 包括ANR上报\n改进方案, 高频采集, 分析重复堆栈  \n\n\n线下监控与线上监控工具建设\n线下关注提前暴露, 线上关注自动化, 全面性, 灵敏度\n对于达不到阈值的小卡顿, 线下AOP对一些耗时代码hook, 如IPC, IO等, 分析数据\n线下Hook Handler的两个方法, 统计时间与堆栈信息\n线上还监控秒开时间, 生命周期之间耗时\n\n\n\n\n\n\n线程调度\n普通CPU调度采用公平分配\nJvm线程调度根据优先级分配时间片\nAndroid调度是抢占式\nnice\n在Process中定义\n越小优先级越高\n默认是0\n\n\ncgroup\n根据群组调用, 防止很多后台压制前台\n优先级低的线程会进后台group\n不在前台运行的程序的线程也会进去\n\n\n\n\n线程太多会导致CPU频繁切换, 降低效率\n工作量与优先级应该成反比\n线程有继承性, 在UI线程创建的子线程就会抢占UI线程的时间片\n线程执行的过程中, 也可以改名字与优先级\n为了让子库做到线程收敛, 可提供一个setExecutor的方法统一设置\n分类设置线程池\n如果IO密集型, 不消耗CPU, 线程池可以设置的很大\nCPU密集型的线程大小要与核心数相关\n\n\n\n\n网络优化\n维度\n流量消耗\n一段时间的消耗, 不同网络类型, 前台后台\n流量消耗均值, 异常率, 流量消耗多, 次数多, 文件大等\n所有网络请求Request/Response本地监控\n\n\n质量监控\n请求时长, 成功率, 失败率, Top失败接口\n\n\n其他消耗\n成本, 带宽, CDN\n耗电\n\n\n\n\n工具\nNetworkProfiler\n监控发送接收, 连接数\n手动需要开启高级分析 (API小于26)\n只支持URLConnection与OkHttp\n\n\n抓包工具\nCharles (mac)\nFiddler (windows)\nWireShark (底层抓包)\nStetho (chrome)\n\n\n\n\n获取流量消耗\n本地测试\n流量管理关闭其他app\n抓包工具只允许本App联网\n\n\n线上获取\nTrafficStats API8(2.2)之后 重启之后的流量数据\ngetUidRxBytes\ngetTotalTxBytes\n\n\nNetworkStatsManager API23(6.0)之后\nquerySummary 返回bucket, 判断uid过滤本app数据\nbucket getRxBytes getTxBytes\n\n\n\n\n前台与后台\n定时+统计+前后台标记\n每隔30s进行统计一次\n\n\n\n\n网络优化\n添加配置使用http缓存\nNonetworkIntercepter, 无网环境打开Force Cache\n\n\n增量更新\n数据gzip压缩\netag\n图片压缩后上传\nLuban\n\n\n合并网络请求\n批量上传, 如上报数据\n\n\n\n\n图片相关\n先试用缩略图\n使用webp\n\n\n质量相关\n成功率与速度\ndns优化\n使用HttpDns绕过运营, 不使用dns53端口而使用80\n阿里云 httpdns.aar\n通过实现Dns接口设置给okhttp\n\n\nhttp版本\n1.0 tcp不复用\n1.1 长连接, 复用, tcp上的http是按顺序\n2.0 tcp上的http同时发送多个请求, 类似于spdy\n\n\n监控\n请求耗时, 成功率, 错误码\n添加okhttp EventListener, 监控每个环节\n通过EventListenerFactory加入okhttp \n\n\n图片加载每一步耗时\nFresco 设置RequestListener      \n\n\n\n\n其他\n容灾, 如果多次连接不上, 就不要请求了\ncdn加速, 更新则需要清缓存\n减少传输量, 时机, 频率\nOkhttp请求池\nDispatcher\nokhttp限制了同域名最多请求个数为5, 如果单域名, 可以增加\n\n\n\n\n\n\n体系化\n线下测试\n只开本App\n请求有误, 多余, 切网, 弱网, 无网\n\n\n线上监控\n服务端\n请求耗时, 地域, 时间段, 版本, 机型\n失败率, 包括业务失败与请求失败\n统计Top失败接口\n\n\n客户端\n接口每一步信息, 包括DNS解析, 连接建立, 请求包大小等\n请求次数, 包大小, 失败原因\n图片监控\n\n\n\n\n异常监控\n服务器防刷\n大文件预警 \n异常兜底, 一定时间错误次数太多, 就不能访问, 或重试次数增加\n单点问题查看日志分析\n\n\n\n\n\n\n电量优化\n统计电量消耗\n系统电量排行\n通过注册Action_Battery_Changed广播\nBattery Histrian 5.0+ 线下使用\n\n\n测试\n复杂运算, 视频\n传感器相关, 耗电, 发热, 使用时长等\n后台静默\n\n\nBattery Histrian\n基于dumpsys, 试用前先重置电量, 再开启电量统计, 再通过adb导出\nadb shell dumpsys batterystats –reset\nadb shell dumpsys batterystats –enable full-wake-history\nadb bugreport bugreport.zip\n\n\n可以通过docker安装histrain, 或者上http://bathist.ef.lc\n\n\n运行时能耗\n能耗设定\nadb pull /system/framework/framework-res.apk\n反编译找到power_profile拿到能耗\n能耗是厂家设置的, 可以帮助分析哪些比较耗电\n\n\nAOP统计耗电组件调用时间, 次数\n使用Lacent @Insert @TargetClass\n对于WakeLock, Thread.run\n\n\n\n\n总结\n降低CPU时间片占用, 通过traceview, cpuprofiler, 降低后台工作\n网络请求合并, 数据压缩\n不要轮询进行操作业务\n定位使用低精度, 网络定位, 使用完立即关闭\n耗电操作后台关闭, 如动画\nWakeLock及时释放, 设置超时时间, 释放最好写到finally中\n如需要保持长亮, 可使用KeepScreenOn\n使用JobScheduler/WorkManager, 设置运行场景\n\n\n\n\nAPK瘦身\n头部App都出Lite版, 提升转化率\nApk组成\nclasses.dex 代码\n资源 res, asserts, resource.arsc\nso相关 lib\n\n\n分析工具\napktool 反编译\nanalyze apk studio自带\nnimbledroid.com 分析网站\n文件大小排行\ndex, sdk方法数\n启动时间, 内存占用\n\n\nclassyshark github开源\n支持apk, jar, class, so\n\n\n\n\n代码优化\n混淆\n第三方库统一, 选小库\nandroid methods count插件\n可以引入第三方库的部分模块, 或者修改源码剥离\n\n\n移除无用代码\n通过AOP统计activity是否还在被用\n通过AOP看看类的构造还有没有被调用\n@After(excution(xxx.new(..)))\n\n\n\n\n\n\n资源优化\n无用资源\n右键refactor-&gt;remove unused resources\n或者通过Analyze里面run inspect by name, 搜unused\n\n\n图片压缩\ntinypng.com及tinypngplugin\njpeg比png小很多\n\n\n资源混淆\nAndResGuard github项目\ngradle引入插件, 添加配置\n通过gradle task resguardRelease\n会将resource.resc中的名字变短\n\n\n其他\n图片保留一份 如xdpi\n资源放远端\n\n\n\n\nso瘦身\n加解密, 音视频一般都是用so\n在lib设置abifilters设置支持架构, 一般留armeabi, 兼容其他, 但是不会优化\n可以把对性能要求高的so单独加入到armeabi中, 通过代码逻辑进行加载\nso动态下载\n插件化\natalas\nreplugin\n\n\nCI监控大小变化\n\n\n\n\n稳定性优化\n维度\nCrash\n性能\n业务高可用\n\n\n重要的是在于预防\nCrash率\nUV评估影响范围, PV评估影响程度\n启动Crash, 启动10秒后crash\n优先解决新增crash (增量与存量)\n99.8%是底线 万分之更优秀\n\n\n业务高可用\n主流程核心路径监控\nAOP采集, 统一上传\n阈值报警, 趋势报警, 特定指标报警\n\n\n异常监控\ncatch的代码块\n异常逻辑, 一些逻辑返回false, 一些参数为空, 进行上报\n\n\n兜底\n关闭功能\n跳转分发中心, 不要进入有错误的页面\n\n\n\n\n容灾\n功能开关, remote toggle\n统跳中心, 重定向到临时界面或其他\n热修复\ntinker (把修复的dex里的elements放在host的pathlist中elements之前)\nandfix (method hook, dalvik修改函数指向, art hook entrypoint)\nrobust (跟instant-run一样插装在diapatch)\n如果rn之类的, 可以直接升级\n\n\n安全模式\n多次启动失败, 就重置app\n太严重则需要阻塞热修\n服务器多次失败, 网络库可以拒绝继续发送请求, 保护服务器\n\n\n\n\n长效治理\n开发阶段\n增强编码功底, codereview等\n架构优化, 能力收敛, 如界面切换用路由, 统一容错, 统一网络库, 统一网络错误处理\n容错测试, 如服务器宕机, 脏数据, 特殊机型等边界\n云测平台\n\n\n合代码\n编译检测, 静态扫描\n合入跟主干一样的分支, 预编译, 防止代码冲突\n主流程回归测试, 自动化执行\n\n\n发布环节\n多轮灰度, 筛选忠实用户\n针对低于, 版本定向灰度\n灵敏监控, 热修, 容灾等UI\n\n\n\n\n\n\n列表页卡顿\n图片不要太大\n滑动过程中停止图片加载\n列表页用线程池, 并设置为background, 不抢占UI\nTextView优化\nBoringLayout 单行, StaticLayout 多行, DynamicLayout 可编辑\n异步创建StaticLayout\n可以使用facebook的TextLayoutBuilder优化\n\n\n使用StringBuilder拼接而不是直接+\n常量直接拼接性能最高, jvm直接拼好\n变量拼接使用StringBuilder更好, 虽然直接拼接也会转换builder, 但还会多一些临时变量\n循环内不要使用拼接, 因为会每次循环都创建出一个StringBuidler\n\n\n\n\n储存优化\nSP优化\n系统SP问题\n初始化慢, 虽然异步, 但UI线程需要等\n写入慢, 全量写入\n卡顿, apply会与丢失的可能, 而且SP在一些时候, 如onPause进行写入磁盘\n\n\n使用腾讯MMKV取代\nmmap+文件锁\n增量写入, 使用protobuffer\n支持sp迁移\n\n\n\n\n日志优化\nmmap 内存映射文件\n使用微信的Xlog或者美团的Logan\n\n\n其他\n常用数据缓存\n文件流缓存4-8K\n\n\n\n\nWebview异常监控\nwebview优化\n容器预热, 资源预加载\n参考VasSonic\n\n\n检测白屏\n通过getBitmapFromView\n用每一个像素点对比第一个\n\n\n\n\n\n","dateCreated":"2020-07-30T18:28:53+08:00","dateModified":"2020-07-30T18:38:21+08:00","datePublished":"2020-07-30T18:28:53+08:00","description":"","headline":"Android性能优化总结","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/","keywords":"Android","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png"}</script>
+    <meta name="description" content="最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.  性能优化工具 TraceView 图形化界面 track所有线程, 消耗大 Debug.start/stopMethodTracing开启与停止生成文件 AS的CPU Pr">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Android性能优化总结">
+<meta property="og:url" content="http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.  性能优化工具 TraceView 图形化界面 track所有线程, 消耗大 Debug.start/stopMethodTracing开启与停止生成文件 AS的CPU Pr">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2020-07-30T10:38:21.778Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android性能优化总结">
+<meta name="twitter:description" content="最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.  性能优化工具 TraceView 图形化界面 track所有线程, 消耗大 Debug.start/stopMethodTracing开启与停止生成文件 AS的CPU Pr">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png"/>
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
+    <!--STYLES END-->
+    
+
+    
+    <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?26839bbbc9c89fbe9eb99aba7bceb413";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="5">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/ "
+            aria-label=""
+        >
+            Weyoung&#39;s Blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="5">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/mailto"
+                            
+                            rel="noopener"
+                            title="邮箱"
+                        >
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="5"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            Android性能优化总结
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-07-30T18:28:53+08:00">
+	
+		    7月 30, 2020
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.<br>期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.</p>
+<ul>
+<li>性能优化工具<ul>
+<li>TraceView<ul>
+<li>图形化界面</li>
+<li>track所有线程, 消耗大</li>
+<li>Debug.start/stopMethodTracing开启与停止生成文件</li>
+<li>AS的CPU Profile Trace Method就是这个</li>
+<li>系统函数黄色, 第三方蓝色, 自己绿色</li>
+<li>四个图表来查看<ul>
+<li>Call Chart<ul>
+<li>顺序的函数调用关系与时间, 由上到下</li>
+</ul>
+</li>
+<li>Flame Chart<ul>
+<li>函数调用时间汇总, 有下到上</li>
+</ul>
+</li>
+<li>Top Down<ul>
+<li>由根函数开始做树状图</li>
+</ul>
+</li>
+<li>Bottom Down<ul>
+<li>由叶子函数开始做树状图</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>时间<ul>
+<li>Wall Clock Time<ul>
+<li>表示真实运行时间, 包括Sleep, CPU切换</li>
+</ul>
+</li>
+<li>Thread Time<ul>
+<li>线程占用CPU的时间, 小于真实运行时间</li>
+</ul>
+</li>
+<li>Self Time<ul>
+<li>函数除第三方调用耗时以外的时间消耗</li>
+</ul>
+</li>
+<li>Children Time<ul>
+<li>函数第三方调用消耗</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Systrace<ul>
+<li>主要检测CPU各个内核使用情况</li>
+<li>消耗小, 只拿埋的点数据</li>
+<li>python脚本, 通过Trace/TraceCompat打tag</li>
+<li>CPU time才是优化的方向, 如果耗时过长, 可以通过多线程处理</li>
+<li>灰色:睡眠, 蓝色:可以运行, 绿色:正在运行, 红色:内核睡眠, 橙色:IO睡眠</li>
+<li>w:放大, s:缩小, a:左移, d:右移, f:放大, m:选中</li>
+<li>查看frame中F的间隔, 大于16ms可能就有卡顿, 再通过traceview或者CPU Profile来进行追踪</li>
+<li>4.3(18)以上加入了Java的Trace, 6.0(23)加入了Native Tracce, 低版本Native可以通过JNI来获取</li>
+</ul>
+</li>
+<li>CPU Profiler<ul>
+<li>3.0以上AS使用Profiler取代了Monitor</li>
+<li>CPU时间轴最上面有事件时间轴, 7.1(25)及一下版本必须在Config里面勾选Advanced profiling, 重新编译, 注入监控逻辑才能有, 附带的还有一些内存的监控</li>
+<li>Trace Method<ul>
+<li>给方法调用前后记录时间戳, 有运行开销</li>
+</ul>
+</li>
+<li>Sample Java Method<ul>
+<li>通过不断的捕获堆栈</li>
+</ul>
+</li>
+<li>System Trace<ul>
+<li>使用systrace获取更加详细的</li>
+<li>必须在7.0 (24)以上的机器才具备</li>
+<li>在代码中添加检测代码进行标记<ul>
+<li>C使用trace.h原生跟踪</li>
+<li>Java使用Trace</li>
+</ul>
+</li>
+<li>9.0 (28)以上手机里也可开启systrace </li>
+</ul>
+</li>
+<li>Sample C++ Function<ul>
+<li>8.0 (26)以上</li>
+<li>使用simpleperf进行采样</li>
+<li>如果想指定参数, 命令行使用simpleperf</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>启动速度优化<ul>
+<li>时间测量<ul>
+<li>AOP AspectJ<ul>
+<li>Join Points <ul>
+<li>切入点<ul>
+<li>函数调用,执行</li>
+<li>get/set</li>
+<li>init</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Cut Point<ul>
+<li>带条件的切入点</li>
+</ul>
+</li>
+<li>Advice<ul>
+<li>Hook, 插入位置<ul>
+<li>Before</li>
+<li>After</li>
+<li>Around</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>语法<ul>
+<li>@Aspect</li>
+<li>@Before(“excution (* android.app.Activity.on**(..))”) public xx(JointPoint joinPoint) {}</li>
+<li>@Around(“call(* package.**(..))”) public xx(ProceedingJoinPoint joinPoint) {}</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过AMS<ul>
+<li>adb logcat -s ActivityManager | grep “Displayed”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>启动器多线程<ul>
+<li>Task</li>
+<li>有向无环图</li>
+</ul>
+</li>
+<li>延迟初始化<ul>
+<li>View显示第一帧启动初始化任务<ul>
+<li>ViewTreeObserver.addOnDrawListener</li>
+</ul>
+</li>
+<li>IdleHandler<ul>
+<li>Looper.queue.addIdleHandler</li>
+<li>return true handler被移除, return false handler继续停留</li>
+<li>结合第一帧, 封装一个Dispatcher, 将初始化任务加入, 注册IdleHandler</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>提前异步读取SharePreference<ul>
+<li>在Multi dex install之前</li>
+</ul>
+</li>
+<li>启动阶段不启动子进程</li>
+<li>提前异步类加载<ul>
+<li>在Multi dex install之前</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>内存优化<ul>
+<li>常用工具<ul>
+<li>离线<ul>
+<li>Memory Profile</li>
+<li>Memory Analyser</li>
+<li>LeakCanary</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Java内存分配<ul>
+<li>方法区<ul>
+<li>静态变量</li>
+<li>方法信息</li>
+<li>所有线程共享</li>
+</ul>
+</li>
+<li>虚拟机栈</li>
+<li>本地方法栈(native)</li>
+<li>堆</li>
+<li>程序计数器<ul>
+<li>函数执行多多少行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Java内存回收<ul>
+<li>标记清除法<ul>
+<li>先标记再统一回收</li>
+<li>效率低, 内存不连续</li>
+</ul>
+</li>
+<li>复制算法<ul>
+<li>划分多个块</li>
+<li>一块用完后复制存活到另一块</li>
+<li>再清除另一块</li>
+<li>效率高, 但浪费</li>
+</ul>
+</li>
+<li>标记整理<ul>
+<li>存活对象向一端移动</li>
+<li>清理其他内存</li>
+<li>不浪费, 也没碎片</li>
+</ul>
+</li>
+<li>分代收集<ul>
+<li>新生代存活低, 复制</li>
+<li>老年代存活高, 标记整理</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Android内存管理<ul>
+<li>内存弹性分配, 根据设备</li>
+<li>OOM, 内存不足或者可用不足</li>
+<li>Dalvik<ul>
+<li>固定回收算法</li>
+</ul>
+</li>
+<li>Art<ul>
+<li>运行期选择<ul>
+<li>前台<ul>
+<li>标记清除</li>
+</ul>
+</li>
+<li>后台<ul>
+<li>标记整理</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Low Memory Killer<ul>
+<li>进程分类<ul>
+<li>根据优先级Kill</li>
+<li>前台,可见,服务,后台,空进程</li>
+</ul>
+</li>
+<li>回收收益<ul>
+<li>根据需要回收的量级</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>内存抖动与OOM<ul>
+<li>原因 <ul>
+<li>频繁创建对象, 会造成内存碎片与不足</li>
+<li>内存碎片化会导致无法分配出来可用内存导致OOM</li>
+</ul>
+</li>
+<li>Memory Profiler分析<ul>
+<li>锯齿状</li>
+<li>Record查看内存活动情况<ul>
+<li>Allocate 分类instance个数</li>
+<li>Shallow 自身占用内存大小</li>
+<li>Retained 持有对象总大小</li>
+</ul>
+</li>
+<li>追踪可疑内存allocate位置</li>
+</ul>
+</li>
+<li>CPU Profile分析<ul>
+<li>查看频繁调用方法的地方<ul>
+<li>内存泄露</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>定义<ul>
+<li>内存中存在没有用的对象 </li>
+</ul>
+</li>
+<li>表象<ul>
+<li>内存抖动 (因为GC), 可用内存逐渐减少</li>
+</ul>
+</li>
+<li>危害<ul>
+<li>GC频繁, 卡顿, 甚至OOM</li>
+</ul>
+</li>
+<li>用Memory Profiler检测内存是否泄漏, 并dump java内存堆栈</li>
+<li>用Memory Analyzer(MAT)分析<ul>
+<li>需要进行转换 hprof-conv</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Memory Analyzer<ul>
+<li>Overview<ul>
+<li>饼图</li>
+<li>Top Consumer<ul>
+<li>可查看Biggest Object</li>
+</ul>
+</li>
+<li>Leak Suspect<ul>
+<li>自动化分析泄露引用树</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Histogram<ul>
+<li>以类来列表</li>
+<li>右键Group by package 以包名摆放</li>
+<li>检查Objects, 存在个数</li>
+<li>可疑对象右键可选List Object -&gt; with incoming ref</li>
+</ul>
+</li>
+<li>dominator tree<ul>
+<li>以对象列表</li>
+<li>Percentage<ul>
+<li>查看占比大的</li>
+<li>同样通过List Object -&gt; with incoming ref</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>OQL<ul>
+<li>对象数据库</li>
+<li>可使用select * FROM className</li>
+</ul>
+</li>
+<li>thread overview<ul>
+<li>查看各个线程</li>
+</ul>
+</li>
+<li>Unreachable Objects Histogram<ul>
+<li>已经可回收的对象</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Bitmap内存模型<ul>
+<li>Api10之前, 像素存在Native, 对象存在Dalvik<ul>
+<li>native回收时机不够</li>
+</ul>
+</li>
+<li>Api10之后全部放Dalvik</li>
+<li>Api26更改机制, 全部放Native, Bitmap回收后通知Native层</li>
+<li>计算大小<ul>
+<li>getByteCount</li>
+<li>h <em> w </em> density, res要考虑压缩比例</li>
+</ul>
+</li>
+<li>ARTHook<ul>
+<li>Epic<ul>
+<li>Hook Java方法</li>
+<li>4.0 - 9.0</li>
+<li>继承XC_MethodHook</li>
+<li>DexposedBridge.hookXX用于注册</li>
+<li>DexposedBridge.findXX用于查找</li>
+</ul>
+</li>
+<li>无侵入性</li>
+<li>基于Dexposed来hook</li>
+<li>Hook了ArtMethod指向的函数指令, 指向自己的片段</li>
+<li>兼容性问题大, 开源不能带入线上环境</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线上内存问题解决一般方案<ul>
+<li>检测内存使用达到一定程度, 使用Debug.dumpHprofData()</li>
+<li>文件太大, 不易上传, 虽然可裁剪</li>
+</ul>
+</li>
+<li>完整方案<ul>
+<li>监控待机内存, 重点模块内存, OOM率<ul>
+<li>ActivityManager#getProcessMemoryInfo</li>
+<li>Debug.MemoryInfo#getMemoryStat</li>
+<li>读取</li>
+</ul>
+</li>
+<li>整机或者重点模块GC次数, GC时间<ul>
+<li>Debug.startAllocCounting</li>
+<li>Debug.getGlobalAllocCount() &lt; 6.0</li>
+<li>Debug.getRuntimeStat(“art.gc.gc-xxx”) &gt; 6.0</li>
+</ul>
+</li>
+<li>增强型LeakCanary<ul>
+<li>ResourceCanary</li>
+<li>自己找怀疑点</li>
+<li>只分析Retain size大的</li>
+<li>对象裁剪, 不全加入内存</li>
+</ul>
+</li>
+<li>开LargeHeap</li>
+<li>onTrimMemory/onLowMemory, 自我释放</li>
+<li>使用SparseArray</li>
+<li>谨慎使用SharedPreference</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>布局优化<ul>
+<li>16ms发送VSync触发渲染</li>
+<li>手机刷新频率一般是60Hz</li>
+<li>Systrace查看帧率<ul>
+<li>Frames</li>
+<li>会给出一些Alert</li>
+</ul>
+</li>
+<li>LayoutInspector查看布局层次</li>
+<li>Choreographer<ul>
+<li>API 16以上</li>
+<li>可以获取FPS</li>
+<li>Choreographer.getInstance().postFrameCallback</li>
+</ul>
+</li>
+<li>原生布局加载优化<ul>
+<li>读取资源使用IO<ul>
+<li>?X2C?Async?</li>
+</ul>
+</li>
+<li>创建View使用反射<ul>
+<li>LayoutInflater.Factory/2<ul>
+<li>创建一个Hook</li>
+<li>全局替换自定义View的创建</li>
+<li>LayoutInflaterCompat.setFactory2</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>AsyncLayoutInflater<ul>
+<li>内部没有用Compat, 不能用Factory</li>
+<li>View不能有创建Handler或者使用myLooper, 因为没调用prepare</li>
+<li>不支持Fragment, 这个通过privateFactory构建的</li>
+<li>父布局的generateLayoutParams必须线程安全</li>
+<li>默认queue的size只有10</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取界面打开耗时<ul>
+<li>Hook setContentView <ul>
+<li>AspectJ<ul>
+<li>excution setContentView</li>
+</ul>
+</li>
+<li>ARTHook<ul>
+<li>DexposedBridge.findAndHookMethod</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取每一个控件耗时<ul>
+<li>LayoutInflater.Factory/2</li>
+</ul>
+</li>
+<li>X2C<ul>
+<li>XML通过Apt转换为Java</li>
+<li>@Xml让Java知道XML</li>
+<li>X2C.setContentView</li>
+<li>有的xml属性Java不支持</li>
+<li>如果想要使用Compat的View做兼容, 需要自己修改X2C</li>
+</ul>
+</li>
+<li>视图绘制优化<ul>
+<li>减少层级</li>
+<li>宽而浅, 避免前而深<ul>
+<li>由上到下元素尽量在一个Group内</li>
+<li>由左到右, 布局深度更浅</li>
+</ul>
+</li>
+<li>不嵌套RelativeLayout</li>
+<li>不在嵌套的LinearLayout里使用weight</li>
+<li>多使用merge</li>
+<li>避免过度绘制<ul>
+<li>去掉多余背景色</li>
+<li>减少复杂shape使用</li>
+<li>不免空间重叠</li>
+<li>自定义View使用clipReact屏蔽遮盖view绘制</li>
+</ul>
+</li>
+<li>使用ViewStud延迟</li>
+<li>onDraw不要创建大对象</li>
+</ul>
+</li>
+<li>所使用的工具<ul>
+<li>Choreographer -&gt; 帧率 线上</li>
+<li>AOP, ArtHook -&gt; 统计耗时 线上</li>
+<li>Systrace -&gt; 每一帧的耗时 线下</li>
+<li>Layout Inspector -&gt; 布局层级 线下</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>App卡顿优化<ul>
+<li>代码, 内存, 绘制, IO …</li>
+<li>工具<ul>
+<li>CPU Profiler<ul>
+<li>Debug.startMethodTracing</li>
+<li>Debug.stopMethodTracing</li>
+<li>开销大</li>
+</ul>
+</li>
+<li>Systrace<ul>
+<li>API 18</li>
+<li>TraceCompat</li>
+<li>systrace.py -t 10 [options] [categories]</li>
+<li>轻量级, 开销小</li>
+<li>CPU利用率可视, 帧卡顿给出建议</li>
+</ul>
+</li>
+<li>StrictMode<ul>
+<li>运行时检测</li>
+<li>线程策略<ul>
+<li>自定义耗时调用<ul>
+<li>detectCustomSlowCalls()</li>
+</ul>
+</li>
+<li>磁盘读写<ul>
+<li>detectDiskReads</li>
+</ul>
+</li>
+<li>网络请求<ul>
+<li>detectNetwork</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>虚拟机策略<ul>
+<li>Activity泄露<ul>
+<li>detectActivityLeaks</li>
+</ul>
+</li>
+<li>Sqlite泄露<ul>
+<li>detectLeakedSqlLiteObjects</li>
+</ul>
+</li>
+<li>实例数检测<ul>
+<li>setClassInstanceLimit</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线上自动化监测<ul>
+<li>原理<ul>
+<li>Looper在dispathMessage的时候前后都会调用mLogging, 可用于监控耗时</li>
+<li>通过seetMessageLogging</li>
+</ul>
+</li>
+<li>AndroidPerformanceMonitor<ul>
+<li>基于之上的原理, 时间超了就说明卡了</li>
+<li>BlockCanary</li>
+<li>非浸入</li>
+<li>不足与优化<ul>
+<li>只有T2时刻的堆栈, 可能不能表现卡顿原因</li>
+<li>优化方案就是高频多次采集</li>
+<li>对多次卡顿堆栈进行去重, 减少数据量</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ANR<ul>
+<li>ActivityManagerService里定义了<ul>
+<li>KeyDispatchTimeout 5s</li>
+<li>BroadcastTimeout 前台10s, 后台60s</li>
+<li>ServiceTimeout 前台20s, 后台200s</li>
+</ul>
+</li>
+<li>ANR弹出会多余5s, 因为要写入堆栈信息</li>
+<li>导入/data/anr/traces.txt分析</li>
+<li>线上ANR监控<ul>
+<li>低版本通过FileObserver监控文件变化</li>
+<li>ANR-Wartchdog<ul>
+<li>自有线程向UIhandler发消息</li>
+<li>然后Sleep等待计数器增加</li>
+<li>如果醒来发现没有增加, 说明ANR了, 就抛异常, 并且打印主线程堆栈信息</li>
+<li>可以复写Listener, 自己处理异常</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>单点卡顿监控:<ul>
+<li>AspectJ与ArtHook<ul>
+<li>AspectJ只能往自己或者lib里方法, 不支持系统方法</li>
+<li>ArtHook则可以在系统方法调用的时候进行hook</li>
+</ul>
+</li>
+<li>IPC问题监控<ul>
+<li>关注点<ul>
+<li>IPC调用类型, package manager等</li>
+<li>次数, 耗时</li>
+<li>堆栈, 发生的线程</li>
+</ul>
+</li>
+<li>adb监控<ul>
+<li>adb shell am trace-ipc start</li>
+<li>adb shell am trace-ipc stop –dump-file xxx.txt</li>
+</ul>
+</li>
+<li>Hook IPC数据传输<ul>
+<li>BinderProxy#transact</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>IO, DB, View绘制</li>
+</ul>
+</li>
+<li>界面秒开<ul>
+<li>轻量级AOP框架, Lancet<ul>
+<li>编译速度快, 增量编译</li>
+<li>API简单, 没有多余的代码插入Apk中, 只有自己hook的</li>
+<li>API<ul>
+<li>@Proxy 对系统API进行Hook, 传入方法名</li>
+<li>@TargetClass 指定Hook所在的<ul>
+<li>scope<ul>
+<li>SELF </li>
+<li>DIRECT SELF+直接子类</li>
+<li>ALL SELF+所有子类</li>
+<li>LEAF 叶子节点</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>@Insert 操作App或者lib的类<ul>
+<li>mayCreateSuper<ul>
+<li>true 如果方法不存在, 就创建</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Origin.call() 调用原有方法</li>
+</ul>
+</li>
+<li>检测onWindowFocusChange - onCreate就是页面打开时间</li>
+<li>监控生命周期函数耗时, 以及生命周期函数之间转换的耗时</li>
+</ul>
+</li>
+<li>思路<ul>
+<li>Systracce分析</li>
+<li>异步+延迟初始化</li>
+<li>异步Inflate, X2C, 绘制优化</li>
+<li>提前获取数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>监控盲区<ul>
+<li>只知道耗时了, 不知道具体做了什么</li>
+<li>线上也不好操作</li>
+<li>线下检测<ul>
+<li>TraceView可以查看每一个线程都做了什么</li>
+<li>还可以监控系统调用</li>
+<li>GC可以通过log或者通过systrace的HeapTaskDaemon线程查看</li>
+</ul>
+</li>
+<li>线上检测<ul>
+<li>使用定制化的Handler监控sendMessage跟dispatchMessage</li>
+<li>sendMessage保存msg记录时间, 调用栈, dispatchMessage拿出msg, 检测耗时, 上报调用栈</li>
+<li>使用gradle插件编译期替换bytecode</li>
+<li>didi的DroidAssist方便替换</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>卡顿优化不同阶段<ul>
+<li>线下通过系统工具定位, 通过异步或者延时解决</li>
+<li>线上自动化卡顿方案, 通过消息机制捕获上报, 包括ANR上报<ul>
+<li>改进方案, 高频采集, 分析重复堆栈  </li>
+</ul>
+</li>
+<li>线下监控与线上监控工具建设<ul>
+<li>线下关注提前暴露, 线上关注自动化, 全面性, 灵敏度</li>
+<li>对于达不到阈值的小卡顿, 线下AOP对一些耗时代码hook, 如IPC, IO等, 分析数据</li>
+<li>线下Hook Handler的两个方法, 统计时间与堆栈信息</li>
+<li>线上还监控秒开时间, 生命周期之间耗时</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线程调度<ul>
+<li>普通CPU调度采用公平分配</li>
+<li>Jvm线程调度根据优先级分配时间片</li>
+<li>Android调度是抢占式<ul>
+<li>nice<ul>
+<li>在Process中定义</li>
+<li>越小优先级越高</li>
+<li>默认是0</li>
+</ul>
+</li>
+<li>cgroup<ul>
+<li>根据群组调用, 防止很多后台压制前台</li>
+<li>优先级低的线程会进后台group</li>
+<li>不在前台运行的程序的线程也会进去</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>线程太多会导致CPU频繁切换, 降低效率</li>
+<li>工作量与优先级应该成反比</li>
+<li>线程有继承性, 在UI线程创建的子线程就会抢占UI线程的时间片</li>
+<li>线程执行的过程中, 也可以改名字与优先级</li>
+<li>为了让子库做到线程收敛, 可提供一个setExecutor的方法统一设置</li>
+<li>分类设置线程池<ul>
+<li>如果IO密集型, 不消耗CPU, 线程池可以设置的很大</li>
+<li>CPU密集型的线程大小要与核心数相关</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>网络优化<ul>
+<li>维度<ul>
+<li>流量消耗<ul>
+<li>一段时间的消耗, 不同网络类型, 前台后台</li>
+<li>流量消耗均值, 异常率, 流量消耗多, 次数多, 文件大等</li>
+<li>所有网络请求Request/Response本地监控</li>
+</ul>
+</li>
+<li>质量监控<ul>
+<li>请求时长, 成功率, 失败率, Top失败接口</li>
+</ul>
+</li>
+<li>其他消耗<ul>
+<li>成本, 带宽, CDN</li>
+<li>耗电</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>工具<ul>
+<li>NetworkProfiler<ul>
+<li>监控发送接收, 连接数</li>
+<li>手动需要开启高级分析 (API小于26)</li>
+<li>只支持URLConnection与OkHttp</li>
+</ul>
+</li>
+<li>抓包工具<ul>
+<li>Charles (mac)</li>
+<li>Fiddler (windows)</li>
+<li>WireShark (底层抓包)</li>
+<li>Stetho (chrome)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取流量消耗<ul>
+<li>本地测试<ul>
+<li>流量管理关闭其他app</li>
+<li>抓包工具只允许本App联网</li>
+</ul>
+</li>
+<li>线上获取<ul>
+<li>TrafficStats API8(2.2)之后 重启之后的流量数据<ul>
+<li>getUidRxBytes</li>
+<li>getTotalTxBytes</li>
+</ul>
+</li>
+<li>NetworkStatsManager API23(6.0)之后<ul>
+<li>querySummary 返回bucket, 判断uid过滤本app数据</li>
+<li>bucket getRxBytes getTxBytes</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>前台与后台<ul>
+<li>定时+统计+前后台标记</li>
+<li>每隔30s进行统计一次</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>网络优化<ul>
+<li>添加配置使用http缓存<ul>
+<li>NonetworkIntercepter, 无网环境打开Force Cache</li>
+</ul>
+</li>
+<li>增量更新</li>
+<li>数据gzip压缩</li>
+<li>etag</li>
+<li>图片压缩后上传<ul>
+<li>Luban</li>
+</ul>
+</li>
+<li>合并网络请求<ul>
+<li>批量上传, 如上报数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>图片相关<ul>
+<li>先试用缩略图</li>
+<li>使用webp</li>
+</ul>
+</li>
+<li>质量相关<ul>
+<li>成功率与速度</li>
+<li>dns优化<ul>
+<li>使用HttpDns绕过运营, 不使用dns53端口而使用80</li>
+<li>阿里云 httpdns.aar</li>
+<li>通过实现Dns接口设置给okhttp</li>
+</ul>
+</li>
+<li>http版本<ul>
+<li>1.0 tcp不复用</li>
+<li>1.1 长连接, 复用, tcp上的http是按顺序</li>
+<li>2.0 tcp上的http同时发送多个请求, 类似于spdy</li>
+</ul>
+</li>
+<li>监控<ul>
+<li>请求耗时, 成功率, 错误码<ul>
+<li>添加okhttp EventListener, 监控每个环节</li>
+<li>通过EventListenerFactory加入okhttp </li>
+</ul>
+</li>
+<li>图片加载每一步耗时<ul>
+<li>Fresco 设置RequestListener      </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>容灾, 如果多次连接不上, 就不要请求了</li>
+<li>cdn加速, 更新则需要清缓存</li>
+<li>减少传输量, 时机, 频率</li>
+<li>Okhttp请求池<ul>
+<li>Dispatcher</li>
+<li>okhttp限制了同域名最多请求个数为5, 如果单域名, 可以增加</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>体系化<ul>
+<li>线下测试<ul>
+<li>只开本App</li>
+<li>请求有误, 多余, 切网, 弱网, 无网</li>
+</ul>
+</li>
+<li>线上监控<ul>
+<li>服务端<ul>
+<li>请求耗时, 地域, 时间段, 版本, 机型</li>
+<li>失败率, 包括业务失败与请求失败</li>
+<li>统计Top失败接口</li>
+</ul>
+</li>
+<li>客户端<ul>
+<li>接口每一步信息, 包括DNS解析, 连接建立, 请求包大小等</li>
+<li>请求次数, 包大小, 失败原因</li>
+<li>图片监控</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>异常监控<ul>
+<li>服务器防刷</li>
+<li>大文件预警 </li>
+<li>异常兜底, 一定时间错误次数太多, 就不能访问, 或重试次数增加</li>
+<li>单点问题查看日志分析</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>电量优化<ul>
+<li>统计电量消耗<ul>
+<li>系统电量排行</li>
+<li>通过注册Action_Battery_Changed广播</li>
+<li>Battery Histrian 5.0+ 线下使用</li>
+</ul>
+</li>
+<li>测试<ul>
+<li>复杂运算, 视频</li>
+<li>传感器相关, 耗电, 发热, 使用时长等</li>
+<li>后台静默</li>
+</ul>
+</li>
+<li>Battery Histrian<ul>
+<li>基于dumpsys, 试用前先重置电量, 再开启电量统计, 再通过adb导出<ul>
+<li>adb shell dumpsys batterystats –reset</li>
+<li>adb shell dumpsys batterystats –enable full-wake-history</li>
+<li>adb bugreport bugreport.zip</li>
+</ul>
+</li>
+<li>可以通过docker安装histrain, 或者上<a href="http://bathist.ef.lc" target="_blank" rel="noopener">http://bathist.ef.lc</a></li>
+</ul>
+</li>
+<li>运行时能耗<ul>
+<li>能耗设定<ul>
+<li>adb pull /system/framework/framework-res.apk</li>
+<li>反编译找到power_profile拿到能耗</li>
+<li>能耗是厂家设置的, 可以帮助分析哪些比较耗电</li>
+</ul>
+</li>
+<li>AOP统计耗电组件调用时间, 次数<ul>
+<li>使用Lacent @Insert @TargetClass</li>
+<li>对于WakeLock, Thread.run</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>总结<ul>
+<li>降低CPU时间片占用, 通过traceview, cpuprofiler, 降低后台工作</li>
+<li>网络请求合并, 数据压缩</li>
+<li>不要轮询进行操作业务</li>
+<li>定位使用低精度, 网络定位, 使用完立即关闭</li>
+<li>耗电操作后台关闭, 如动画</li>
+<li>WakeLock及时释放, 设置超时时间, 释放最好写到finally中</li>
+<li>如需要保持长亮, 可使用KeepScreenOn</li>
+<li>使用JobScheduler/WorkManager, 设置运行场景</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>APK瘦身<ul>
+<li>头部App都出Lite版, 提升转化率</li>
+<li>Apk组成<ul>
+<li>classes.dex 代码</li>
+<li>资源 res, asserts, resource.arsc</li>
+<li>so相关 lib</li>
+</ul>
+</li>
+<li>分析工具<ul>
+<li>apktool 反编译</li>
+<li>analyze apk studio自带</li>
+<li>nimbledroid.com 分析网站<ul>
+<li>文件大小排行</li>
+<li>dex, sdk方法数</li>
+<li>启动时间, 内存占用</li>
+</ul>
+</li>
+<li>classyshark github开源<ul>
+<li>支持apk, jar, class, so</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>代码优化<ul>
+<li>混淆</li>
+<li>第三方库统一, 选小库<ul>
+<li>android methods count插件</li>
+<li>可以引入第三方库的部分模块, 或者修改源码剥离</li>
+</ul>
+</li>
+<li>移除无用代码<ul>
+<li>通过AOP统计activity是否还在被用</li>
+<li>通过AOP看看类的构造还有没有被调用<ul>
+<li>@After(excution(xxx.new(..)))</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>资源优化<ul>
+<li>无用资源<ul>
+<li>右键refactor-&gt;remove unused resources</li>
+<li>或者通过Analyze里面run inspect by name, 搜unused</li>
+</ul>
+</li>
+<li>图片压缩<ul>
+<li>tinypng.com及tinypngplugin</li>
+<li>jpeg比png小很多</li>
+</ul>
+</li>
+<li>资源混淆<ul>
+<li>AndResGuard github项目</li>
+<li>gradle引入插件, 添加配置</li>
+<li>通过gradle task resguardRelease</li>
+<li>会将resource.resc中的名字变短</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>图片保留一份 如xdpi</li>
+<li>资源放远端</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>so瘦身<ul>
+<li>加解密, 音视频一般都是用so</li>
+<li>在lib设置abifilters设置支持架构, 一般留armeabi, 兼容其他, 但是不会优化</li>
+<li>可以把对性能要求高的so单独加入到armeabi中, 通过代码逻辑进行加载</li>
+<li>so动态下载</li>
+<li>插件化<ul>
+<li>atalas</li>
+<li>replugin</li>
+</ul>
+</li>
+<li>CI监控大小变化</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>稳定性优化<ul>
+<li>维度<ul>
+<li>Crash</li>
+<li>性能</li>
+<li>业务高可用</li>
+</ul>
+</li>
+<li>重要的是在于预防</li>
+<li>Crash率<ul>
+<li>UV评估影响范围, PV评估影响程度</li>
+<li>启动Crash, 启动10秒后crash</li>
+<li>优先解决新增crash (增量与存量)</li>
+<li>99.8%是底线 万分之更优秀</li>
+</ul>
+</li>
+<li>业务高可用<ul>
+<li>主流程核心路径监控<ul>
+<li>AOP采集, 统一上传</li>
+<li>阈值报警, 趋势报警, 特定指标报警</li>
+</ul>
+</li>
+<li>异常监控<ul>
+<li>catch的代码块</li>
+<li>异常逻辑, 一些逻辑返回false, 一些参数为空, 进行上报</li>
+</ul>
+</li>
+<li>兜底<ul>
+<li>关闭功能</li>
+<li>跳转分发中心, 不要进入有错误的页面</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>容灾<ul>
+<li>功能开关, remote toggle</li>
+<li>统跳中心, 重定向到临时界面或其他</li>
+<li>热修复<ul>
+<li>tinker (把修复的dex里的elements放在host的pathlist中elements之前)</li>
+<li>andfix (method hook, dalvik修改函数指向, art hook entrypoint)</li>
+<li>robust (跟instant-run一样插装在diapatch)</li>
+<li>如果rn之类的, 可以直接升级</li>
+</ul>
+</li>
+<li>安全模式<ul>
+<li>多次启动失败, 就重置app</li>
+<li>太严重则需要阻塞热修</li>
+<li>服务器多次失败, 网络库可以拒绝继续发送请求, 保护服务器</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>长效治理<ul>
+<li>开发阶段<ul>
+<li>增强编码功底, codereview等</li>
+<li>架构优化, 能力收敛, 如界面切换用路由, 统一容错, 统一网络库, 统一网络错误处理</li>
+<li>容错测试, 如服务器宕机, 脏数据, 特殊机型等边界</li>
+<li>云测平台</li>
+</ul>
+</li>
+<li>合代码<ul>
+<li>编译检测, 静态扫描</li>
+<li>合入跟主干一样的分支, 预编译, 防止代码冲突</li>
+<li>主流程回归测试, 自动化执行</li>
+</ul>
+</li>
+<li>发布环节<ul>
+<li>多轮灰度, 筛选忠实用户</li>
+<li>针对低于, 版本定向灰度</li>
+<li>灵敏监控, 热修, 容灾等UI</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>列表页卡顿<ul>
+<li>图片不要太大</li>
+<li>滑动过程中停止图片加载</li>
+<li>列表页用线程池, 并设置为background, 不抢占UI</li>
+<li>TextView优化<ul>
+<li>BoringLayout 单行, StaticLayout 多行, DynamicLayout 可编辑</li>
+<li>异步创建StaticLayout</li>
+<li>可以使用facebook的TextLayoutBuilder优化</li>
+</ul>
+</li>
+<li>使用StringBuilder拼接而不是直接+<ul>
+<li>常量直接拼接性能最高, jvm直接拼好</li>
+<li>变量拼接使用StringBuilder更好, 虽然直接拼接也会转换builder, 但还会多一些临时变量</li>
+<li>循环内不要使用拼接, 因为会每次循环都创建出一个StringBuidler</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>储存优化<ul>
+<li>SP优化<ul>
+<li>系统SP问题<ul>
+<li>初始化慢, 虽然异步, 但UI线程需要等</li>
+<li>写入慢, 全量写入</li>
+<li>卡顿, apply会与丢失的可能, 而且SP在一些时候, 如onPause进行写入磁盘</li>
+</ul>
+</li>
+<li>使用腾讯MMKV取代<ul>
+<li>mmap+文件锁</li>
+<li>增量写入, 使用protobuffer</li>
+<li>支持sp迁移</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>日志优化<ul>
+<li>mmap 内存映射文件</li>
+<li>使用微信的Xlog或者美团的Logan</li>
+</ul>
+</li>
+<li>其他<ul>
+<li>常用数据缓存</li>
+<li>文件流缓存4-8K</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Webview异常监控<ul>
+<li>webview优化<ul>
+<li>容器预热, 资源预加载</li>
+<li>参考VasSonic</li>
+</ul>
+</li>
+<li>检测白屏<ul>
+<li>通过getBitmapFromView</li>
+<li>用每一个像素点对比第一个</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Android/">Android</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/06/02/Refresh-Java/"
+                    data-tooltip="Refresh Java"
+                    aria-label="下一篇: Refresh Java"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/06/02/Refresh-Java/"
+                    data-tooltip="Refresh Java"
+                    aria-label="下一篇: Refresh Java"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>Xi’an B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Worker</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an
+            </div>
+        
+    </div>
+</div>
+
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            aria-label=": First Blog"
+                        >
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 42 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/new_cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+    <script src="/assets/js/moment-with-locales.js"></script>
+    <script src="/assets/js/algoliasearch.js"></script>
+    <script>
+      var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+    </body>
+</html>

@@ -17,9 +17,9 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"December 24th, 2017\nAndroid Weekly Issue #289今年最后一篇, 包含了可以上传log记录的HyperLog,以及Android的面试技巧,还有Model的分层,以及如何迁移到Room.还有比较炫酷的一个Path动画的实现方法值得去看.剩下的多是一些入门介绍,如kotlin,firebase messaging,contraintset animation等.\n\nARTICLES &amp; TUTORIALSHyperLog: Android Remote Logger Library for Debugging 作者讲了很多人苦恼有时候插线数据线Logcat给清掉了,也看不到日志信息,而Timber活着Logger也没法支持Production环境,推荐了HyperLog,可以上传日志文件到远端服务器,可以设定一些schedular定时上传.\nBring life to your custom view 文章介绍了通过动画来绘制一个自定义View,原理是通用的,就是首先分析你的图形构成的元素,需要哪些变量的变化,然后通过ValueAnimator控制这些变量的变化,再通过invalidate触发onDraw依照变量的值进行绘制.\nInterviewing Tips for Android Engineers 作者作为Lyfy的一员,作者很高兴的分享自己的一些新的帮助面试者,介绍了Android面试的一些tips,包含从开始的电话初面或者作业,到后来的Java面,Android UI相关技能面,Android Infrastructure面,以及Design与Background的面所应该注意的点以及准备的方法.\nUsing Architecture Components with Firebase Database - Part 3 文章继续之前通过LiveData封装FirebaseDatabase,与ViewModel结合实现MVVM的工作.\n这是第三部分,主要介绍如何优化没有必要的query,Activity有可能因为转屏导致configuration changed,从而引起LiveData瞬间切换到Inactive又变成Active,导致数据库重复的query.\n解决方案是将销毁操作封装到延迟的Runnable里面,发送给Handler,并设置标记位.在onActive中检测标记为,如果发现仍然在pending状态,就removeCallbacks,清楚消息…\nData model mapping in Android Apps 文章一步一步介绍了我们应该如何处理我们的Model,其实是希望我们应该对我们的Model进行分层.\nAPI与Cache的原始数据,以及与我们核心业务相关的Domain层,再者就是包含UI state等信息的Presentation层了.\n其实就是我们常说的Model-&gt;Domain-&gt;Presentation.\n当然在我们所谓BFF(backends for frontends)理论下(简单来说就是Server为Mobile加一层转换,直接输出显示内容相关数据),可以省去Model与Domain层,但一些UI的state我们仍需想办法维护.\nIncrementally migrate from SQLite to Room 介绍了如何逐步将你的db迁移到room.\n\n首先根据你的table定义Entity.\n其次实现RoomDatabase,增加版本号并加上空的Migration逻辑.\n使用SupportSQLiteOpenHelper替换原有的SQLiteOpenHelper,如果你之前没有使用raw的sql语句,需要用使用SupportSQLiteQuery拼出query条件.\n写自己的DAO,替换掉Cusor的操作.\n\nBoost your app reviews with Firebase Predictions! 介绍了利用Firebase正在测试阶段的Predictions帮助我们决定何时弹提醒用户评分的框框.\nPlaying with Paths 介绍了如何绘制轨迹动画,挺炫酷的,主要使用到了PathDashPathEffect.\nHow to add Push Notification capability to your Android app 文章介绍了如何通过Firebase Messaging来做推送,包含了详细的Client端的配置,以及Server端的Initialize.\nAnimations with ConstraintLayout and ConstraintSet 文章介绍了通过ConstraintSet对ConstraintLayout添加一些如ChangeBounds的动画.\nGetting started with Kotlin on Android Kotlin简单的入门教程,包含IDE的配置,以及几个Kotlin的特点,如when等等.非常初级,想入门的可以多看看…呵呵…\nLIBRARIES &amp; CODEhyperlog-android 可以将log记录发到后台的一个库.\nandroid-clean-architecture-mvi-boilerplate 所谓基于MVI的Clean Architecture.\nReactiveNetwork 基于RxJava监听网络状态的库.\n","dateCreated":"2017-12-31T11:36:24+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-12-31T11:36:24+08:00","description":"December 24th, 2017\nAndroid Weekly Issue #289今年最后一篇, 包含了可以上传log记录的HyperLog,以及Android的面试技巧,还有Model的分层,以及如何迁移到Room.还有比较炫酷的一个Path动画的实现方法值得去看.剩下的多是一些入门介绍,如kotlin,firebase messaging,contraintset animation等.","headline":"Android Weekly Issue #289","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1514691335/289_fyupzr.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/12/31/Android-Weekly-Issue-289/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/12/31/Android-Weekly-Issue-289/","keywords":"Kotlin, Room, Android Weekly, Clean Architecture, Android Notification, Path Animation, ConstraintSet Animation","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1514691335/289_fyupzr.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"December 24th, 2017\nAndroid Weekly Issue #289今年最后一篇, 包含了可以上传log记录的HyperLog,以及Android的面试技巧,还有Model的分层,以及如何迁移到Room.还有比较炫酷的一个Path动画的实现方法值得去看.剩下的多是一些入门介绍,如kotlin,firebase messaging,contraintset animation等.\n\nARTICLES &amp; TUTORIALSHyperLog: Android Remote Logger Library for Debugging 作者讲了很多人苦恼有时候插线数据线Logcat给清掉了,也看不到日志信息,而Timber活着Logger也没法支持Production环境,推荐了HyperLog,可以上传日志文件到远端服务器,可以设定一些schedular定时上传.\nBring life to your custom view 文章介绍了通过动画来绘制一个自定义View,原理是通用的,就是首先分析你的图形构成的元素,需要哪些变量的变化,然后通过ValueAnimator控制这些变量的变化,再通过invalidate触发onDraw依照变量的值进行绘制.\nInterviewing Tips for Android Engineers 作者作为Lyfy的一员,作者很高兴的分享自己的一些新的帮助面试者,介绍了Android面试的一些tips,包含从开始的电话初面或者作业,到后来的Java面,Android UI相关技能面,Android Infrastructure面,以及Design与Background的面所应该注意的点以及准备的方法.\nUsing Architecture Components with Firebase Database - Part 3 文章继续之前通过LiveData封装FirebaseDatabase,与ViewModel结合实现MVVM的工作.\n这是第三部分,主要介绍如何优化没有必要的query,Activity有可能因为转屏导致configuration changed,从而引起LiveData瞬间切换到Inactive又变成Active,导致数据库重复的query.\n解决方案是将销毁操作封装到延迟的Runnable里面,发送给Handler,并设置标记位.在onActive中检测标记为,如果发现仍然在pending状态,就removeCallbacks,清楚消息…\nData model mapping in Android Apps 文章一步一步介绍了我们应该如何处理我们的Model,其实是希望我们应该对我们的Model进行分层.\nAPI与Cache的原始数据,以及与我们核心业务相关的Domain层,再者就是包含UI state等信息的Presentation层了.\n其实就是我们常说的Model-&gt;Domain-&gt;Presentation.\n当然在我们所谓BFF(backends for frontends)理论下(简单来说就是Server为Mobile加一层转换,直接输出显示内容相关数据),可以省去Model与Domain层,但一些UI的state我们仍需想办法维护.\nIncrementally migrate from SQLite to Room 介绍了如何逐步将你的db迁移到room.\n\n首先根据你的table定义Entity.\n其次实现RoomDatabase,增加版本号并加上空的Migration逻辑.\n使用SupportSQLiteOpenHelper替换原有的SQLiteOpenHelper,如果你之前没有使用raw的sql语句,需要用使用SupportSQLiteQuery拼出query条件.\n写自己的DAO,替换掉Cusor的操作.\n\nBoost your app reviews with Firebase Predictions! 介绍了利用Firebase正在测试阶段的Predictions帮助我们决定何时弹提醒用户评分的框框.\nPlaying with Paths 介绍了如何绘制轨迹动画,挺炫酷的,主要使用到了PathDashPathEffect.\nHow to add Push Notification capability to your Android app 文章介绍了如何通过Firebase Messaging来做推送,包含了详细的Client端的配置,以及Server端的Initialize.\nAnimations with ConstraintLayout and ConstraintSet 文章介绍了通过ConstraintSet对ConstraintLayout添加一些如ChangeBounds的动画.\nGetting started with Kotlin on Android Kotlin简单的入门教程,包含IDE的配置,以及几个Kotlin的特点,如when等等.非常初级,想入门的可以多看看…呵呵…\nLIBRARIES &amp; CODEhyperlog-android 可以将log记录发到后台的一个库.\nandroid-clean-architecture-mvi-boilerplate 所谓基于MVI的Clean Architecture.\nReactiveNetwork 基于RxJava监听网络状态的库.\n","dateCreated":"2017-12-31T11:36:24+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-12-31T11:36:24+08:00","description":"December 24th, 2017\nAndroid Weekly Issue #289今年最后一篇, 包含了可以上传log记录的HyperLog,以及Android的面试技巧,还有Model的分层,以及如何迁移到Room.还有比较炫酷的一个Path动画的实现方法值得去看.剩下的多是一些入门介绍,如kotlin,firebase messaging,contraintset animation等.","headline":"Android Weekly Issue #289","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1514691335/289_fyupzr.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/12/31/Android-Weekly-Issue-289/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/12/31/Android-Weekly-Issue-289/","keywords":"Kotlin, Clean Architecture, Android Weekly, Room, Android Notification, Path Animation, ConstraintSet Animation","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1514691335/289_fyupzr.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
-<meta name="keywords" content="Kotlin,Room,Android Weekly,Clean Architecture,Android Notification,Path Animation,ConstraintSet Animation">
+<meta name="keywords" content="Kotlin,Clean Architecture,Android Weekly,Room,Android Notification,Path Animation,ConstraintSet Animation">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Weekly Issue #289">
 <meta property="og:url" content="http://talentprince.github.io/2017/12/31/Android-Weekly-Issue-289/index.html">
@@ -345,7 +345,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -395,7 +395,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -460,7 +460,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -510,7 +510,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -980,7 +980,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 41 篇文章
+                找到 42 篇文章
             </p>
         </div>
     </div>
