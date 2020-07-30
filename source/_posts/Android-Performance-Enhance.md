@@ -1,0 +1,682 @@
+---
+layout: post
+title: Android性能优化总结
+date: 2020-07-30 18:28:53
+tags: [Android]
+thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png
+---
+
+最近断断续续的看完了Android性能优化相关的一个系列视频, 感觉总结的非常不错, 很多地方都有深受启发.
+期间也穿插着停下来研究了一些相关的技术,框架,与工具, 并做了一些小笔记, 现将整个体系总结下来, 以便翻阅与温习.
+
+<!--more-->
+
+- 性能优化工具
+    - TraceView
+        - 图形化界面
+        - track所有线程, 消耗大
+        - Debug.start/stopMethodTracing开启与停止生成文件
+        - AS的CPU Profile Trace Method就是这个
+        - 系统函数黄色, 第三方蓝色, 自己绿色
+        - 四个图表来查看
+            - Call Chart
+                - 顺序的函数调用关系与时间, 由上到下
+            - Flame Chart
+                - 函数调用时间汇总, 有下到上
+            - Top Down
+                - 由根函数开始做树状图
+            - Bottom Down
+                - 由叶子函数开始做树状图
+        - 时间
+            - Wall Clock Time
+                - 表示真实运行时间, 包括Sleep, CPU切换
+            - Thread Time
+                - 线程占用CPU的时间, 小于真实运行时间
+            - Self Time
+                - 函数除第三方调用耗时以外的时间消耗
+            - Children Time
+                - 函数第三方调用消耗
+    - Systrace
+        - 主要检测CPU各个内核使用情况
+        - 消耗小, 只拿埋的点数据
+        - python脚本, 通过Trace/TraceCompat打tag
+        - CPU time才是优化的方向, 如果耗时过长, 可以通过多线程处理
+        - 灰色:睡眠, 蓝色:可以运行, 绿色:正在运行, 红色:内核睡眠, 橙色:IO睡眠
+        - w:放大, s:缩小, a:左移, d:右移, f:放大, m:选中
+        - 查看frame中F的间隔, 大于16ms可能就有卡顿, 再通过traceview或者CPU Profile来进行追踪
+        - 4.3(18)以上加入了Java的Trace, 6.0(23)加入了Native Tracce, 低版本Native可以通过JNI来获取
+    - CPU Profiler
+        - 3.0以上AS使用Profiler取代了Monitor
+        - CPU时间轴最上面有事件时间轴, 7.1(25)及一下版本必须在Config里面勾选Advanced profiling, 重新编译, 注入监控逻辑才能有, 附带的还有一些内存的监控
+        - Trace Method
+            - 给方法调用前后记录时间戳, 有运行开销
+        - Sample Java Method
+            - 通过不断的捕获堆栈
+        - System Trace
+            - 使用systrace获取更加详细的
+            - 必须在7.0 (24)以上的机器才具备
+            - 在代码中添加检测代码进行标记
+                - C使用trace.h原生跟踪
+                - Java使用Trace
+            - 9.0 (28)以上手机里也可开启systrace 
+        - Sample C++ Function
+            - 8.0 (26)以上
+            - 使用simpleperf进行采样
+            - 如果想指定参数, 命令行使用simpleperf
+- 启动速度优化
+    - 时间测量
+        - AOP AspectJ
+            - Join Points 
+                - 切入点
+                    - 函数调用,执行
+                    - get/set
+                    - init
+            - Cut Point
+                - 带条件的切入点
+            - Advice
+                - Hook, 插入位置
+                    - Before
+                    - After
+                    - Around
+            - 语法
+                - @Aspect
+                - @Before("excution (* android.app.Activity.on**(..))") public xx(JointPoint joinPoint) {}
+                - @Around("call(* package.**(..))") public xx(ProceedingJoinPoint joinPoint) {}
+        - 通过AMS
+            - adb logcat -s ActivityManager | grep "Displayed"
+    - 启动器多线程
+        - Task
+        - 有向无环图
+    - 延迟初始化
+        - View显示第一帧启动初始化任务
+            - ViewTreeObserver.addOnDrawListener
+        - IdleHandler
+            - Looper.queue.addIdleHandler
+            - return true handler被移除, return false handler继续停留
+            - 结合第一帧, 封装一个Dispatcher, 将初始化任务加入, 注册IdleHandler
+    - 提前异步读取SharePreference
+        - 在Multi dex install之前
+    - 启动阶段不启动子进程
+    - 提前异步类加载
+        - 在Multi dex install之前
+- 内存优化
+    - 常用工具
+        - 离线
+            - Memory Profile
+            - Memory Analyser
+            - LeakCanary
+    - Java内存分配
+        - 方法区
+            - 静态变量
+            - 方法信息
+            - 所有线程共享
+        - 虚拟机栈
+        - 本地方法栈(native)
+        - 堆
+        - 程序计数器
+            - 函数执行多多少行
+    - Java内存回收
+        - 标记清除法
+            - 先标记再统一回收
+            - 效率低, 内存不连续
+        - 复制算法
+            - 划分多个块
+            - 一块用完后复制存活到另一块
+            - 再清除另一块
+            - 效率高, 但浪费
+        - 标记整理
+            - 存活对象向一端移动
+            - 清理其他内存
+            - 不浪费, 也没碎片
+        - 分代收集
+            - 新生代存活低, 复制
+            - 老年代存活高, 标记整理
+    - Android内存管理
+        - 内存弹性分配, 根据设备
+        - OOM, 内存不足或者可用不足
+        - Dalvik
+            - 固定回收算法
+        - Art
+            - 运行期选择
+                - 前台
+                    - 标记清除
+                - 后台
+                    - 标记整理
+        - Low Memory Killer
+            - 进程分类
+                - 根据优先级Kill
+                - 前台,可见,服务,后台,空进程
+            - 回收收益
+                - 根据需要回收的量级
+    - 内存抖动与OOM
+        - 原因 
+            - 频繁创建对象, 会造成内存碎片与不足
+            - 内存碎片化会导致无法分配出来可用内存导致OOM
+        - Memory Profiler分析
+            - 锯齿状
+            - Record查看内存活动情况
+                - Allocate 分类instance个数
+                - Shallow 自身占用内存大小
+                - Retained 持有对象总大小
+            - 追踪可疑内存allocate位置
+        - CPU Profile分析
+            - 查看频繁调用方法的地方
+   - 内存泄露
+        - 定义
+            - 内存中存在没有用的对象 
+        - 表象
+            - 内存抖动 (因为GC), 可用内存逐渐减少
+        - 危害
+            - GC频繁, 卡顿, 甚至OOM
+        - 用Memory Profiler检测内存是否泄漏, 并dump java内存堆栈
+        - 用Memory Analyzer(MAT)分析
+            - 需要进行转换 hprof-conv
+    - Memory Analyzer
+        - Overview
+            - 饼图
+            - Top Consumer
+                - 可查看Biggest Object
+            - Leak Suspect
+                - 自动化分析泄露引用树
+        - Histogram
+            - 以类来列表
+            - 右键Group by package 以包名摆放
+            - 检查Objects, 存在个数
+            - 可疑对象右键可选List Object -> with incoming ref
+        - dominator tree
+            - 以对象列表
+            - Percentage
+                - 查看占比大的
+                - 同样通过List Object -> with incoming ref
+        - OQL
+            - 对象数据库
+            - 可使用select * FROM className
+        - thread overview
+            - 查看各个线程
+        - Unreachable Objects Histogram
+            - 已经可回收的对象
+    - Bitmap内存模型
+        - Api10之前, 像素存在Native, 对象存在Dalvik
+            - native回收时机不够
+        - Api10之后全部放Dalvik
+        - Api26更改机制, 全部放Native, Bitmap回收后通知Native层
+        - 计算大小
+            - getByteCount
+            - h * w * density, res要考虑压缩比例
+        - ARTHook
+            - Epic
+                - Hook Java方法
+                - 4.0 - 9.0
+                - 继承XC_MethodHook
+                - DexposedBridge.hookXX用于注册
+                - DexposedBridge.findXX用于查找
+            - 无侵入性
+            - 基于Dexposed来hook
+            - Hook了ArtMethod指向的函数指令, 指向自己的片段
+            - 兼容性问题大, 开源不能带入线上环境
+    - 线上内存问题解决一般方案
+        - 检测内存使用达到一定程度, 使用Debug.dumpHprofData()
+        - 文件太大, 不易上传, 虽然可裁剪
+    - 完整方案
+        - 监控待机内存, 重点模块内存, OOM率
+            - ActivityManager#getProcessMemoryInfo
+            -  Debug.MemoryInfo#getMemoryStat
+            -  读取
+        - 整机或者重点模块GC次数, GC时间
+            - Debug.startAllocCounting
+            - Debug.getGlobalAllocCount() < 6.0
+            - Debug.getRuntimeStat("art.gc.gc-xxx") > 6.0
+        - 增强型LeakCanary
+            - ResourceCanary
+            - 自己找怀疑点
+            - 只分析Retain size大的
+            - 对象裁剪, 不全加入内存
+        - 开LargeHeap
+        - onTrimMemory/onLowMemory, 自我释放
+        - 使用SparseArray
+        - 谨慎使用SharedPreference
+- 布局优化
+    - 16ms发送VSync触发渲染
+    - 手机刷新频率一般是60Hz
+    - Systrace查看帧率
+        - Frames
+        - 会给出一些Alert
+    - LayoutInspector查看布局层次
+    - Choreographer
+        - API 16以上
+        - 可以获取FPS
+        - Choreographer.getInstance().postFrameCallback
+    - 原生布局加载优化
+        - 读取资源使用IO
+            - ?X2C?Async?
+        - 创建View使用反射
+            - LayoutInflater.Factory/2
+                - 创建一个Hook
+                - 全局替换自定义View的创建
+                - LayoutInflaterCompat.setFactory2
+        - AsyncLayoutInflater
+            - 内部没有用Compat, 不能用Factory
+            - View不能有创建Handler或者使用myLooper, 因为没调用prepare
+            - 不支持Fragment, 这个通过privateFactory构建的
+            - 父布局的generateLayoutParams必须线程安全
+            - 默认queue的size只有10
+    - 获取界面打开耗时
+        - Hook setContentView 
+            - AspectJ
+                - excution setContentView
+            - ARTHook
+                - DexposedBridge.findAndHookMethod
+    - 获取每一个控件耗时
+        - LayoutInflater.Factory/2
+    - X2C
+        - XML通过Apt转换为Java
+        - @Xml让Java知道XML
+        - X2C.setContentView
+        - 有的xml属性Java不支持
+        - 如果想要使用Compat的View做兼容, 需要自己修改X2C
+    - 视图绘制优化
+        - 减少层级
+        - 宽而浅, 避免前而深
+            - 由上到下元素尽量在一个Group内
+            - 由左到右, 布局深度更浅
+        - 不嵌套RelativeLayout
+        - 不在嵌套的LinearLayout里使用weight
+        - 多使用merge
+        - 避免过度绘制
+            - 去掉多余背景色
+            - 减少复杂shape使用
+            - 不免空间重叠
+            - 自定义View使用clipReact屏蔽遮盖view绘制
+        - 使用ViewStud延迟
+        - onDraw不要创建大对象
+    - 所使用的工具
+        - Choreographer -> 帧率 线上
+        - AOP, ArtHook -> 统计耗时 线上
+        - Systrace -> 每一帧的耗时 线下
+        - Layout Inspector -> 布局层级 线下
+- App卡顿优化
+    - 代码, 内存, 绘制, IO ...
+    - 工具
+        - CPU Profiler
+            - Debug.startMethodTracing
+            - Debug.stopMethodTracing
+            - 开销大
+        - Systrace
+            - API 18
+            - TraceCompat
+            - systrace.py -t 10 [options] [categories]
+            - 轻量级, 开销小
+            - CPU利用率可视, 帧卡顿给出建议
+        - StrictMode
+            - 运行时检测
+            - 线程策略
+                - 自定义耗时调用
+                    - detectCustomSlowCalls()
+                - 磁盘读写
+                    - detectDiskReads
+                - 网络请求
+                    - detectNetwork
+            - 虚拟机策略
+                - Activity泄露
+                    - detectActivityLeaks
+                - Sqlite泄露
+                    - detectLeakedSqlLiteObjects
+                - 实例数检测
+                    - setClassInstanceLimit
+    -   线上自动化监测
+        - 原理
+            - Looper在dispathMessage的时候前后都会调用mLogging, 可用于监控耗时
+            - 通过seetMessageLogging
+        -   AndroidPerformanceMonitor
+            - 基于之上的原理, 时间超了就说明卡了
+            - BlockCanary
+            - 非浸入
+            - 不足与优化
+                -   只有T2时刻的堆栈, 可能不能表现卡顿原因
+                -   优化方案就是高频多次采集
+                -   对多次卡顿堆栈进行去重, 减少数据量
+    - ANR
+        - ActivityManagerService里定义了
+            - KeyDispatchTimeout 5s
+            - BroadcastTimeout 前台10s, 后台60s
+            - ServiceTimeout 前台20s, 后台200s
+        - ANR弹出会多余5s, 因为要写入堆栈信息
+        - 导入/data/anr/traces.txt分析
+        - 线上ANR监控
+            - 低版本通过FileObserver监控文件变化
+            - ANR-Wartchdog
+                - 自有线程向UIhandler发消息
+                - 然后Sleep等待计数器增加
+                - 如果醒来发现没有增加, 说明ANR了, 就抛异常, 并且打印主线程堆栈信息
+                - 可以复写Listener, 自己处理异常
+    - 单点卡顿监控:
+        - AspectJ与ArtHook
+            - AspectJ只能往自己或者lib里方法, 不支持系统方法
+            - ArtHook则可以在系统方法调用的时候进行hook
+        - IPC问题监控
+            - 关注点
+                - IPC调用类型, package manager等
+                - 次数, 耗时
+                - 堆栈, 发生的线程
+            - adb监控
+                - adb shell am trace-ipc start
+                - adb shell am trace-ipc stop --dump-file xxx.txt
+            - Hook IPC数据传输
+                - BinderProxy#transact
+        - IO, DB, View绘制
+    - 界面秒开
+        - 轻量级AOP框架, Lancet
+            - 编译速度快, 增量编译
+            - API简单, 没有多余的代码插入Apk中, 只有自己hook的
+            - API
+                - @Proxy 对系统API进行Hook, 传入方法名
+                - @TargetClass 指定Hook所在的
+                    - scope
+                        - SELF 
+                        - DIRECT SELF+直接子类
+                        - ALL SELF+所有子类
+                        - LEAF 叶子节点
+                - @Insert 操作App或者lib的类
+                    - mayCreateSuper
+                        - true 如果方法不存在, 就创建
+                - Origin.call() 调用原有方法
+            - 检测onWindowFocusChange - onCreate就是页面打开时间
+            - 监控生命周期函数耗时, 以及生命周期函数之间转换的耗时
+        - 思路
+            - Systracce分析
+            - 异步+延迟初始化
+            - 异步Inflate, X2C, 绘制优化
+            - 提前获取数据
+    - 监控盲区
+        - 只知道耗时了, 不知道具体做了什么
+        - 线上也不好操作
+        - 线下检测
+            - TraceView可以查看每一个线程都做了什么
+            - 还可以监控系统调用
+            - GC可以通过log或者通过systrace的HeapTaskDaemon线程查看
+        - 线上检测
+            - 使用定制化的Handler监控sendMessage跟dispatchMessage
+            - sendMessage保存msg记录时间, 调用栈, dispatchMessage拿出msg, 检测耗时, 上报调用栈
+            - 使用gradle插件编译期替换bytecode
+            - didi的DroidAssist方便替换
+    - 卡顿优化不同阶段
+        - 线下通过系统工具定位, 通过异步或者延时解决
+        - 线上自动化卡顿方案, 通过消息机制捕获上报, 包括ANR上报
+            - 改进方案, 高频采集, 分析重复堆栈  
+        - 线下监控与线上监控工具建设
+            - 线下关注提前暴露, 线上关注自动化, 全面性, 灵敏度
+            - 对于达不到阈值的小卡顿, 线下AOP对一些耗时代码hook, 如IPC, IO等, 分析数据
+            - 线下Hook Handler的两个方法, 统计时间与堆栈信息
+            - 线上还监控秒开时间, 生命周期之间耗时
+- 线程调度
+    - 普通CPU调度采用公平分配
+    - Jvm线程调度根据优先级分配时间片
+    - Android调度是抢占式
+        - nice
+            - 在Process中定义
+            - 越小优先级越高
+            - 默认是0
+        - cgroup
+            - 根据群组调用, 防止很多后台压制前台
+            - 优先级低的线程会进后台group
+            - 不在前台运行的程序的线程也会进去
+    - 线程太多会导致CPU频繁切换, 降低效率
+    - 工作量与优先级应该成反比
+    - 线程有继承性, 在UI线程创建的子线程就会抢占UI线程的时间片
+    - 线程执行的过程中, 也可以改名字与优先级
+    - 为了让子库做到线程收敛, 可提供一个setExecutor的方法统一设置
+    - 分类设置线程池
+        - 如果IO密集型, 不消耗CPU, 线程池可以设置的很大
+        - CPU密集型的线程大小要与核心数相关
+- 网络优化
+    - 维度
+        - 流量消耗
+            - 一段时间的消耗, 不同网络类型, 前台后台
+            - 流量消耗均值, 异常率, 流量消耗多, 次数多, 文件大等
+            - 所有网络请求Request/Response本地监控
+        - 质量监控
+            - 请求时长, 成功率, 失败率, Top失败接口
+        - 其他消耗
+            - 成本, 带宽, CDN
+            - 耗电
+    - 工具
+        - NetworkProfiler
+            - 监控发送接收, 连接数
+            - 手动需要开启高级分析 (API小于26)
+            - 只支持URLConnection与OkHttp
+        - 抓包工具
+            - Charles (mac)
+            - Fiddler (windows)
+            - WireShark (底层抓包)
+            - Stetho (chrome)
+    - 获取流量消耗
+        - 本地测试
+            - 流量管理关闭其他app
+            - 抓包工具只允许本App联网
+        - 线上获取
+            - TrafficStats API8(2.2)之后 重启之后的流量数据
+                - getUidRxBytes
+                - getTotalTxBytes
+            - NetworkStatsManager API23(6.0)之后
+                - querySummary 返回bucket, 判断uid过滤本app数据
+                - bucket getRxBytes getTxBytes
+        - 前台与后台
+            - 定时+统计+前后台标记
+            - 每隔30s进行统计一次
+    - 网络优化
+        - 添加配置使用http缓存
+            - NonetworkIntercepter, 无网环境打开Force Cache
+        - 增量更新
+        - 数据gzip压缩
+        - etag
+        - 图片压缩后上传
+            - Luban
+        - 合并网络请求
+            - 批量上传, 如上报数据
+    - 图片相关
+        - 先试用缩略图
+        - 使用webp
+    - 质量相关
+        - 成功率与速度
+        - dns优化
+            - 使用HttpDns绕过运营, 不使用dns53端口而使用80
+            - 阿里云 httpdns.aar
+            - 通过实现Dns接口设置给okhttp
+        - http版本
+            - 1.0 tcp不复用
+            - 1.1 长连接, 复用, tcp上的http是按顺序
+            - 2.0 tcp上的http同时发送多个请求, 类似于spdy
+        - 监控
+            - 请求耗时, 成功率, 错误码
+                - 添加okhttp EventListener, 监控每个环节
+                - 通过EventListenerFactory加入okhttp 
+            - 图片加载每一步耗时
+                - Fresco 设置RequestListener      
+        - 其他
+            - 容灾, 如果多次连接不上, 就不要请求了
+            - cdn加速, 更新则需要清缓存
+            - 减少传输量, 时机, 频率
+            - Okhttp请求池
+                - Dispatcher
+                - okhttp限制了同域名最多请求个数为5, 如果单域名, 可以增加
+    - 体系化
+        - 线下测试
+            - 只开本App
+            - 请求有误, 多余, 切网, 弱网, 无网
+        - 线上监控
+            - 服务端
+                - 请求耗时, 地域, 时间段, 版本, 机型
+                - 失败率, 包括业务失败与请求失败
+                - 统计Top失败接口
+            - 客户端
+                - 接口每一步信息, 包括DNS解析, 连接建立, 请求包大小等
+                - 请求次数, 包大小, 失败原因
+                - 图片监控
+        - 异常监控
+            - 服务器防刷
+            - 大文件预警 
+            - 异常兜底, 一定时间错误次数太多, 就不能访问, 或重试次数增加
+            - 单点问题查看日志分析
+- 电量优化
+    - 统计电量消耗
+        - 系统电量排行
+        - 通过注册Action_Battery_Changed广播
+        - Battery Histrian 5.0+ 线下使用
+    - 测试
+        - 复杂运算, 视频
+        - 传感器相关, 耗电, 发热, 使用时长等
+        - 后台静默
+    - Battery Histrian
+        - 基于dumpsys, 试用前先重置电量, 再开启电量统计, 再通过adb导出
+            - adb shell dumpsys batterystats --reset
+            - adb shell dumpsys batterystats --enable full-wake-history
+            - adb bugreport bugreport.zip
+        - 可以通过docker安装histrain, 或者上http://bathist.ef.lc
+    - 运行时能耗
+        - 能耗设定
+            - adb pull /system/framework/framework-res.apk
+            - 反编译找到power_profile拿到能耗
+            - 能耗是厂家设置的, 可以帮助分析哪些比较耗电
+        - AOP统计耗电组件调用时间, 次数
+            - 使用Lacent @Insert @TargetClass
+            - 对于WakeLock, Thread.run
+    - 总结
+        - 降低CPU时间片占用, 通过traceview, cpuprofiler, 降低后台工作
+        - 网络请求合并, 数据压缩
+        - 不要轮询进行操作业务
+        - 定位使用低精度, 网络定位, 使用完立即关闭
+        - 耗电操作后台关闭, 如动画
+        - WakeLock及时释放, 设置超时时间, 释放最好写到finally中
+        - 如需要保持长亮, 可使用KeepScreenOn
+        - 使用JobScheduler/WorkManager, 设置运行场景
+- APK瘦身
+    - 头部App都出Lite版, 提升转化率
+    - Apk组成
+        - classes.dex 代码
+        - 资源 res, asserts, resource.arsc
+        - so相关 lib
+    - 分析工具
+        - apktool 反编译
+        - analyze apk studio自带
+        - nimbledroid.com 分析网站
+            - 文件大小排行
+            - dex, sdk方法数
+            - 启动时间, 内存占用
+        - classyshark github开源
+            - 支持apk, jar, class, so
+    - 代码优化
+        - 混淆
+        - 第三方库统一, 选小库
+            - android methods count插件
+            - 可以引入第三方库的部分模块, 或者修改源码剥离
+        - 移除无用代码
+            - 通过AOP统计activity是否还在被用
+            - 通过AOP看看类的构造还有没有被调用
+                - @After(excution(xxx.new(..)))
+    - 资源优化
+        - 无用资源
+            - 右键refactor->remove unused resources
+            - 或者通过Analyze里面run inspect by name, 搜unused
+        - 图片压缩
+            - tinypng.com及tinypngplugin
+            - jpeg比png小很多
+        - 资源混淆
+            - AndResGuard github项目
+            - gradle引入插件, 添加配置
+            - 通过gradle task resguardRelease
+            - 会将resource.resc中的名字变短
+        - 其他
+            - 图片保留一份 如xdpi
+            - 资源放远端
+    - so瘦身
+        - 加解密, 音视频一般都是用so
+        - 在lib设置abifilters设置支持架构, 一般留armeabi, 兼容其他, 但是不会优化
+        - 可以把对性能要求高的so单独加入到armeabi中, 通过代码逻辑进行加载
+        - so动态下载
+        - 插件化
+            - atalas
+            - replugin
+        - CI监控大小变化
+- 稳定性优化
+    - 维度
+        - Crash
+        - 性能
+        - 业务高可用
+    - 重要的是在于预防
+    - Crash率
+        - UV评估影响范围, PV评估影响程度
+        - 启动Crash, 启动10秒后crash
+        - 优先解决新增crash (增量与存量)
+        - 99.8%是底线 万分之更优秀
+    - 业务高可用
+        - 主流程核心路径监控
+            - AOP采集, 统一上传
+            - 阈值报警, 趋势报警, 特定指标报警
+        - 异常监控
+            - catch的代码块
+            - 异常逻辑, 一些逻辑返回false, 一些参数为空, 进行上报
+        - 兜底
+            - 关闭功能
+            - 跳转分发中心, 不要进入有错误的页面
+    - 容灾
+        - 功能开关, remote toggle
+        - 统跳中心, 重定向到临时界面或其他
+        - 热修复
+            - tinker (把修复的dex里的elements放在host的pathlist中elements之前)
+            - andfix (method hook, dalvik修改函数指向, art hook entrypoint)
+            - robust (跟instant-run一样插装在diapatch)
+            - 如果rn之类的, 可以直接升级
+        - 安全模式
+            - 多次启动失败, 就重置app
+            - 太严重则需要阻塞热修
+            - 服务器多次失败, 网络库可以拒绝继续发送请求, 保护服务器
+    - 长效治理
+        - 开发阶段
+            - 增强编码功底, codereview等
+            - 架构优化, 能力收敛, 如界面切换用路由, 统一容错, 统一网络库, 统一网络错误处理
+            - 容错测试, 如服务器宕机, 脏数据, 特殊机型等边界
+            - 云测平台
+        - 合代码
+            - 编译检测, 静态扫描
+            - 合入跟主干一样的分支, 预编译, 防止代码冲突
+            - 主流程回归测试, 自动化执行
+        - 发布环节
+            - 多轮灰度, 筛选忠实用户
+            - 针对低于, 版本定向灰度
+            - 灵敏监控, 热修, 容灾等UI
+- 列表页卡顿
+    - 图片不要太大
+    - 滑动过程中停止图片加载
+    - 列表页用线程池, 并设置为background, 不抢占UI
+    - TextView优化
+        - BoringLayout 单行, StaticLayout 多行, DynamicLayout 可编辑
+        - 异步创建StaticLayout
+        - 可以使用facebook的TextLayoutBuilder优化
+    - 使用StringBuilder拼接而不是直接+
+        - 常量直接拼接性能最高, jvm直接拼好
+        - 变量拼接使用StringBuilder更好, 虽然直接拼接也会转换builder, 但还会多一些临时变量
+        - 循环内不要使用拼接, 因为会每次循环都创建出一个StringBuidler
+- 储存优化
+    - SP优化
+        - 系统SP问题
+            - 初始化慢, 虽然异步, 但UI线程需要等
+            - 写入慢, 全量写入
+            - 卡顿, apply会与丢失的可能, 而且SP在一些时候, 如onPause进行写入磁盘
+        - 使用腾讯MMKV取代
+            - mmap+文件锁
+            - 增量写入, 使用protobuffer
+            - 支持sp迁移
+    - 日志优化
+        - mmap 内存映射文件
+        - 使用微信的Xlog或者美团的Logan
+    - 其他
+        - 常用数据缓存
+        - 文件流缓存4-8K
+- Webview异常监控
+    - webview优化
+        - 容器预热, 资源预加载
+        - 参考VasSonic
+    - 检测白屏
+        - 通过getBitmapFromView
+        - 用每一个像素点对比第一个
+            
