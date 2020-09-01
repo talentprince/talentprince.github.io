@@ -17,9 +17,9 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"November 12th, 2017\nAndroid Weekly Issue #283本期内容包括Gradle相关的几篇,如封装繁杂依赖的技巧,通过kotlin dsl让gradle支持kotlin,以及gradle入门指南等,还包括RxJava2的迁移介绍,以及关于IoT,图片压缩,Security相关的文章.AS3.0也正式发布,feature满满,Firebase退出了Rx版本,Kata 测试教程也放出Kotlin版本供大家学习.\n\nARTICLES &amp; TUTORIALSMigration to RxJava 2.x 文章介绍了RxJava2的一些变化,如新的类型(Completable,Single,Maybe),Test Observable,特别值得注意的是ErrorHandling,之前RxJava1可以通过registerErrorHandler注册,但是只有监听功能,无法Hook(如OnErrorNotImplementedException),程序该崩还得崩.\n新版本通过RxJavaPlugins.setErrorHandler可以router到所有Rx流中产生的任何异常,包括在onNext/onSuccess中产生的异常,以及没有实现onError发生错误产生的异常.\n值得注意的是,RxJava1会在Rx流结束或者Cancel后吃掉所有后续产生的Throwable,但是RxJava2将会依旧发射错误,这点需要注意,之前不不崩溃的程序可能会出问题,最好自己设置一个handler来catch.\nAndroid Things - IoT possibilities 文章介绍了Hackster.io联合Google搞的一个IoT的比赛,介绍了几个好的创意,如办公室监控,都是字母的表,监控狗狗睡眠的床等等,比较有趣.包含每个项目的Detail信息的链接.\nExperimenting with Gradle dependencies 文章介绍了如何整理与简化我们gradle里面大量的dependencies,安装feature进行划分比较清晰,然后再利用closure delegate封装,使得implementation这个关键字可以在我们定义的函数中使用,将我们的dependencies改成大概这个样子.\n1234dependencies &#123;  ui()  network()&#125;\n关于如何用closure delegate定义ui与network可以查看作者原文.\nRadialGradient 上期有篇文章讲了软硬加速的一些知识,这篇文章讨论Shader(RadialGradient)与Hardware/Software Layer相关的知识.\nKotlin DSL to write Gradle scripts on Android: Step by step walkthrough Gradle推出了对Kotlin的支持,gradle-kotlin-dsl,可以用kotlin来写你的gradle文件了,但是由于文档很少很少,作者写了一个demo来帮助大家.\n\n你需要将你的gradle升级到最新.\n你需要给build.gradle加上一个.kts的后缀\n你可以在buildSrc文件夹里面定义一些kotlin类,将一些string的定义放进去,取代之前的ext{...}的写法.\n\nRx2Firebase : Firebase + RxJava 作者介绍了Rx2Firebase的推出对于使用Firebase online database用户带来的福音,再也不用被嵌套回调烦扰.\nMigrating Crashlytics to the Firebase Console 文章介绍了如何在FirebaseConsole看到Crashlytics(Fibric),其实就是把你的firic的依赖删掉,换成firebase.\n需要注意的是,他没有数据的migrate,所以fibric上的不会出现在firebase里面.\nBeginner’s Guide to Gradle for Android Developers 文章介绍了Gradle的基本常识,包括每一个block的作用,很适合初学者学习,包括root的build.gradle,以及每一个子项目的build.gradle.\nSecure data in Android — Encryption in Android (Part 2) 文章是一个安全系列文章的第三篇,介绍了如何通过KeyguardManager来要求手机必须设置LockScreen.还有如何使用Keystore相关方法创建公钥私钥,通过Cipher进行加密解密.Android 18之后,秘钥都是保存在系统服务里,并随着应用的卸载而删除,不像之间必须存在本地文件,存在被extract的风险了.\nAlias free resize with RenderScript 文章介绍了原生的Bitmap.createScaledBitmap在缩放图片时候会产生锯齿,通过BitmapFactory.decode配合options.inSampleSize可以达到比较好的效果,但是只支持偶数被缩小,并且Bitmap必须没有解码之前.\n采用RenderScript进行缩放,可以达到非常好的效果.但是耗时比较多,是createScaledBitmap的30倍.\nWelcome to Android Studio 3.0 AS3.0正式发布,配合gradle 3.0,支持Java8 feature build-in,支持kotlin,支持Instant App…等等新的功能.\nTesting like a pro in Kotlin Karumi将Kata挪到了kotlin上,提供了好几个sample帮助学习kotlin测试.\n包括Clean Architecture相关,Espresso相关,Stubbing Http相关等等.\nLIBRARIES &amp; CODERIBs 优步的跨平台框架.\nBottomSheetLayout View级别的一个BottomSheet.\nRx2Firebase Firebase的Rx版本,使用online db更方便\n","dateCreated":"2017-11-20T11:08:27+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-11-20T11:08:27+08:00","description":"November 12th, 2017\nAndroid Weekly Issue #283本期内容包括Gradle相关的几篇,如封装繁杂依赖的技巧,通过kotlin dsl让gradle支持kotlin,以及gradle入门指南等,还包括RxJava2的迁移介绍,以及关于IoT,图片压缩,Security相关的文章.AS3.0也正式发布,feature满满,Firebase退出了Rx版本,Kata 测试教程也放出Kotlin版本供大家学习.","headline":"Android Weekly Issue #283","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1511496201/283_j3gpwf.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/11/20/Android-Weekly-Issue-283/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/11/20/Android-Weekly-Issue-283/","keywords":"IoT, Android Weekly, Kotlin Test, RxJava2, Gradle, Kotlin DSL, Rx2Firebase, Android Security","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1511496201/283_j3gpwf.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"November 12th, 2017\nAndroid Weekly Issue #283本期内容包括Gradle相关的几篇,如封装繁杂依赖的技巧,通过kotlin dsl让gradle支持kotlin,以及gradle入门指南等,还包括RxJava2的迁移介绍,以及关于IoT,图片压缩,Security相关的文章.AS3.0也正式发布,feature满满,Firebase退出了Rx版本,Kata 测试教程也放出Kotlin版本供大家学习.\n\nARTICLES &amp; TUTORIALSMigration to RxJava 2.x 文章介绍了RxJava2的一些变化,如新的类型(Completable,Single,Maybe),Test Observable,特别值得注意的是ErrorHandling,之前RxJava1可以通过registerErrorHandler注册,但是只有监听功能,无法Hook(如OnErrorNotImplementedException),程序该崩还得崩.\n新版本通过RxJavaPlugins.setErrorHandler可以router到所有Rx流中产生的任何异常,包括在onNext/onSuccess中产生的异常,以及没有实现onError发生错误产生的异常.\n值得注意的是,RxJava1会在Rx流结束或者Cancel后吃掉所有后续产生的Throwable,但是RxJava2将会依旧发射错误,这点需要注意,之前不不崩溃的程序可能会出问题,最好自己设置一个handler来catch.\nAndroid Things - IoT possibilities 文章介绍了Hackster.io联合Google搞的一个IoT的比赛,介绍了几个好的创意,如办公室监控,都是字母的表,监控狗狗睡眠的床等等,比较有趣.包含每个项目的Detail信息的链接.\nExperimenting with Gradle dependencies 文章介绍了如何整理与简化我们gradle里面大量的dependencies,安装feature进行划分比较清晰,然后再利用closure delegate封装,使得implementation这个关键字可以在我们定义的函数中使用,将我们的dependencies改成大概这个样子.\n1234dependencies &#123;  ui()  network()&#125;\n关于如何用closure delegate定义ui与network可以查看作者原文.\nRadialGradient 上期有篇文章讲了软硬加速的一些知识,这篇文章讨论Shader(RadialGradient)与Hardware/Software Layer相关的知识.\nKotlin DSL to write Gradle scripts on Android: Step by step walkthrough Gradle推出了对Kotlin的支持,gradle-kotlin-dsl,可以用kotlin来写你的gradle文件了,但是由于文档很少很少,作者写了一个demo来帮助大家.\n\n你需要将你的gradle升级到最新.\n你需要给build.gradle加上一个.kts的后缀\n你可以在buildSrc文件夹里面定义一些kotlin类,将一些string的定义放进去,取代之前的ext{...}的写法.\n\nRx2Firebase : Firebase + RxJava 作者介绍了Rx2Firebase的推出对于使用Firebase online database用户带来的福音,再也不用被嵌套回调烦扰.\nMigrating Crashlytics to the Firebase Console 文章介绍了如何在FirebaseConsole看到Crashlytics(Fibric),其实就是把你的firic的依赖删掉,换成firebase.\n需要注意的是,他没有数据的migrate,所以fibric上的不会出现在firebase里面.\nBeginner’s Guide to Gradle for Android Developers 文章介绍了Gradle的基本常识,包括每一个block的作用,很适合初学者学习,包括root的build.gradle,以及每一个子项目的build.gradle.\nSecure data in Android — Encryption in Android (Part 2) 文章是一个安全系列文章的第三篇,介绍了如何通过KeyguardManager来要求手机必须设置LockScreen.还有如何使用Keystore相关方法创建公钥私钥,通过Cipher进行加密解密.Android 18之后,秘钥都是保存在系统服务里,并随着应用的卸载而删除,不像之间必须存在本地文件,存在被extract的风险了.\nAlias free resize with RenderScript 文章介绍了原生的Bitmap.createScaledBitmap在缩放图片时候会产生锯齿,通过BitmapFactory.decode配合options.inSampleSize可以达到比较好的效果,但是只支持偶数被缩小,并且Bitmap必须没有解码之前.\n采用RenderScript进行缩放,可以达到非常好的效果.但是耗时比较多,是createScaledBitmap的30倍.\nWelcome to Android Studio 3.0 AS3.0正式发布,配合gradle 3.0,支持Java8 feature build-in,支持kotlin,支持Instant App…等等新的功能.\nTesting like a pro in Kotlin Karumi将Kata挪到了kotlin上,提供了好几个sample帮助学习kotlin测试.\n包括Clean Architecture相关,Espresso相关,Stubbing Http相关等等.\nLIBRARIES &amp; CODERIBs 优步的跨平台框架.\nBottomSheetLayout View级别的一个BottomSheet.\nRx2Firebase Firebase的Rx版本,使用online db更方便\n","dateCreated":"2017-11-20T11:08:27+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-11-20T11:08:27+08:00","description":"November 12th, 2017\nAndroid Weekly Issue #283本期内容包括Gradle相关的几篇,如封装繁杂依赖的技巧,通过kotlin dsl让gradle支持kotlin,以及gradle入门指南等,还包括RxJava2的迁移介绍,以及关于IoT,图片压缩,Security相关的文章.AS3.0也正式发布,feature满满,Firebase退出了Rx版本,Kata 测试教程也放出Kotlin版本供大家学习.","headline":"Android Weekly Issue #283","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1511496201/283_j3gpwf.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/11/20/Android-Weekly-Issue-283/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/11/20/Android-Weekly-Issue-283/","keywords":"IoT, Android Weekly, RxJava2, Kotlin Test, Gradle, Kotlin DSL, Rx2Firebase, Android Security","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1511496201/283_j3gpwf.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
-<meta name="keywords" content="IoT,Android Weekly,Kotlin Test,RxJava2,Gradle,Kotlin DSL,Rx2Firebase,Android Security">
+<meta name="keywords" content="IoT,Android Weekly,RxJava2,Kotlin Test,Gradle,Kotlin DSL,Rx2Firebase,Android Security">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Weekly Issue #283">
 <meta property="og:url" content="http://talentprince.github.io/2017/11/20/Android-Weekly-Issue-283/index.html">
@@ -347,7 +347,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -397,7 +397,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -462,7 +462,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -512,7 +512,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -982,7 +982,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 42 篇文章
+                找到 43 篇文章
             </p>
         </div>
     </div>
