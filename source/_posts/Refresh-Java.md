@@ -1,7 +1,7 @@
 ---
 title: Refresh Java
 date: 2020-06-2 17:54:52
-tags: [Java]
+tags: [Java, Note]
 categories: Java
 description: Thinking in Java
 thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1592819744/java_cwuv0h.png

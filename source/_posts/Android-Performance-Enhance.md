@@ -2,7 +2,8 @@
 layout: post
 title: Android性能优化总结
 date: 2020-07-30 18:28:53
-tags: [Android]
+tags: [Android, Note]
+categories: Android Note
 thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1596105259/performance_sjv0xm.png
 ---
 

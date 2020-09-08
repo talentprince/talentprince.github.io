@@ -1,7 +1,7 @@
 ---
 title: Refresh design pattern
 date: 2019-09-30 16:06:52
-tags: [Design Pattern]
+tags: [Design Pattern, Note]
 categories: Design Pattern
 description: Design Pattern
 thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1569816716/design_chunyd.jpg

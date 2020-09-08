@@ -1,7 +1,7 @@
 ---
 title: Refresh Refactor
 date: 2020-09-01 16:39:21
-tags: [Refactor]
+tags: [Refactor, Note]
 categories: Refactor
 description: Refactor 重构 Martin Fowler 马丁福勒
 thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png

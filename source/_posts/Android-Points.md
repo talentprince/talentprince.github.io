@@ -1,0 +1,552 @@
+---
+title: Java与Android知识点总结
+date: 2020-09-08 12:25:31
+tags: [Android, Note]
+categories: Android Note
+comments: true
+description: Android 知识点
+thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1599539474/note_zuxqpg.jpg
+---
+最近在看关于Java以及Android开发相关知识点的视频, 有的非常细节, 有的则很概括, 本人也通过查阅文档对一些知识点进行了补充, 将其要点总结于此, 以供日后查阅.
+
+<!--more-->
+
+- Char
+    - Char两个字节, 里面使用UTF-16编码
+    - String的length是字符占据的长度, 而不是字符个数, python3.3以后已经改成实际个数了, 如果在微博输入一个emoj, 就会减2/3个字符
+    - Java9会优化字符存储, 字母会用Byte来存字母, 而不是以前的2个字节
+    - Unicode是字符集, 而不是编码
+    - ASCII (Windows上简体中文用GB2312), Unicode (只规定了二进制代码, 不规定如何存, Windows上用UCS-2), UTF8 (1~4表示一个字符), UTF16 (UCS-2的父集, 2/4字节)
+- String
+    - 栈中的String, 使用`CONSTANT_Utf8_info`来存储, 长度为u2即两个字节长度, 所以最多65534个字节 (Java编译器用了<而不是<=, Kotlin没问题), 最终储存在方法区内的常量池
+    - 对于汉字, 得通过Utf8编码才知道占用字节, 这里使用了>MAX所以可以存入65535/3个汉字
+    - 堆中的长度跟Int.Max一样, 有些虚拟机有头部保留, 可能为Max - 8
+- 方法绑定
+    - Java方法重载, 编译期就决定了, 调用声明类型
+    - 但是Groovy调用实际类型, 因为它先反射你的变量得到实际类型, 再调用
+    - C++非虚方法只会调用声明类型方法, 虚方法只有指针调用时才触发虚绑定, C++对象本身赋值会触发赋值/复制构造, 进行裁剪, 所以无法触发绑定
+    - Java方法都是虚方法, 覆写会动态绑定, 调用实际类型
+    - 注解扩展
+        - Target
+            - 限制注解使用位置, 如METHOD, FIELD, TYPE(class/interface)等
+        - Retention
+            - 约束其生命周期
+                - SOURCE 只会在代码里, 编译后丢失
+                - CLASS 会保留在源码里, 但是不会加载到虚拟机, 如Override, Deprecate
+                - RUNTIME 加载JVM,  运行时可通过反射用
+- Java泛型
+    - 为了兼容性, Java用了假泛型, 类型擦出
+    - 基本类型无法作为泛型类型, 必须装箱拆箱, Android可以用SparseArray省去装箱
+    - 静态方法没法用类泛型, 因为会早于类实例化, 但可以自己定义方法泛型
+    - 即便有泛型, 1.5以后强转开销还在
+    - Gson的TypeToken<x>(){}.getType()就是通过getGenericReturnType等方法拿到运行时泛型信息, 前提得`- keepattributes Signature`保存泛型签名
+        - TypeToken的构造为protected, 通过创建其匿名内部类调用getType方法
+    - Retrofit的接口定义Call<x>泛型信息也是通过类似方法
+    - Kotlin反射原理来自最终的注解Metadata, 反射得把`kotlin.Metadata{*;}`给keep了
+    - 混淆扩展
+        - keep 类所有东西都保留
+        - keepclassmembers 指定的成员保留, 比如方法, 类成员
+        - keepclasseswithmember 保留满足条件(含某成员或者方法)的类
+- onActivityResult
+    - 不能使用简单回调是因为activity可能重建, 回调匿名类持有的已经不是显示出来的
+    - 新API里通过prepareCall/launch或者直接ActivityResultRegistry注册
+    - 改造回调办法
+        - 基于DummyFragment实现回调 
+            - 将回调存在一个地方, 再次返回调用新Fragment的onResult时将回调中的activity替换成新的
+        - 基于AOP
+            - AOP hook住所有activiy的onResult, callback存全局map
+        - 基于Hook
+            - 向ActivityThread的handler callback里加入自己的handler, 然后拿出返回的activty进行回调
+- 线程停止
+    - stop/suspend被废弃了
+        - stop主要是因为stop后会释放所有线程锁, 这样其他线程就获取一些被保护的变量获取不一致的状态, 因为数据没有机会清理
+        - suspend主要因为可能会造成死锁, 或者卡主其他的线程
+    - 正常的中断方式
+        - boolean
+        - interupt
+    - 中断
+        - interrupted()
+            - 静态方法, 获取当前线程,  读取后状态清空, 除非等到下一次打断信号
+        - isInterrupted()
+            - 状态清除前一直是true
+        - Java层调用interrupted其实底层给`interrupted_`加锁并置位
+        - 除非用了sleep, 一般用boolean标志位就够了, boolean需要加上volatile, 并且比底层操作性能高
+- 线程安全
+    - Java内存模型
+        - 每一个线程都有内存副本, 更改完副本后, JMM会控制刷新主内存, 其他共享该内存的线程会去主内存拉去状态, 更新副本. 类似于线程一向线程二发消息.
+        - JVM的内存会被分为, 线程栈区跟堆区.
+            - 本地变量原始类型, 放在栈区, 对象类型引用在栈区, 实际对象在堆区
+            - 对象成员方法中的变量, 全部在栈区, 即便对象本身在堆区
+            - 对象的成员变量, 不管什么类型, 都在堆区
+            - 静态类本身与变量都会在堆区
+        - 堆区的变量是多个线程共享的
+        - volatile变量JMM会在写入字段后插入指令, 保证写入时其他线程也能看到更新
+        - Java5以后提出happens-before模型, 保证前一个操作执行结果对后一个可见
+            - 同一个线程, 顺序执行
+            - 解锁操作与随后的加锁操作
+            - volatile的写入与其他线程的读取
+            - 传递性, A-hb-B, B-hb-C, 则A-hb-C
+    - 可变资源线程共享
+        - 共享不可变资源
+        - 不共享资源
+            - 函数不使用外部内存
+            - ThreadLocal
+                - 弱引用
+                - 定义全局静态final
+                - 避免存储大量对象
+                    - 因为它内部的map使用的开放定址, hash值为magicnumber的倍数
+                - 用完即时移除
+                    - 因为它自己得线程退出才移除
+        - 共享可变
+            - 遵循原则
+                - 可见性
+                    - volitale防止操作副本
+                    - final防止重排序
+                    - 加锁, 锁释放时会刷新主内存
+                - 原子
+                    - ++不是原子操作, 因为会把原值放进tmp内再加
+                    - 通过加锁保证
+                    - 使用CAS指令, 如Unsafe.compareAndSwapInt
+                        - 这个方法得通过反射Unsafe内的`theUnsafe`得到实例
+                        - 方法swap成功返回true, 否则返回false
+                    - AtomicInteger等
+                    - AtomicReferenceFieldUpdater
+                - 禁止重排序
+                    - final可以禁止重排序, 保证赋值操作在构造体内完成
+                    - 1.5之后, volitale也能保证改造函数一定在赋值操作之前调用, 写单例必须加上volatile
+- ConcurrentHashMap
+    - HashTable是全表加锁
+    - 优化进程
+        - 1.5 分段加锁, 必要时加锁
+        - 1.6 优化二次hash算法
+        - 1.7 段懒加载, volatile加cas
+        - 1.8 摒弃段, 基于hashmap实现并发
+- AtomicReference与AtomicReferenceFieldUpdater
+    - ARFU指向前者, 占用16字节(压缩指针)或者24个字节 
+    - ARFU使用反射, 创建一个静态的用于原子赋值, 节省内存
+    - AR使用更简单
+    - kotlin by lazy(PUBLICATION)使用的就是ARFU
+- 异步代码
+    - 异步不一定快, 如果是CPU密集型可能会更慢, 因为切换需要消耗
+    - 通过RxJava解决回调低于, 注意异常处理, 以及disposable的处理, 如使用AutoDisposable
+    - 通过Kotlin协程处理, 参考AutoDiaposable写自动cancel, 通过class AutoDisposable(view, job): Job by job, OnAttachStateChangeListener的扩展+代理, 保证不改变原本launch的返回值为Job, 且可链式调用添加Listener控制cancel
+- CPU架构适配(native)
+    - 普通开发者与sdk开发者考虑问题不同, sdk要尽可能全, 并且优化体积
+    - 架构分为mips64/mips(废弃了) x86_64/x86(兼容armeabi) armeabi-v7a/v8a/armeabi
+    - 优先去对应目录找so, 如果不全, 则加载失败, 如果一个都没提供, 则会自动找兼容
+    - 简单的使用v7a最通用的so
+    - 复杂一些把不同的架构都放在armeabi里, 通过代码来加载对应, 获取优化, 如libmath.so
+    - 混用限于同一种位数, 比如都是32位 (arm与v7), 如果v8a机器加载armeabi中的v8a库则会以32位加载出问题
+    - 太大的so库又不是启动项则可以后期增量下载
+    - `-fvisibility=hidden`隐藏符号表, 只公开必要, `-fno-exceptions -fno ftti`用处不大可以去掉, 不要使用iostream使用android log, 可以通过gc-sections去除无用代码, 如cflags`-ffunction-sections` `-fdata-sections`, 以及ldflags`-WL` `--gc-sections`
+    - 也可以使用官方的splits { abi {} }分包
+- JNI绑定
+    - 分静态绑定与动态绑定
+        - 全部可见占用符号表, 名字写死, 但是AS可以跳转 
+        - 动态绑定(env->RegisterNative)任何时候都可以触发, 可以覆盖静态绑定
+    - 需要暴露的JNI方法通过`extern "C" JNIEXPORT void JNICALL`进行声明
+        - `JNIEXPORT`设置了函数的visibility为default
+        - `JNICALL`在某些平台上有定义, 如Windows定义了函数如何入栈等惯例规则
+- JNI数据传递
+    - 指针通过long传递
+    - 字符串传递
+        - GetStringUTFChars/ReleaseStringUTFChars
+            - const char* Modified-UTF-8字节流, `\0`编码为0xc080, 不影响c字符串结尾
+        - GetStringChars/ReleaseStringChars
+            - const jchar* 自动处理字节序转换, Java是大端, C是小端
+        - GetStringUTFRegion/GetStringRegion
+            - 需要自己开辟内存, 可以控制长短
+        - GetStringCritical/ReleaseStringCritical
+            - 调用会暂停Jvm Gc 与 其他JNI操作
+        - 这些函数大部分第二个参数都是`jboolean* isCopy`, 告诉你是不是复制的, 虚拟机支持的话, 可以指向Java层的字符串
+    - Local Reference有个数限制, 使用完就释放, 如果个数少可以等函数调用结束自动释放
+    - ByteBuffer直接在物理内存开辟 (ByteBuffer.allocateDirect), 不需要拷贝, 底层直接通过`GetDirectBufferAddress`获取指针地址, 但是需要自己处理字节序
+    - 尽可能让底层访问少的Java对象, 减少反射, 多使用基本类型
+- 捕获Native异常
+    - `struct sigaction` handler结构体
+    - 调用sigaction(SIGNAL, &handler, &old_hanlders[SIGNAL])设置新的handler, 保存旧的
+    - 然后再新handler内处理不同信号的异常, 处理完再交给oldhandler处理, 类似Java
+    - 对于底层pthread创建的线程, 要通过`Jvm->AttatchCurrentThread`来获得新的env, 并且结束后Detach
+    - 如果`Jvm->GetEnv`返回JNI_OK, 则可以直接使用, 利用这两个机制创建Helper对象, 析构函数Detach简化Env的获取
+    - 如果Env是attach到native线程上的, 就无法拿到Java层的类了, 就需要通过底层保存的`classLoader`对象调用findClass来找到jclass
+    - JNI只有GlobalRef才可以被返回, LocalRef出了函数就被回收了
+    - 需要使用备用栈 (`action.sa_flags |= SA_ONSTACK;`),  防止SIGSEGV栈循环溢出无法拿到
+    - 通过独立线程收集, 通过libcorkscrew.so(4.1-5.0),libunwind.so(5.0+)
+    - 通过线程对应Java崩溃堆栈, 分析问题
+- 只有C/C++才能编译so吗
+    - 只要符合规定就可以运行
+        - 静态绑定
+            - 符号表可见
+            - 命名符合报名_类名_方法名
+            - 符号使用extern C修饰, 不能用C++
+        - 动态绑定
+            - 只要在JNI_OnLoad里注册就行
+    - 可选的编译成native的语言都可以
+        - Golang, Rust, Kotlin Native, Scala Native
+    - Kotlin Native
+        - @CName静态绑定native函数签名
+        - JEnv*通过对象包装, CPointer<JNIEnvVar>
+        - memScoped可以自动管理内存
+        - 动态注册需要通过`staticCFunction(::function)`拿到指针然后register
+- Activity启动
+    - Activity通过AMP(Proxy/Client)访问AMS
+        - 解析Activity信息
+        - 处理启动参数
+        - 启动与绑定进程, 通过Zygote fork进程, 以便可以复用资源加快速度
+    - AMS通过ATP(Proxy/Client)#scheduleLaunchActivity返回Activity
+        - 控制生命周期回调
+    - 插件化就是在发起跟结束的时候欺上瞒下, hook发给AMS的信息, 并在返回ActivityThread后改回来
+    - Bundler有缓冲区, 大小有限制, 数据必须序列化
+        - 同一个进程就通过全局共享内存传大数据
+        - 进程间则可能需要ContentProvider之类的
+    - Activity跟Fragment都需要无参构造, 系统通过反射创建它
+        - new->attach->create->start->restoreState->postCreate->resume->makeVisible
+        - attach->createPhoneWindow
+        - create->installDecor (add, setContentView)
+        - resume->显示 (status bar, action bar, content view)
+    - 转场动画
+        - 新页面显示之前, 拿到之前页面元素(共享元素)的位置信息, 应用到新元素并播放动画, 达到新页面位置
+    - 跨App启动Activity
+        - sharedUserId相同, 直接通过Intent.setComponentName来启动
+        - exported暴露, 公开可见
+        - 定义了私有的的action
+            - 加上一个自定义permission, 但是必须主应用先安装, 才能申请到权限
+        - 暴露的Activity如何防止其他人传未知类型导致crash, 拒绝服务漏洞
+            - trycatch包住intent.getExtra
+    - Activity传参繁琐
+        - 通过Builder设置Require以及Optional
+        - 在ActivityLifeCycleCallback的onActivityCreated里注入, 这是被onCreate触发的
+        - onNewIntent需要单独手动处理
+        - 这些都可以通过注解生成器来生成
+            - 需要合并父类的fields, 父类可能不需要生成builder
+            - 万一Activity是内部类可能需要特殊处理, 命名会有$
+            - 尽量少生成代码, kotlin与java之间类型的映射
+        - 元编程
+            - apt (dagger, arouter), bytecode(replugin), generic, reflect, proxy(retrofit)
+    - 任意位置添加View
+        - GC回收
+            - 被GCRoots持有都不会被回收
+                - 虚拟机栈, 方法栈
+                - 静态类属性
+                - 常量引用
+                - Native方法引用
+            - SoftRef
+                - 内存快满才回收
+            - WeakRef
+                - GC一次就回收
+        - Activity里面添加
+            - 因为只有addContentView, 没有remove, 需要拿到decorview
+        - 全局View
+            - 通过window来添加
+    - App右滑效果
+        - Fragment
+            - 不涉及Window, View跟随手势
+            - 手势结束判断取消或者归位动画等
+        - Activity
+            - 顶层Window背景为透明
+                - windowBackground
+                - windowIsTranslucent (如果不设置, window背景会强制被改为不透明)
+            - 多个Task
+                - 在切task后会先显示另一个task最顶层再打开目标
+                - 可以通过偷偷放截图在下面障眼
+            - 透明与生命周期
+                - 看不到是create, 能看到是start, 顶层是resume
+            - SwipeBackActivity
+                - 必须继承父类
+                - 必须设置windowIsTranslucent
+                    - 设置后下面的activity生命周期会变化, 永远会被绘制, 不会进入onStop 
+            - 优化降低成本
+                - 改继承为实现接口
+                - 通过隐藏方法在滑动的时候转换透明
+                    - convertToTranslucent/convertFromTranslucent
+            - 造轮子, 或者改造现有轮子
+- 非UI线程更新UI
+    - Zygote--main函数-->ActivtyThread->Loop--退出后-->RuntimeException
+    - Handler.post->Looper.loop->MessageQueue->Handler.dispatchMessage->MainThread
+    - UI变化快需要高效, 所以不能加锁, 所以必须单线程更新
+    - SurfaceView可以在非UI线程绘制, lockCanvas->draw->unLockCanvasAndPost, 主线程只显示, 所以帧率高
+    - GLSurfaceView是SurfaceView的子类, 有GLThread进行绘制, 死循环不断onDrawFrame
+    - Handler.postDelay
+        - enqueueMessage->wake->write
+        - epoll_wait->pollOnce->next(当前时间与消息队列第一条消息时间, 到了就执行, 不到就继续等)->执行消息
+        - delay不靠谱, 大于Looper周期基本可靠 (>50ms)
+        - 消息队列优化
+            - 重复消息过滤
+            - 互斥消息取消
+            - obtain复用消息, 避免太多触发gc
+            - IdleHandler, glide3是用它移除ReferenceQueue监听到需要移除的弱引用
+            - HandlerThread可以自己开线程穿件Looper, 内部已经Loop.prepare+loop过了
+    - Looper与ANR
+        - Service(20s/200s), Broadcast(10s/60s), ContentProvider(10s), InputDispatch(5s)卡久了就ANR
+        - AMS->ActiveService->到app启动Service, 开始后AS会发一个延迟的消息, scheduleServiceTimeoutLocked, 如果规定时间内没有执行完调用doneExecutingLocked, 就会发送handler message到UI线程, 弹出ANR对话框
+        - Looper是消息循环, 里面出问题了才会有ANR
+        - Looper空消息后调用epoll_wait, 等待文件消息, 不占用CPU
+            - epoll_ctl建立监听管道, rbtree
+            - epoll_wait监听就绪列表, rdlist
+        - 简单的Handler-Looper
+            - Handler内部用了开机后消耗了多少时间, 简单实现可以使用当前时间
+            - Looper.prepare把对象存放在ThreadLocal里
+            - Looper.loop启动循环调用next拿消息执行
+            - MessageQueue可以用现成的DelayQueue来实现
+                - 取消息阻塞类似于MessageQueue的nativePollOnce
+                - 不过take阻塞底层通过`pthread_cond_timeout`来实现
+                - Android为何不使用DelayQueue
+                    - 没有合适的remove, android通过msg里的token(obj)移除
+                    - 自己实现底层, 自由度更高
+                    - MessageQueue对单线程读取优化, 只有Looper现成读, 提前读取下一条消息
+- 避免OOM 
+    - 选择合适的数据结构
+        - SparseArray+ArrayMap
+            - 数量少于1000, 增删不频繁就用, 扩容慢, 还能缩容
+            - 内存复用, 
+    - 整形替代枚举 4byte vs 24byte
+        - @IntDef限制类型, 只能提示不能阻止, kotlin也不支持
+        - inline class
+    - 图片使用
+        - 选择合适分辨率, 注意原始分辨率与缩放关系
+            - xxhdpi放的匹配图片放入hdpi里面会缩放2倍, 占用更多内存
+        - bitmap使用重采样, 缩略图
+    - 不用帧动画, 用代码实现
+    - 谨慎使用多进程, 因为进程本身分配了很多内存
+    - 使用NDK内存跳出JVM限制
+    - 5R原则
+        - Reduce, Reuse, Recycle, Refactor, Revalue
+    - 图片如何缓存
+        - 三级缓存
+        - 获取成本 缓存成本 缓存价值(命中率) 随着时间的变化
+        - LRU(对应的还有LFU), 最近使用交换位置排在最后, 干掉最开始不常用的
+            - LRU内部有一些private的算法统计字段xxxCount
+            - LRU线程安全, 采用短锁
+            - LRU内部使用LinkedHashMap, accessOrder设置true会自动发访问过的放最后
+    - 图片占用内存大小
+        - 根据dpi抽象出canvas层, 在不同设备上进行缩放
+        - getByteCount应该占用内存
+        - getAllocationByteCount实际占用, 当小图复用大图时
+        - 预先计算
+            - 宽*高*像素编码位数
+            - 高dpi手机拿低dpi文件夹下的, 图片会变大 (scale=屏幕dpi/图片目录dpi + 0.5f)
+        - inSampleSize采样大变小, 矩阵变换小变大
+        - 使用svg, rgb_565, 9-patch, 不用图
+        - 通过assets中透明的indexed-png+rgb565强行加载index-8类型
+            - 因为skia库中对于透明的565格式返回图本身
+            - 该类型不能通过Bitmap创建Canvas, 不能放入缩放目录
+            - 8.1底层开始被移除了
+- Android P隐藏API
+    - @hide的函数可以通过自编jar骗过编译器
+    - private的只能使用反射
+        - setAccessible绕过权限控制, 还可以修改final变量
+    - API名单
+        - 白名单
+        - 浅灰名单 反射依旧可以用
+        - 深灰名单
+            - Targe低于28 可以使用
+            - Targe>=28 反射也不能用
+        - 黑名单 反射也不能用
+    - Android修改了getDeclaredMethods方法, 调用底层检查是否在白名单或者是否是No_check的Policy
+    - 使用FreeReflection绕过检查
+        - 修改Runtime的`hidden_api_policy`
+            - 底层通过JavaVM拿到JavaVMExt的私有变量Runtime
+            - 自己写个Struct凑位数, 第二个`void*`(没虚方法少一个vp)类型就是Runtime变量
+            - Runtime里面通过每4个字节(内存对齐)查找定位变量位置
+            - 查找`target_sdk_version`做为定位点, 将Runtime转换为PartialRuntime拿到Policy修改
+        - 修改`hidden_api_exemptions`, 让程序豁免
+            - 类似于第一种方法拿到Runtime, 修改HiddenApiExemptions 
+    - 修改想要使用的Class, 将其ClassLoader置空 
+        - `fn_caller_is_trusted`判断如果classLoader是空认为是bootClassLoader
+        - 可以在Java层修改, 也可以在native层修改
+- 换肤功能
+    - Theme只支持定义的时候配置的值, 无法外部与动态加载
+    - 资源加载Context->Resource->AssetsManager (xml, 非xml, ResourceValue, ResourceText)
+    - Resources内缓存替换
+        - 替换资源有限, 只能替换缓存过的
+        - Hook繁琐
+    - ResourcesWrapper包装
+        - 不支持style, assets目录
+        - 包装起来代码量大
+        - id映射可以在编译时期一致, 或者动态映射
+            - Id映射成资源name, 然后替换package再查找资源包新Id
+    - AssertManager替换
+        - 支持style, assets, 替换简洁
+        - 不能动态映射, 只能编译器需要对齐资源ID
+            - aapt输入主包的id映射表, public.xml
+            - 或者修改resource.arsc
+            - 如果皮肤资源少, 不能剔除public.xml, 因为剔除后位置会被后续非public资源补位, 保持资源紧凑
+            - 皮肤包资源需要对自己没有而主包有的资源进行占位/补位, 保证主包资源能加载进来
+                - 修改AAPT, 或者直接修改resource.arsc
+                - ResourceTable#applyPublicEntryOrder中间为不存在的占坑
+                - 如果最后有少资源还需要补位
+        - 非运行时替换
+            - 编译器主包跟皮肤包差分, 应用阶段主包再与差分包合成皮肤包, 需要资源重定向
+            - 创建新的AssertManager只需要加入一个包即可, 因为包含所有资源
+        - 反射创建并调用AssertManager#addAssetPath方法加入主包, 皮肤包, L以上要单独把Assets拿出来最后再加一次
+            - 插件化是为了资源并存
+            - 皮肤是为了覆盖
+        - 创建WrapContext
+            - attatchBaseContext的时候包装, 替换掉里面的resource, assertManager, classLoader
+                - Resource可以通过AssertManager构造
+            - getBaseContext的时候解包
+            - 可以使用JavaAssist改字节码插入attatch/detach方法
+- VirtualAPK
+    - ClassLoader双亲委派
+        - DexClassLoader (user/plugin) -> PathClassLoader (context) -> BootClassLoader (parent)
+        - 先查看是否加载, 然后由父类查找, 父类查不到再让子类查找
+        - 他们都继承了BaseClassLoader->ClassLoader
+        - BaseClassLoader#findClass会在pathList里查找类, 而这个list就是dex的list
+- Tinker
+    - Patch与Apk组成新Apk并放在Dex数组最前面
+        - 基于Dex的差分, DexSectionDiffAlgorithm/DexSectionPatchAlogrithm
+            - 先排序再用双指针分别指向
+            - 如果Old指针指向小于New指针指向, 说明DEL了
+            - 如果Old指针指向大于New指针指向, 说明ADD了
+            - 如果相等, 则更新映射
+            - 最后Index相同内容不同, 删除ADD/DEL操作, 标识为REPLACE
+            - 最终把变化转换为差分后的操作
+    - Assets直接创建新的AssetsManager
+        - 基于Entry的BSDiff, 得出资源差分包
+        - 与旧资源组成新包, 创建新的AssetsManager加载
+    - 异常熔断
+        - 加载之前checkpatch
+        - 单一进程启动三次失败
+        - 十秒钟内崩溃多次
+        - 大量注释, 46000代码, 69%代码
+        - 早起监控129个
+- Shadow
+    - 使用Hook在海外直接下架
+    - 由反射转入编译器字节码, 注解处理器的方案
+    - Shadow属于静态代理流派, 使用了很多字节码编辑
+    - 插件化流派
+        - 动态Hook
+            - 发送的时候靠占坑Activity替换绕过AMS检测, AMS返回的时候再换回PluginActivity
+        - 静态代理
+            - 将Activity的启动与生命周期靠ProxyActivity代理, 然后传递给PluginActivity, Plugin寄生与Proxy不被系统获知
+            - 在编译的时候, 通过字节码修改, 将PluginActivity修改成寄生的ShadowActivity
+    - Shadow结构
+        - manager (插件管理, 如版本)
+            - plugin (ShadowActivity)
+            - runtime (PluginContainerAcitity, Proxy)
+            - loader (实现插件加载)
+            - plugin, runtime, loader可以有多组, 没各插件都有一组, manager只有一个, 他们都是单独的apk
+    - Shadow模块
+        - DynamicPluginManager与PluginProcessService都在Host里, 前者负责加载Manger, 反射创建PluginManager实例, 而该实例负责启动跨进程通信Service
+        - PluginProcessService负责启动Loader与Runtime
+        - Manager通过Binder接口直接控制Loader加载对应Plugin
+    - 宿主与插件ClassLoader关系
+        - ApkClassLoader负责加载Manager, Loader
+        - RuntimeClassLoader负责加载Runtime, 唯一的反射将其挂在PathClassLoader之上, 为了让系统启动Proxy壳子
+    - 宿主与插件资源关系
+        - 分开, ShadowActivity默认注入插件资源
+    - 字节码编辑
+        - Java -> APT (AST->Symbol)->Class->Dex->Apk
+        - Class->Transform->Dex通过Transform修改
+        - 源码->Javassit->ASM->字节码, 越来越抽象
+    - 插件系统通信机制
+        - 主从通信
+            - 插件注册Callback到宿主
+            - 插件通过binder与宿主通信
+        - 对等结构
+            - 通信模块可能也是特殊的插件
+            - 低频用Broadcast, 高频用LocalSocket
+    - 插件更新管理
+        - 差分包
+            - Dex使用DexDiff(Tinker)
+            - so使用Courgette(指令差分)
+            - binary使用BSDiff
+        - v2签名
+            - 插件包可以不需要签名
+            - 自研的更新服务器可重新签名
+                - 可以拿到签名   
+                    - 先解包重新排列再签名
+                    - 与重排列的完整包进行差分
+                    - 合并插件
+                - 拿不到签名
+                    - 拿到原始包压缩级别， entrylist
+                    - 合成新的包, 可以做到复制签名信息等同等MD5值
+                    - google/archive-patcher
+        - 工程管理
+            - Maven版本管理, 但有缓存不好用
+            - 所有都在一个project中, 耦合性大
+            - Git Submodule, 依赖git, 手动管理更新代码
+            - Gradle CompositeBuild
+                - setting.gradle里面直接`includeBuild=path-to-other-project`
+                - 也有一些插件简化该操作
+- 如何开展优化
+    - 目标必须明确, 从定性到定量
+    - 定位关键问题, 找出最大的点, 梳理优先级
+    - 二八定律
+        - 前期20%时间解决80%问题
+        - 后期则相反
+    - 业内对比, 造轮子成本高
+    - 优化需要监控
+    - 算法策略优化
+        - 对比现有方案, 论文或者经验交流
+        - 不同角度问题分析, 选择痛点
+        - 算法能否动态下发
+        - 监控报表与收益
+    - 工程技术优化
+        - 现有方案对比 
+            - 系统方案, 开源方案, 基于开源自研方案
+        - 基于开源自研优化
+            - 针对特定Case进行处理, 如估算+再次判断
+            - 与产品探讨是否接受妥协, 使用估算代替精确
+        - 开源协议License
+            - GPL 使用了就必须开源
+            - LGPL 不用开源
+- 系统设计
+    - 需求分析与系统设计
+    - 需求->流程->细节
+    - 细节
+        - IO密集还是CPU密集
+        - 线程如何调度, 需要多少线程
+        - 使用RxJava还是Koroutine
+        - 网络接入
+            - 长连接, 高频交互, 维护复杂
+                - 心跳保活, 要求高6-9s, 一般30-40s
+            - 短连接, 低频交互, 查询为主
+                - 短轮询, 固定时间抓取
+                - 长轮询, 60秒时间如果有就返回, 没有就超时让客户端重新抓
+        - 加密算法
+            - 对称加密 
+            - 非对称加密, 耗时太长, 对数据长度有限制(RSA)
+            - 一般用对称加密, 用非对称加密将对称加密秘钥加密
+        - 热修复与插件化
+            - 是否需要立即生效
+            - 是否修改或者新增类
+            - 是否有未来做平台的打算
+        - 脚本化
+            - 存在很多模式化逻辑, 游戏关卡, 自定义UI体系等
+            - 经常调整的策略
+        - 可以执行
+            - 是否存在复杂平台不想管逻辑, 抽象为so库
+        - 性能问题
+            - 算法时间空间复杂度
+            - 内存峰值OOM
+            - CPU占用与耗电量
+        - 监控
+            - 异常捕获Java+Native
+            - 性能监控
+            - 优化指标监控
+            - 运营数据监控
+- 短视频APP
+    - 网络
+    - 相机
+        - 新API都是异步, 状态难维护
+    - 滤镜
+        - 下发Shader Script给OpenGL渲染
+    - 播放器
+        - H265 文件小, 硬件支持差, 解码慢, 适合热点小规模
+        - H264 文件大一些, 硬件支持好, 解码快, 适合大规模
+        - 自带播放器一般收到一组GOP才能播放, FFmpeg收到关键帧就可以
+    - 封装模式调整
+        - Mpeg4 (File Type Box, Movie Box, Media Data Box)
+        - 将一般的顺序由ftyp-mdat-moov改为ftyp-moov-mdat, 边下边播
+- 网络请求框架
+    - 依赖简单, 接口简单, 功能纯粹
+    - 协议 Http, WebSocket
+    - 基础组件
+        - 连接管理
+        - 线程管理
+    - 拦截器, 日志系统也是类似
+    - 重试机制, 渐进式重试, 最大重试次数与衰减因子
+    - 使用注解配置请求, 类似于retrofit与spring
+    - 支持第三方扩展, 支持rx, suspend
+    - DNS增强, HttpDnsServer, 提速防止被劫持
