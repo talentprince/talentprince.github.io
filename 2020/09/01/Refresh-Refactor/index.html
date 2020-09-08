@@ -17,16 +17,16 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.\n\n\n思想方面\n如果发现加特性很难, 就需要重构\n重构前需要想想有没有可靠的测试机制\n重构要微小步伐, 容易发现错误\nExtract method是最简单的重构\n写出机器认识的代码容易, 写出人类容易理解的才是应该的, 最大的影响就是命名\n做移动重构时, 最好先复制粘贴, 测后再删除旧的代码\n对于另外对象的switch往往可以通过继承, 多态来取代\n三次遇到不合理的, 可能就是重构的时候了\n重构往往通过加隔离层进行\n不要过早发布接口\n性能优化应该基于良好的代码结构, 性能瓶颈往往只会在很小的代码片段里\n每次遇到一个bug, 尽量写个单元测试覆盖\n测试集中覆盖边缘case  \n\n\n代码坏味道与手段\n重复代码\n抽方法\n\n\n大函数\n抽方法, 抽类\n\n\n大类\n抽类, 抽子类\n\n\n太多参数\n参数变方法, 抽参数对象\n\n\n加新功能修改多个函数\n抽子类\n\n\n加新功能需要改很多类\n挪方法, 挪成员\n\n\n函数过度依赖其他类\n挪方法, 抽方法\n\n\n同样的几个参数到处出现\n抽参数对象\n\n\n大量同样的基本类型做参数\n抽类, 不同表达式可抽进子类\n\n\n很多switch\n考虑用多态取代\n\n\n子类需平行同时添加\n先持有对方, 再挪方法, 再挪变量, 再合并\n\n\n没人用的类\n做内部类\n\n\n没太大用处的抽象, 参数, 命名\n删除, 重命名, 内联\n\n\n临时变量命名模糊\n抽方法, 抽类\n\n\n消息链过长, 对象转换过多\n对同一对象的使用抽方法, 推入消息链消除对象\n\n\n过度代理\n内联代理\n\n\n注释太多\n可能代码写的太难懂, 需要重构\n\n\n\n\n数据\n临时变量被赋值多次, 则可以抽成方法\n有时候需要提取多个临时变量对逻辑进行解释, 当然更好的可以再抽成方法\nJava按值传递, 本质上是对象的引用按值传递\n移除中间人与隐藏委托是相辅相成的\n如果类无法更改, 就写个函数包装他, 类似于工厂方法?\n如果不能修改, Adapter模式常常用于扩展方法功能\n子类修改某些变量的获取可以通过自封装, 把变量抽象成函数\n成员如果不用改变, 就由引用变为值对象, 即immutable对象\n当业务复杂度变高需要将类之间单向关系改为双向绑定关系, 甚至一对多与多对一的关系\n双向绑定可能会造成很多僵尸对象, 增加复杂度与空间占用, 所以只有真正需要的时候用, 删除可以通过将内部绑定查询转移为传参, 再在调用的位置进行判断是否为僵尸对象\n不要使用Magic Number, 常量即可以优化储存, 又可读性高\n封装字段可以控制字段的读写, 称之为数据隐藏\n对于返回集合的函数需要返回只读副本, 如果需要修改, 则可另行提供修改方法\n原始类型替换成类, 有类型字段的类转换为多个子类, 或者抽象成策略模式, 从而合理改变数据结构\n如果子类只有常量, 可以抽成变量放父类, 再添加工厂方法创建, 降低复杂度\n\n\n条件表达式\n条件表达式很复杂的时候, 可以将条件, 执行代码进行封装, 更表意\n嵌套很深的条件表达式的每个结果都作为返回值的话, 可以简化为多个if+return, 类似于swift里面的guard, 或者kotlin里面的?:return, 书里叫卫语句(Guard Clauses)\n嵌套很深的条件表达式可以将范围大的if反向, 实现提前return\nswitch表达式有时候可以通过多态来取代\n\n\n函数调用\n函数最好读写分离\n抽象重复性的函数用以复用\nswitch构造可以替换成工厂方法\n从对象内拿出参数再传递给某函数不如直接将对象传入函数\n当函数的参数来自另外一个函数时, 也可以删掉参数, 把函数调用挪进去\n函数参数过多可以同对象替代\n如果不需要设置就不要提供set方法, 变量都需要为final\n有时候用抛异常替代返回错误码, 如果程序无法继续进行的话\n如果可以条件逻辑避免Runtime异常, 应不要无脑try/catch\n\n\n继承关系\n子类同样的方法应该向上提, 并将不同的地方抽象为抽象方法分别继承\n子类构造复制父类字段应该通过父类构造, super\n超类与子类差不多, 就合并\n逻辑相同, 类型不同可以通过模板函数, 模板类解决\n不能滥用继承, 组合代理好过继承, 但也有特殊, 如果需要使用委托函数所有函数或者大量, 则就需要继承, 不过这一点在kotlin里面也可以通过by来代理\n\n\n复杂的重构\n整理复杂的继承关系, 该抽接口抽接口, 摘出更多深层子类\n领域与表述分离, 就是UI与逻辑分离\n过程抽象为对象\n提炼继承体系\n\n\n\n","dateCreated":"2020-09-01T16:39:21+08:00","dateModified":"2020-09-01T17:38:45+08:00","datePublished":"2020-09-01T16:39:21+08:00","description":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.","headline":"Refresh Refactor","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2020/09/01/Refresh-Refactor/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2020/09/01/Refresh-Refactor/","keywords":"Refactor","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.\n\n\n思想方面\n如果发现加特性很难, 就需要重构\n重构前需要想想有没有可靠的测试机制\n重构要微小步伐, 容易发现错误\nExtract method是最简单的重构\n写出机器认识的代码容易, 写出人类容易理解的才是应该的, 最大的影响就是命名\n做移动重构时, 最好先复制粘贴, 测后再删除旧的代码\n对于另外对象的switch往往可以通过继承, 多态来取代\n三次遇到不合理的, 可能就是重构的时候了\n重构往往通过加隔离层进行\n不要过早发布接口\n性能优化应该基于良好的代码结构, 性能瓶颈往往只会在很小的代码片段里\n每次遇到一个bug, 尽量写个单元测试覆盖\n测试集中覆盖边缘case  \n\n\n代码坏味道与手段\n重复代码\n抽方法\n\n\n大函数\n抽方法, 抽类\n\n\n大类\n抽类, 抽子类\n\n\n太多参数\n参数变方法, 抽参数对象\n\n\n加新功能修改多个函数\n抽子类\n\n\n加新功能需要改很多类\n挪方法, 挪成员\n\n\n函数过度依赖其他类\n挪方法, 抽方法\n\n\n同样的几个参数到处出现\n抽参数对象\n\n\n大量同样的基本类型做参数\n抽类, 不同表达式可抽进子类\n\n\n很多switch\n考虑用多态取代\n\n\n子类需平行同时添加\n先持有对方, 再挪方法, 再挪变量, 再合并\n\n\n没人用的类\n做内部类\n\n\n没太大用处的抽象, 参数, 命名\n删除, 重命名, 内联\n\n\n临时变量命名模糊\n抽方法, 抽类\n\n\n消息链过长, 对象转换过多\n对同一对象的使用抽方法, 推入消息链消除对象\n\n\n过度代理\n内联代理\n\n\n注释太多\n可能代码写的太难懂, 需要重构\n\n\n\n\n数据\n临时变量被赋值多次, 则可以抽成方法\n有时候需要提取多个临时变量对逻辑进行解释, 当然更好的可以再抽成方法\nJava按值传递, 本质上是对象的引用按值传递\n移除中间人与隐藏委托是相辅相成的\n如果类无法更改, 就写个函数包装他, 类似于工厂方法?\n如果不能修改, Adapter模式常常用于扩展方法功能\n子类修改某些变量的获取可以通过自封装, 把变量抽象成函数\n成员如果不用改变, 就由引用变为值对象, 即immutable对象\n当业务复杂度变高需要将类之间单向关系改为双向绑定关系, 甚至一对多与多对一的关系\n双向绑定可能会造成很多僵尸对象, 增加复杂度与空间占用, 所以只有真正需要的时候用, 删除可以通过将内部绑定查询转移为传参, 再在调用的位置进行判断是否为僵尸对象\n不要使用Magic Number, 常量即可以优化储存, 又可读性高\n封装字段可以控制字段的读写, 称之为数据隐藏\n对于返回集合的函数需要返回只读副本, 如果需要修改, 则可另行提供修改方法\n原始类型替换成类, 有类型字段的类转换为多个子类, 或者抽象成策略模式, 从而合理改变数据结构\n如果子类只有常量, 可以抽成变量放父类, 再添加工厂方法创建, 降低复杂度\n\n\n条件表达式\n条件表达式很复杂的时候, 可以将条件, 执行代码进行封装, 更表意\n嵌套很深的条件表达式的每个结果都作为返回值的话, 可以简化为多个if+return, 类似于swift里面的guard, 或者kotlin里面的?:return, 书里叫卫语句(Guard Clauses)\n嵌套很深的条件表达式可以将范围大的if反向, 实现提前return\nswitch表达式有时候可以通过多态来取代\n\n\n函数调用\n函数最好读写分离\n抽象重复性的函数用以复用\nswitch构造可以替换成工厂方法\n从对象内拿出参数再传递给某函数不如直接将对象传入函数\n当函数的参数来自另外一个函数时, 也可以删掉参数, 把函数调用挪进去\n函数参数过多可以同对象替代\n如果不需要设置就不要提供set方法, 变量都需要为final\n有时候用抛异常替代返回错误码, 如果程序无法继续进行的话\n如果可以条件逻辑避免Runtime异常, 应不要无脑try/catch\n\n\n继承关系\n子类同样的方法应该向上提, 并将不同的地方抽象为抽象方法分别继承\n子类构造复制父类字段应该通过父类构造, super\n超类与子类差不多, 就合并\n逻辑相同, 类型不同可以通过模板函数, 模板类解决\n不能滥用继承, 组合代理好过继承, 但也有特殊, 如果需要使用委托函数所有函数或者大量, 则就需要继承, 不过这一点在kotlin里面也可以通过by来代理\n\n\n复杂的重构\n整理复杂的继承关系, 该抽接口抽接口, 摘出更多深层子类\n领域与表述分离, 就是UI与逻辑分离\n过程抽象为对象\n提炼继承体系\n\n\n\n","dateCreated":"2020-09-01T16:39:21+08:00","dateModified":"2020-09-08T12:28:43+08:00","datePublished":"2020-09-01T16:39:21+08:00","description":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.","headline":"Refresh Refactor","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2020/09/01/Refresh-Refactor/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2020/09/01/Refresh-Refactor/","keywords":"Note, Refactor","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"}</script>
     <meta name="description" content="Refactor 重构 Martin Fowler 马丁福勒">
-<meta name="keywords" content="Refactor">
+<meta name="keywords" content="Note,Refactor">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Refresh Refactor">
 <meta property="og:url" content="http://talentprince.github.io/2020/09/01/Refresh-Refactor/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Refactor 重构 Martin Fowler 马丁福勒">
 <meta property="og:locale" content="zh-cn">
-<meta property="og:updated_time" content="2020-09-01T09:38:45.269Z">
+<meta property="og:updated_time" content="2020-09-08T04:28:43.337Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Refresh Refactor">
 <meta name="twitter:description" content="Refactor 重构 Martin Fowler 马丁福勒">
@@ -419,7 +419,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-link" href="/tags/Refactor/">Refactor</a>
+    <a class="tag tag--primary tag--small t-link" href="/tags/Note/">Note</a> <a class="tag tag--primary tag--small t-link" href="/tags/Refactor/">Refactor</a>
 
             </div>
         
@@ -429,11 +429,14 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a
-                        class="post-action-btn btn btn--disabled"
-                        aria-hidden="true"
-                    >
-                        
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/08/Android-Points/"
+                    data-tooltip="Java与Android的一些知识点"
+                    aria-label="上一篇: Java与Android的一些知识点"
+                >
+                    
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
                         <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
                     </a>
@@ -459,7 +462,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -509,7 +512,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -541,11 +544,14 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    <a
-                        class="post-action-btn btn btn--disabled"
-                        aria-hidden="true"
-                    >
-                        
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/08/Android-Points/"
+                    data-tooltip="Java与Android的一些知识点"
+                    aria-label="上一篇: Java与Android的一些知识点"
+                >
+                    
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
                         <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
                     </a>
@@ -571,7 +577,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -621,7 +627,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -1091,7 +1097,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 43 篇文章
+                找到 44 篇文章
             </p>
         </div>
     </div>
