@@ -1,0 +1,1091 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Refresh Clean Code - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"这是一本被前辈称赞, 另一个马丁的知名著作, 被赋予学习如何写出漂亮代码的教皇级手册, 最近(再)浏览, 有诸多感受.\n总结一下就是如果你是新手, 可能看优秀的open source学习更好; 如果你是老手, 可能他说的东西要么你会觉得太啰嗦, 要么你会觉得例子太细节, 太教条, 无法举一反三.\n不过一些General的要点思想我摘录了出来, 有些还包括个人的观点, 记录在此, 以备查阅.\n\n\n勒布朗(LeBlanc)法则, Later equals never\n代码如果烂了就会越来越烂, 所谓破窗原理, 以前老是也提过叫代码腐化\n命名\n命名应该合理, 成员变量不用加前缀, 靠高亮就很好\n接口加前缀I也不太好, 不如实现加Imp\n方法命名最好使用动词或动词短语\n多使用计算机领域的词汇\n有时候命名在语境里才有意义, 有时候变量命名也不需要重复语境\n\n\n函数\n函数短小一些比较易懂, 20行内最佳\nif/else/while代码块封装函数, 只有一行最好 (有点激进?)\n一个函数只干一件事情\n复杂的switch试图用多态取代, 然后封装在抽象工厂里\n同一类型函数命名风格应该一致, 使用描述性的语句描述比难懂的短词更好\n一元函数最普遍, 标识函数(参数为boolean)的不如分成两个函数, 二元函数尽可能转换成一元函数\n参数太多可能需要封装类了\n好名字的函数一般是动词, 或者动词+关键字\n函数一般要么做事, 要么回答事, 不可兼得 (其实也不一定, 比如很多返回boolean状态的函数)\n推荐使用异常代替错误代码\n最好将try/catch单独抽入一个函数 (如Android代码会对RemoteService调用进行类似封装, 吃掉exception)\n使用枚举表示错误码会让改动变得繁琐 (重新导入或者编译部署), 大家都依赖这个枚举, 应该用异常与继承取代\n不要重复, 偶尔可以考虑AOP这类的方法解决\n\n\n注释\n注释少要比注释多有用, 注释多说明代码糟糕 (其实分情况吧)\n有目的性的注释还是有用的, 比如阐述, 放大, 警告, 定期维护的TODO等\n如果代码不用, 不要注释掉, 直接删掉\n\n\n格式\n横向, 竖向对齐, 间隔, 缩进等. 其实目前formater已经很强大了, 养成良好的format习惯, 渐渐的写出来的代码就会像直接format后一样\n\n\n对象与数据结构\n面向过程与面向对象对立, 前者容易加函数, 不容易加对象, 后者容易加对象, 而不容易加函数\n理想情况下, Law of Demeter认为, 类不应该操作对象内部的东西, 如不应该操作函数返回对象的方法. 目的只是为了降低复杂度, 认为这样将私有变量公开化, 增加了重构的难度, 如添加新函数, 方法等, 将数据结构与对象逻辑耦合在一起.\n针对于上面的问题, 原则应该是对象暴露行为, 隐藏数据, 数据结构暴露数据\n\n\n错误处理\nJava特色的受控异常(Checked Exception), 必须得被catch, 对受控异常的修改会引起上层所有调用方法的改动, 尽量不要使用, 其他语言只有RuntimeException\n可以包装第三方逻辑, 封装自己的异常类, 简化为只catch一种异常\n简化使用也可以将异常处理完全封装进去, 返回特例即可\n轻易不要返回null, 传入null\n代码的坚固与干净不冲突, 所以添加一些check, throw相应的Exception也合理\n\n\n边界\n所谓边界就是自己可以控制到的程序与第三方的边界, 通常需要通过封装的办法来划清边界, 限制那些无法控制的第三方, 如直接Wrapper或者Adapter模式等\n\n\n单元测试\n测试需要整洁, 需要跟随代码一起更新, 测试的最大用途是保证你后续的修改有信心\n测试的整洁主要讲的是可读性, 即分为三个环节, build-&gt;operate-&gt;check, 可以把繁杂的准备封装起来\n测试API是渐渐重构演进过来的, 也不可能是起初就设计出来\n有人建议每个测试一个assert, 但是这样会有很多重复的代码, 不过可以利用Template Method来解决. 不过也不一定必须一个, 做到最小化就可以了\n整洁还有五条规则, Fast, Independent, Repeatable, Self-Validation, Timely\n这里讲到TDD的好处, 主要是帮助你覆盖更多的测试, 如果写完再测, 发现测不了, 就不写了.\n\n\n类 \n类应该短小, 权责应该足够单一, 内聚性应该高\n如果期望抽走一部分逻辑, 最好连相关函数参数也抽走\n简化类的过程应该小步, 每一步都运行测试一下\n类的精简是为了更好的体现开闭原则, 整体结构为修改而设计\n类应依赖于接口, 不依赖实现, 可以隔离修改, 符合依赖倒置原则, 类似策略模式\n\n\n系统\n构造与使用分开, 通过依赖注入等\n通过AOP, Proxy的方式, 无侵入性的插入逻辑\n系统如果充分模块化, 领域之间相互直接松耦合, 最为理想, 就可以通过测试来驱动\nDSL的使用可以平衡领域与技术\n\n\n迭代\n代码是在不断迭代中进步的, 比如通过抽函数, 运用设计模式等\n\n\n并发\n应该尽可能分离并发代码与其他代码\n尽可能让线程之间独立, 不要有共享\n线程模型有典型的生产者与消费者, 读者与作者, 宴席哲学家模型, 分别用来说明互斥, 读写, 竞争死锁等特例\n锁定代码块应该尽可能小\n线程最好可插拔, 遵循单一权责, 分离线程与其他代码,  测试先保证除线程之外的逻辑\n最后一张通过实例来介绍并发代码如何重构的比较清晰\n\n\n逐步改进\n这片使用了一个例子, 先采用蛮干进行重构发现越来越难, 后来采用逐步的办法, 还写的很细节,  但是比较Tricky的地方是, 这里提出的每步改动都通过测试来印证, 然后保证测试通过, 或者补充一个测试, 让代码通过, 但是所谓TDD部分只有思想, 老代码既然写的不好, 测试是如何出来的, 如何做到Cover全的. 如果假设在一个有比较好测试覆盖的基础上重构, 我感觉即便蛮力也不会太差…\n\n\nJUnit\n比较神奇的一章, 感觉更像是用一个算法类的重构来说明如何把代码改简单, 但是开头先介绍了100%覆盖的Junit测试长什么样子… 感觉作者是想说以前的人做的还不错, 都用JUnit给覆盖全了, 还是可以重构的更漂亮的, 所以感觉标题不太好\n\n\n重构SerialDate\n跟上一个对比, 这个测试覆盖不全, 所以在补测试的过程中进行重构, 还发现了缺陷, 又最终把代码改清晰了. 不过同样由于太过细节, 一些重构理论也很教条, 如果想通过看别人重构的例子来学习如果写简洁的代码, 不如直接看优秀的代码是怎么写的\n\n\n味道\n里面类比了很多Bad Smell, 同样是很细节, 比如太多, 太死, 太复杂, 重复, 不一致, 耦合, 测试不足等, 提供的Tips大多的中心思想就是抽, 封装, 单一职责, 命名清晰\n提到使用*来避免过长import, 不过这个与现在流行的lint检测违背, 可以因为以前都是手动, 通配符简单吧.\n不要通过继承来使用常量, 还提到不要用静态常量, 用枚举, 这个也与当前的思想有出入, 现在经常将Java的enum太冗余, 不必要时可以用常量\n\n\n\n","dateCreated":"2020-10-27T12:26:45+08:00","dateModified":"2020-10-27T12:30:36+08:00","datePublished":"2020-10-27T12:26:45+08:00","description":"这是一本被前辈称赞, 另一个马丁的知名著作, 被赋予学习如何写出漂亮代码的教皇级手册, 最近(再)浏览, 有诸多感受.\n总结一下就是如果你是新手, 可能看优秀的open source学习更好; 如果你是老手, 可能他说的东西要么你会觉得太啰嗦, 要么你会觉得例子太细节, 太教条, 无法举一反三.\n不过一些General的要点思想我摘录了出来, 有些还包括个人的观点, 记录在此, 以备查阅.","headline":"Refresh Clean Code","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1603773011/clean_qupnly.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/","keywords":"Note, Clean Code","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1603773011/clean_qupnly.jpg"}</script>
+    <meta name="description" content="Clean Code">
+<meta name="keywords" content="Note,Clean Code">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Refresh Clean Code">
+<meta property="og:url" content="http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="Clean Code">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2020-10-27T04:30:36.661Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Refresh Clean Code">
+<meta name="twitter:description" content="Clean Code">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1603773011/clean_qupnly.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1603773011/clean_qupnly.jpg"/>
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
+    <!--STYLES END-->
+    
+
+    
+    <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?26839bbbc9c89fbe9eb99aba7bceb413";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="5">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/ "
+            aria-label=""
+        >
+            Weyoung&#39;s Blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="5">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/mailto"
+                            
+                            rel="noopener"
+                            title="邮箱"
+                        >
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="5"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            Refresh Clean Code
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-10-27T12:26:45+08:00">
+	
+		    10月 27, 2020
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Clean-Code/">Clean Code</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>这是一本被前辈称赞, 另一个马丁的知名著作, 被赋予学习如何写出漂亮代码的教皇级手册, 最近(再)浏览, 有诸多感受.</p>
+<p>总结一下就是如果你是新手, 可能看优秀的open source学习更好; 如果你是老手, 可能他说的东西要么你会觉得太啰嗦, 要么你会觉得例子太细节, 太教条, 无法举一反三.</p>
+<p>不过一些General的要点思想我摘录了出来, 有些还包括个人的观点, 记录在此, 以备查阅.</p>
+<a id="more"></a>
+<ul>
+<li>勒布朗(LeBlanc)法则, Later equals never</li>
+<li>代码如果烂了就会越来越烂, 所谓破窗原理, 以前老是也提过叫代码腐化</li>
+<li>命名<ul>
+<li>命名应该合理, 成员变量不用加前缀, 靠高亮就很好</li>
+<li>接口加前缀I也不太好, 不如实现加Imp</li>
+<li>方法命名最好使用动词或动词短语</li>
+<li>多使用计算机领域的词汇</li>
+<li>有时候命名在语境里才有意义, 有时候变量命名也不需要重复语境</li>
+</ul>
+</li>
+<li>函数<ul>
+<li>函数短小一些比较易懂, 20行内最佳</li>
+<li>if/else/while代码块封装函数, 只有一行最好 (有点激进?)</li>
+<li>一个函数只干一件事情</li>
+<li>复杂的switch试图用多态取代, 然后封装在抽象工厂里</li>
+<li>同一类型函数命名风格应该一致, 使用描述性的语句描述比难懂的短词更好</li>
+<li>一元函数最普遍, 标识函数(参数为boolean)的不如分成两个函数, 二元函数尽可能转换成一元函数</li>
+<li>参数太多可能需要封装类了</li>
+<li>好名字的函数一般是动词, 或者动词+关键字</li>
+<li>函数一般要么做事, 要么回答事, 不可兼得 (其实也不一定, 比如很多返回boolean状态的函数)</li>
+<li>推荐使用异常代替错误代码</li>
+<li>最好将try/catch单独抽入一个函数 (如Android代码会对RemoteService调用进行类似封装, 吃掉exception)</li>
+<li>使用枚举表示错误码会让改动变得繁琐 (重新导入或者编译部署), 大家都依赖这个枚举, 应该用异常与继承取代</li>
+<li>不要重复, 偶尔可以考虑AOP这类的方法解决</li>
+</ul>
+</li>
+<li>注释<ul>
+<li>注释少要比注释多有用, 注释多说明代码糟糕 (其实分情况吧)</li>
+<li>有目的性的注释还是有用的, 比如阐述, 放大, 警告, 定期维护的TODO等</li>
+<li>如果代码不用, 不要注释掉, 直接删掉</li>
+</ul>
+</li>
+<li>格式<ul>
+<li>横向, 竖向对齐, 间隔, 缩进等. 其实目前formater已经很强大了, 养成良好的format习惯, 渐渐的写出来的代码就会像直接format后一样</li>
+</ul>
+</li>
+<li>对象与数据结构<ul>
+<li>面向过程与面向对象对立, 前者容易加函数, 不容易加对象, 后者容易加对象, 而不容易加函数</li>
+<li>理想情况下, Law of Demeter认为, 类不应该操作对象内部的东西, 如不应该操作函数返回对象的方法. 目的只是为了降低复杂度, 认为这样将私有变量公开化, 增加了重构的难度, 如添加新函数, 方法等, 将数据结构与对象逻辑耦合在一起.</li>
+<li>针对于上面的问题, 原则应该是对象暴露行为, 隐藏数据, 数据结构暴露数据</li>
+</ul>
+</li>
+<li>错误处理<ul>
+<li>Java特色的受控异常(Checked Exception), 必须得被catch, 对受控异常的修改会引起上层所有调用方法的改动, 尽量不要使用, 其他语言只有RuntimeException</li>
+<li>可以包装第三方逻辑, 封装自己的异常类, 简化为只catch一种异常</li>
+<li>简化使用也可以将异常处理完全封装进去, 返回特例即可</li>
+<li>轻易不要返回null, 传入null</li>
+<li>代码的坚固与干净不冲突, 所以添加一些check, throw相应的Exception也合理</li>
+</ul>
+</li>
+<li>边界<ul>
+<li>所谓边界就是自己可以控制到的程序与第三方的边界, 通常需要通过封装的办法来划清边界, 限制那些无法控制的第三方, 如直接Wrapper或者Adapter模式等</li>
+</ul>
+</li>
+<li>单元测试<ul>
+<li>测试需要整洁, 需要跟随代码一起更新, 测试的最大用途是保证你后续的修改有信心</li>
+<li>测试的整洁主要讲的是可读性, 即分为三个环节, build-&gt;operate-&gt;check, 可以把繁杂的准备封装起来</li>
+<li>测试API是渐渐重构演进过来的, 也不可能是起初就设计出来</li>
+<li>有人建议每个测试一个assert, 但是这样会有很多重复的代码, 不过可以利用<code>Template Method</code>来解决. 不过也不一定必须一个, 做到最小化就可以了</li>
+<li>整洁还有五条规则, Fast, Independent, Repeatable, Self-Validation, Timely</li>
+<li>这里讲到TDD的好处, 主要是帮助你覆盖更多的测试, 如果写完再测, 发现测不了, 就不写了.</li>
+</ul>
+</li>
+<li>类 <ul>
+<li>类应该短小, 权责应该足够单一, 内聚性应该高</li>
+<li>如果期望抽走一部分逻辑, 最好连相关函数参数也抽走</li>
+<li>简化类的过程应该小步, 每一步都运行测试一下</li>
+<li>类的精简是为了更好的体现开闭原则, 整体结构为修改而设计</li>
+<li>类应依赖于接口, 不依赖实现, 可以隔离修改, 符合依赖倒置原则, 类似策略模式</li>
+</ul>
+</li>
+<li>系统<ul>
+<li>构造与使用分开, 通过依赖注入等</li>
+<li>通过AOP, Proxy的方式, 无侵入性的插入逻辑</li>
+<li>系统如果充分模块化, 领域之间相互直接松耦合, 最为理想, 就可以通过测试来驱动</li>
+<li>DSL的使用可以平衡领域与技术</li>
+</ul>
+</li>
+<li>迭代<ul>
+<li>代码是在不断迭代中进步的, 比如通过抽函数, 运用设计模式等</li>
+</ul>
+</li>
+<li>并发<ul>
+<li>应该尽可能分离并发代码与其他代码</li>
+<li>尽可能让线程之间独立, 不要有共享</li>
+<li>线程模型有典型的生产者与消费者, 读者与作者, 宴席哲学家模型, 分别用来说明互斥, 读写, 竞争死锁等特例</li>
+<li>锁定代码块应该尽可能小</li>
+<li>线程最好可插拔, 遵循单一权责, 分离线程与其他代码,  测试先保证除线程之外的逻辑</li>
+<li>最后一张通过实例来介绍并发代码如何重构的比较清晰</li>
+</ul>
+</li>
+<li>逐步改进<ul>
+<li>这片使用了一个例子, 先采用蛮干进行重构发现越来越难, 后来采用逐步的办法, 还写的很细节,  但是比较Tricky的地方是, 这里提出的每步改动都通过测试来印证, 然后保证测试通过, 或者补充一个测试, 让代码通过, 但是所谓TDD部分只有思想, 老代码既然写的不好, 测试是如何出来的, 如何做到Cover全的. 如果假设在一个有比较好测试覆盖的基础上重构, 我感觉即便蛮力也不会太差…</li>
+</ul>
+</li>
+<li>JUnit<ul>
+<li>比较神奇的一章, 感觉更像是用一个算法类的重构来说明如何把代码改简单, 但是开头先介绍了100%覆盖的Junit测试长什么样子… 感觉作者是想说以前的人做的还不错, 都用JUnit给覆盖全了, 还是可以重构的更漂亮的, 所以感觉标题不太好</li>
+</ul>
+</li>
+<li>重构SerialDate<ul>
+<li>跟上一个对比, 这个测试覆盖不全, 所以在补测试的过程中进行重构, 还发现了缺陷, 又最终把代码改清晰了. 不过同样由于太过细节, 一些重构理论也很教条, 如果想通过看别人重构的例子来学习如果写简洁的代码, 不如直接看优秀的代码是怎么写的</li>
+</ul>
+</li>
+<li>味道<ul>
+<li>里面类比了很多Bad Smell, 同样是很细节, 比如太多, 太死, 太复杂, 重复, 不一致, 耦合, 测试不足等, 提供的Tips大多的中心思想就是抽, 封装, 单一职责, 命名清晰</li>
+<li>提到使用*来避免过长import, 不过这个与现在流行的lint检测违背, 可以因为以前都是手动, 通配符简单吧.</li>
+<li>不要通过继承来使用常量, 还提到不要用静态常量, 用枚举, 这个也与当前的思想有出入, 现在经常将Java的enum太冗余, 不必要时可以用常量</li>
+</ul>
+</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Clean-Code/">Clean Code</a> <a class="tag tag--primary tag--small t-link" href="/tags/Note/">Note</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/08/Android-Points/"
+                    data-tooltip="Java与Android知识点总结"
+                    aria-label="下一篇: Java与Android知识点总结"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/08/Android-Points/"
+                    data-tooltip="Java与Android知识点总结"
+                    aria-label="下一篇: Java与Android知识点总结"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>Xi’an B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Worker</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an
+            </div>
+        
+    </div>
+</div>
+
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            aria-label=": First Blog"
+                        >
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 45 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/new_cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+    <script src="/assets/js/moment-with-locales.js"></script>
+    <script src="/assets/js/algoliasearch.js"></script>
+    <script>
+      var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+    </body>
+</html>
