@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"October 29th, 2017\nAndroid Weekly Issue #281本期内容不多,包含了小众DI库牙签帮助测试的文章,Kotlin中Delegate的强大之介绍,以及基于Google Actions与Dialog Flow的AI应用,Android 8.1 API的改动与增强.第三方库有一个kotlin写的时间计算库比较有趣,代码部分Kolin的Delegate可以看两眼,没准可以简化你的项目哦.\n\nARTICLES &amp; TUTORIALSHow I Learned to Love Unit Testing with Toothpick 文章推荐了一个新的DI库叫做ToothPick(牙签),它对UnitTest有很好的支持,用它提供的TestRule并配合Mocktio的TestRule可轻松完成测试类mock依赖类的注入.\n其实我觉得Mokito.initMocks已经很好很强大了…\n关于TP与Dagger2的一些优势可以见其github的doc\nMaking your app Switch Access Compatible 文章比较有爱,只为了帮助有障碍的人,将你的App做到支持Switch Accessible(一种有一到两个按键的遥控器,来控制手机).\nDrag and Drop and Swipe to Dismiss 介绍了如何通过RecyclerView的ItemTouchHelper实现侧滑删除,拖拽移动位置.\nYour first Google Assistant skill 通过Google Action API与DialogFlow呈现了一个记录你每天喝水量的App.\nKotlin is Dope And So Are Its Custom Property Delegates 文章介绍了Kotlin里面Delegate的强大之处,比如通过ReadWriteProperty代理get与set,Delegates.observable监听新老值的变化,ObservableProperty#changeBefore可以hook数据变化等等…\nMigrate to Android Plugin for Gradle 3.0.0 介绍了如何迁移到新的Android Gradle Plugin 3.0.需要升级Gradle plugin到4.1,新加的falvorDimensions必须制定,还有一些api也发生了变化,如implementation/api取代了以前的compile,等等.Google的官方文档,主要以你遇到什么错就该怎么改来帮你做迁移.\nHow Oreo’s color profiles work on the Pixel 2 and 2 XL 介绍了Pixel2 升级到Oreo对DCI-P3颜色的支持,O可以通过设置android:colorMode=&quot;wideColorGamut&quot;开启广域颜色,但是其内置的应用没有一个支持的,包括GooglePhoto,只有直接用OpenGl渲染的一些游戏支持,Camera也支持可惜拍照完看图片的是有依旧不支持…\nRandom Musings on the Android 8.1 Developer Preview 1 介绍了一部分8.1 API上的新变化.如添加了NotificationListenerService可以查看是否拥有通知权限.还有可以在Manifest里面指定程序需要的RAM情况,帮助安装的时候进行过滤.SQLiteDatabase可以创建数据库信息到内存里了.等等.\nLIBRARIES &amp; CODERxSSE 一个基于RxJava用kotlin些的SSE(H5里面基于Http的移送协议/服务)客户端.\nMezzanine 基于Annotation的可以在编译阶段读文件内容的一个第三方库,支持Java,Kotlin\nTime 基于kotlin写的一个安全的时间计算库可以写出这个的计算150.seconds &lt; 2.hours\n","dateCreated":"2017-11-03T09:36:41+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-11-03T09:36:41+08:00","description":"October 29th, 2017\nAndroid Weekly Issue #281本期内容不多,包含了小众DI库牙签帮助测试的文章,Kotlin中Delegate的强大之介绍,以及基于Google Actions与Dialog Flow的AI应用,Android 8.1 API的改动与增强.第三方库有一个kotlin写的时间计算库比较有趣,代码部分Kolin的Delegate可以看两眼,没准可以简化你的项目哦.","headline":"Android Weekly Issue #281","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510191605/281_ce3k6m.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/11/03/Android-Weekly-Issue-281/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/11/03/Android-Weekly-Issue-281/","keywords":"Kotlin Delegate, Google Actions, Dialog Flow, Android 8.1","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510191605/281_ce3k6m.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"October 29th, 2017\nAndroid Weekly Issue #281本期内容不多,包含了小众DI库牙签帮助测试的文章,Kotlin中Delegate的强大之介绍,以及基于Google Actions与Dialog Flow的AI应用,Android 8.1 API的改动与增强.第三方库有一个kotlin写的时间计算库比较有趣,代码部分Kolin的Delegate可以看两眼,没准可以简化你的项目哦.\n\nARTICLES &amp; TUTORIALSHow I Learned to Love Unit Testing with Toothpick 文章推荐了一个新的DI库叫做ToothPick(牙签),它对UnitTest有很好的支持,用它提供的TestRule并配合Mocktio的TestRule可轻松完成测试类mock依赖类的注入.\n其实我觉得Mokito.initMocks已经很好很强大了…\n关于TP与Dagger2的一些优势可以见其github的doc\nMaking your app Switch Access Compatible 文章比较有爱,只为了帮助有障碍的人,将你的App做到支持Switch Accessible(一种有一到两个按键的遥控器,来控制手机).\nDrag and Drop and Swipe to Dismiss 介绍了如何通过RecyclerView的ItemTouchHelper实现侧滑删除,拖拽移动位置.\nYour first Google Assistant skill 通过Google Action API与DialogFlow呈现了一个记录你每天喝水量的App.\nKotlin is Dope And So Are Its Custom Property Delegates 文章介绍了Kotlin里面Delegate的强大之处,比如通过ReadWriteProperty代理get与set,Delegates.observable监听新老值的变化,ObservableProperty#changeBefore可以hook数据变化等等…\nMigrate to Android Plugin for Gradle 3.0.0 介绍了如何迁移到新的Android Gradle Plugin 3.0.需要升级Gradle plugin到4.1,新加的falvorDimensions必须制定,还有一些api也发生了变化,如implementation/api取代了以前的compile,等等.Google的官方文档,主要以你遇到什么错就该怎么改来帮你做迁移.\nHow Oreo’s color profiles work on the Pixel 2 and 2 XL 介绍了Pixel2 升级到Oreo对DCI-P3颜色的支持,O可以通过设置android:colorMode=&quot;wideColorGamut&quot;开启广域颜色,但是其内置的应用没有一个支持的,包括GooglePhoto,只有直接用OpenGl渲染的一些游戏支持,Camera也支持可惜拍照完看图片的是有依旧不支持…\nRandom Musings on the Android 8.1 Developer Preview 1 介绍了一部分8.1 API上的新变化.如添加了NotificationListenerService可以查看是否拥有通知权限.还有可以在Manifest里面指定程序需要的RAM情况,帮助安装的时候进行过滤.SQLiteDatabase可以创建数据库信息到内存里了.等等.\nLIBRARIES &amp; CODERxSSE 一个基于RxJava用kotlin些的SSE(H5里面基于Http的移送协议/服务)客户端.\nMezzanine 基于Annotation的可以在编译阶段读文件内容的一个第三方库,支持Java,Kotlin\nTime 基于kotlin写的一个安全的时间计算库可以写出这个的计算150.seconds &lt; 2.hours\n","dateCreated":"2017-11-03T09:36:41+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-11-03T09:36:41+08:00","description":"October 29th, 2017\nAndroid Weekly Issue #281本期内容不多,包含了小众DI库牙签帮助测试的文章,Kotlin中Delegate的强大之介绍,以及基于Google Actions与Dialog Flow的AI应用,Android 8.1 API的改动与增强.第三方库有一个kotlin写的时间计算库比较有趣,代码部分Kolin的Delegate可以看两眼,没准可以简化你的项目哦.","headline":"Android Weekly Issue #281","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510191605/281_ce3k6m.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/11/03/Android-Weekly-Issue-281/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/11/03/Android-Weekly-Issue-281/","keywords":"Kotlin Delegate, Google Actions, Dialog Flow, Android 8.1","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510191605/281_ce3k6m.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Kotlin Delegate,Google Actions,Dialog Flow,Android 8.1">
 <meta property="og:type" content="blog">
@@ -195,7 +195,7 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/talentprince"
                             
                                 target="_blank"
                             
@@ -333,7 +333,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -383,7 +383,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -403,7 +403,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+        Copyrights &copy; 2021 Prince Chen. All Rights Reserved.
     </span>
 </footer>
 
@@ -448,7 +448,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -498,7 +498,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>

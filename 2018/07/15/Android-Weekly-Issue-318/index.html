@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"July 15th, 2018\nAndroid Weekly Issue #318本期内容包括Jetpack NavigationUI的介绍, FAT AAR的讨论, Realm迁移到Kotlin的方案,以及如何通过MVI+DataBinding来写程序.还包含DSL改造Android Dialog以及Kotlin scope function的详细解读.\n\nARTICLES &amp; TUTORIALSAndroid Jetpack - NavigationUI 文章简单介绍了如何将NavigationView或者BottomNavigation与JetPack提供的Navigation控件连起来,通过定义 xml来实现自动跳转.\nWhy We Need “fat” AARs for Android Libraries Gradle aar不支持打包所有依赖,一般情况下可以使用一个叫做FAT aar的插件,但是已经不更新了.\n还可以通过transitive来让gradle下载依赖,但是作者的疑问在于如果依赖也是不公开的就没办法了.\nGoogle已经表示3.3会考虑加这个功能.\nMaintainable Architecture – UI Layer 继上次介绍数据层,这篇文章介绍了一个Weather App如何使用MVVM实现UI Layer.\nMigrating your Realm to Kotlin – Blue Apron Engineering 文章介绍了如何将Realm迁移到Kotlin.\n\n为了不想让主键为空导致Kotlin nullable变量使用起来需要进行let之类的null check,所以给与初始化值,但是一定要加Migration逻辑保证数据库迁移正确.\n可以通过一些Helper function加!!来避免Null check\nExtension function包装关键字in,因为它是kotlin的关键字.\n\nModel-View-Intent &amp; Data Binding 作者通过一个登陆页面介绍了如何使用了MVI+DataBinding,适合初步了解MVI的机制以及Reducer的思想.\nSocial Network Integration on Android 作者介绍了如何使用诸如FB Twitter这样的social media sdk来实现自己app内的登录与分享.\nKotlin Demystified: What are ‘scope functions’ and why are they special? 作者介绍了Kotlin里面的scope functions,其实就是let/run/with/apply/also.\n作者的总结比较复杂,其实有一个比较简单的图可以清楚了解之间的关系.\n如果你需要返回本身,就使用apply或者also,其区别就是使用this或者it.\n如果你不需要返回本身,又想要做null判断,那就是用T.run或者let,当然区别也是this或者it.\n如果你即不需要返回本身,又不用判断null,那就用with或者run,区别也是this或者it.\nSeedbank — discover machine learning examples 可以在线的试一试Machine Learning\nFrom Java Builders to Kotlin DSLs 教大家如何把Dialog Builder改造成Kotlin DSL,使用起来非常炫酷.\n其实大家也都清楚了,就是通过Extension Function.\n具体可以去看看作者的对比,DSL化后使用起来跟CSS一样,花括号套起来就实现了Dialog.\n123456789draw &#123;    drawerLayout = xxxx    onItemClick &#123;        xxxxx    &#125;    onOpen &#123;        Toast.xxxx    &#125;&#125;\nLIBRARIES &amp; CODEandroid-face-detector 实时面部识别的lib,使用的Firebase ML kit.\nUnderlinePageIndicator 类似于系统design的TabLayout那种效果.\nSeedbank 在线测试ML的.\n","dateCreated":"2018-07-15T09:00:01+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-07-15T09:00:01+08:00","description":"July 15th, 2018\nAndroid Weekly Issue #318本期内容包括Jetpack NavigationUI的介绍, FAT AAR的讨论, Realm迁移到Kotlin的方案,以及如何通过MVI+DataBinding来写程序.还包含DSL改造Android Dialog以及Kotlin scope function的详细解读.","headline":"Android Weekly Issue #318","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1532311724/318_jqq6fx.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/","keywords":"Android Weekly, Realm, Kotlin DSL, DataBinding, MVI, Jetpack, Navigation, AAR, Scope Functions","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1532311724/318_jqq6fx.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"July 15th, 2018\nAndroid Weekly Issue #318本期内容包括Jetpack NavigationUI的介绍, FAT AAR的讨论, Realm迁移到Kotlin的方案,以及如何通过MVI+DataBinding来写程序.还包含DSL改造Android Dialog以及Kotlin scope function的详细解读.\n\nARTICLES &amp; TUTORIALSAndroid Jetpack - NavigationUI 文章简单介绍了如何将NavigationView或者BottomNavigation与JetPack提供的Navigation控件连起来,通过定义 xml来实现自动跳转.\nWhy We Need “fat” AARs for Android Libraries Gradle aar不支持打包所有依赖,一般情况下可以使用一个叫做FAT aar的插件,但是已经不更新了.\n还可以通过transitive来让gradle下载依赖,但是作者的疑问在于如果依赖也是不公开的就没办法了.\nGoogle已经表示3.3会考虑加这个功能.\nMaintainable Architecture – UI Layer 继上次介绍数据层,这篇文章介绍了一个Weather App如何使用MVVM实现UI Layer.\nMigrating your Realm to Kotlin – Blue Apron Engineering 文章介绍了如何将Realm迁移到Kotlin.\n\n为了不想让主键为空导致Kotlin nullable变量使用起来需要进行let之类的null check,所以给与初始化值,但是一定要加Migration逻辑保证数据库迁移正确.\n可以通过一些Helper function加!!来避免Null check\nExtension function包装关键字in,因为它是kotlin的关键字.\n\nModel-View-Intent &amp; Data Binding 作者通过一个登陆页面介绍了如何使用了MVI+DataBinding,适合初步了解MVI的机制以及Reducer的思想.\nSocial Network Integration on Android 作者介绍了如何使用诸如FB Twitter这样的social media sdk来实现自己app内的登录与分享.\nKotlin Demystified: What are ‘scope functions’ and why are they special? 作者介绍了Kotlin里面的scope functions,其实就是let/run/with/apply/also.\n作者的总结比较复杂,其实有一个比较简单的图可以清楚了解之间的关系.\n如果你需要返回本身,就使用apply或者also,其区别就是使用this或者it.\n如果你不需要返回本身,又想要做null判断,那就是用T.run或者let,当然区别也是this或者it.\n如果你即不需要返回本身,又不用判断null,那就用with或者run,区别也是this或者it.\nSeedbank — discover machine learning examples 可以在线的试一试Machine Learning\nFrom Java Builders to Kotlin DSLs 教大家如何把Dialog Builder改造成Kotlin DSL,使用起来非常炫酷.\n其实大家也都清楚了,就是通过Extension Function.\n具体可以去看看作者的对比,DSL化后使用起来跟CSS一样,花括号套起来就实现了Dialog.\n123456789draw &#123;    drawerLayout = xxxx    onItemClick &#123;        xxxxx    &#125;    onOpen &#123;        Toast.xxxx    &#125;&#125;\nLIBRARIES &amp; CODEandroid-face-detector 实时面部识别的lib,使用的Firebase ML kit.\nUnderlinePageIndicator 类似于系统design的TabLayout那种效果.\nSeedbank 在线测试ML的.\n","dateCreated":"2018-07-15T09:00:01+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-07-15T09:00:01+08:00","description":"July 15th, 2018\nAndroid Weekly Issue #318本期内容包括Jetpack NavigationUI的介绍, FAT AAR的讨论, Realm迁移到Kotlin的方案,以及如何通过MVI+DataBinding来写程序.还包含DSL改造Android Dialog以及Kotlin scope function的详细解读.","headline":"Android Weekly Issue #318","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1532311724/318_jqq6fx.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/","keywords":"Android Weekly, Realm, Kotlin DSL, DataBinding, MVI, Jetpack, Navigation, AAR, Scope Functions","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1532311724/318_jqq6fx.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Android Weekly,Realm,Kotlin DSL,DataBinding,MVI,Jetpack,Navigation,AAR,Scope Functions">
 <meta property="og:type" content="blog">
@@ -195,7 +195,7 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/talentprince"
                             
                                 target="_blank"
                             
@@ -346,7 +346,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -396,7 +396,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -416,7 +416,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+        Copyrights &copy; 2021 Prince Chen. All Rights Reserved.
     </span>
 </footer>
 
@@ -461,7 +461,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -511,7 +511,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>

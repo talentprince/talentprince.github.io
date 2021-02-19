@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"多年后, 再次翻阅设计模式书籍, 将每种模式的要点总结于此, 需要本身有一定设计模式基础, 再结合要点, 帮助更好理解与运用.\n\n\n策略模式 (Strategy)\n\n附加功能单独抽象不同接口\n功能以组合方式引入抽象类\n抽象类封装功能模块各调用\n实现类可在构造中配置功能具体实现\n\n\n观察者模式 (Observer)\n\n被订阅者持有所有订阅者\n数据更新可以直接推送\n数据更新也可以通知加拉取\n大程度解耦观察者与被订阅者\n\n\n装饰器模式 (Decorator)\n\n装饰器接口的简单实现叫做组件\n持有组件对象的叫做装饰器\n装饰是从里层的装饰器开始\n最里层的装饰器会持有原始组件\n各层通过对持有的底层对象进行包装完成所谓装饰并返回给上层\n理论上可以做到一层套一层无穷尽\n\n\n工场方法模式 (Factory Method)\n\n解耦产品的实现与使用\n产品需要进行抽象\n工场方法定义创建产品的接口\n工场方法内还可以封装使用过程\n子工场配置自己的创建逻辑\n工场方法常常与抽象工场结合\n抽象工场定义了一组产品的创建\n工厂方法的实现又用这些产品创建或组件具体的大产品\n工厂方法通过继承来实现\n抽象工场通过组合来实现(传入)\n\n\n单例模式 (Singleton)\n\n全局实例注意内存\n多线程需要特殊照顾\n\n\n命令模式 (Command)\n\n解耦发请求者与执行请求者\n命令内部可以直接执行也可以代理给被封装在内的接收者\n命令支持撤销\n宏命令包含多个命令同时调用\n\n\n适配器模式 (Adapter)\n\n对象适配器以组合来实现\n类适配器以多继承来实现\n新旧系统共用可双向适配\n\n\n外观模式 (Facade)\n\n从抽象层次看与适配器很像\n外观模式创建新的简单接口\n适配器模式使用已存在接口\n新接口包装多个系统模块简化调用\n老接口包装其他系统达到兼容\n\n\n模板方法模式 (Template Method)\n\n模板实现算法, 子类实现步骤\n子类与父类尽量不能成环\n好莱坞模式为子类全为回调方法\n有默认实现的为钩子方法\n策略用组合封装算法,模板用继承封装算法\n工厂方法是特殊的模板方法\n\n\n迭代器模式 (Iterator)\n\n解耦游走数组而不要关心具体类型\n集合类都有自己的迭代器\n一般的迭代器具备hasNext与next两个方法\n聚合器持有数据并创建迭代器\n\n\n组合模式 (Composite)\n\n组合模式的节点分为子节点与叶节点\n子与叶都实现了同样的组合接口,所谓透明性\n子节点会额外实现add与get\n为了叶节点安全也可以具有不同接口\n组合模式可以与迭代器共生\n迭代器需要配合栈来实现树的遍历\n子节点可以实现空迭代器来减少Null判断\n\n\n状态模式 (State)\n\n与策略模式类图相似\n状态接口定义状态切换行为\n所有状态实现统一接口\n状态机定义并持有所有状态\n状态机储存当前状态\n状态切换由不同状态自己控制\n状态内通过持有的状态机来切换下一状态\n\n\n代理模式 (Proxy)\n\n可分为远程代理与虚拟代理\n与装饰者很像\n代理更多的是控制真实对象的访问, 解耦客户与真实对象, 也可能帮助创建真实对象\n装饰器更多是增加行为, 而且不创建对象\n可通过工厂方法返回主体的代理\n与适配器很像\n代理不改变接口, 适配器改变接口\n保护代理可以限制访问部分接口,更像适配器\n\n\n复合模式 (Compound)\n\n多用几种\n比如MVC就融合了策略,组合,适配器等\n\n\n\n\n\n一些冷门模式\n\n桥接模式 (Bridge)\n\n与策略模式很像\n主体都依赖于功能组件的抽象\n策略模式的主体是具体算法的实现\n桥接模式的主更抽象,需要子类来实现不同算法\n可以做到主体和功能组件解耦\n增加了复杂度\n\n\n生成器 (Builder)\n\n封装复杂对象的创建过程\n隐藏内部实现\n创建时需要对所创对象有更多认识\n\n\n责任链 (Resposibility)\n\n简单理解为一个Handler的对象链\n比如很多程序里常用的Dispatcher链\n或者很多系统启动时需要加载的数据链\n不能保证一定会有对象对数据进行处理\n\n\n享元 (Flyweight)\n\n多个同样的实例可被一个方法控制, 就可以封装在一起轮询数组进行处理\n但是不能有独立不同行为了\n\n\n解释器 (Intepretor)\n\n主要是做简单固定语法解析\n抽象解释接口, 并实现多个解释器\n如And, Or之类的, 可相互嵌套.\n如果语法复杂, 种类繁多, 会不太适合\n\n\n中介者 (Mediator)\n\n解耦不同对象\n它们只需要通知中介者, 中介者根据不同状态来控制整个逻辑\n可能会让中介者逻辑过于复杂\n\n\n备忘录 (Momento)\n\n将对象的储存抽出来, 更好的维护了业务的内聚\n一般会提供储存与获取接口\n储存过程可能会耗时\n可能需要考虑序列化\n\n\n原型 (Prototype)\n\n提供复制对象的方法\n比如clone\n如果对象层次深,复制起来可能复杂\n\n\n访问者 (Visitor)\n\n解耦对象与每个对象的具体操作, 如对电脑的不同部件进行不同操作\n在对象种类变化小而操作变化大的时候使用\n每一个对象实现visitor接口, 接受(accept)一个visitor,并把自己传给visitor (visit)\n缺点是具体元素对访问者暴露, 而不是抽象接口\n\n\n\n\n有很多种分类方式, 不必拘泥, 也可忽略.\n\n分类方式 I\n\n创建型\n单例\n抽象工厂\n工厂方法\n生成器\n原型\n\n\n行为型\n模板方法\n迭代器\n状态\n策略\n观察者\n命令\n解释器\n中介者\n访问者\n备忘录\n责任链\n\n\n结构型\n装饰器\n代理\n外观\n组合\n适配器\n桥接\n享元\n\n\n\n\n分类方式 II\n\n类\n模板方法\n工厂方法\n适配器\n解释器\n\n\n对象\n单例\n抽象工厂\n装饰器\n代理\n外观\n组合\n适配器\n迭代器\n状态\n策略\n观察者\n命令\n桥接\n享元\n生成器\n中介者\n访问者\n备忘录\n责任链\n原型 \n\n\n\n\n\n","dateCreated":"2019-09-30T16:06:52+08:00","dateModified":"2020-09-08T12:28:35+08:00","datePublished":"2019-09-30T16:06:52+08:00","description":"多年后, 再次翻阅设计模式书籍, 将每种模式的要点总结于此, 需要本身有一定设计模式基础, 再结合要点, 帮助更好理解与运用.","headline":"Refresh design pattern","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1569816716/design_chunyd.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2019/09/30/Refresh-design-pattern/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2019/09/30/Refresh-design-pattern/","keywords":"Note, Design Pattern","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1569816716/design_chunyd.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"多年后, 再次翻阅设计模式书籍, 将每种模式的要点总结于此, 需要本身有一定设计模式基础, 再结合要点, 帮助更好理解与运用.\n\n\n策略模式 (Strategy)\n\n附加功能单独抽象不同接口\n功能以组合方式引入抽象类\n抽象类封装功能模块各调用\n实现类可在构造中配置功能具体实现\n\n\n观察者模式 (Observer)\n\n被订阅者持有所有订阅者\n数据更新可以直接推送\n数据更新也可以通知加拉取\n大程度解耦观察者与被订阅者\n\n\n装饰器模式 (Decorator)\n\n装饰器接口的简单实现叫做组件\n持有组件对象的叫做装饰器\n装饰是从里层的装饰器开始\n最里层的装饰器会持有原始组件\n各层通过对持有的底层对象进行包装完成所谓装饰并返回给上层\n理论上可以做到一层套一层无穷尽\n\n\n工场方法模式 (Factory Method)\n\n解耦产品的实现与使用\n产品需要进行抽象\n工场方法定义创建产品的接口\n工场方法内还可以封装使用过程\n子工场配置自己的创建逻辑\n工场方法常常与抽象工场结合\n抽象工场定义了一组产品的创建\n工厂方法的实现又用这些产品创建或组件具体的大产品\n工厂方法通过继承来实现\n抽象工场通过组合来实现(传入)\n\n\n单例模式 (Singleton)\n\n全局实例注意内存\n多线程需要特殊照顾\n\n\n命令模式 (Command)\n\n解耦发请求者与执行请求者\n命令内部可以直接执行也可以代理给被封装在内的接收者\n命令支持撤销\n宏命令包含多个命令同时调用\n\n\n适配器模式 (Adapter)\n\n对象适配器以组合来实现\n类适配器以多继承来实现\n新旧系统共用可双向适配\n\n\n外观模式 (Facade)\n\n从抽象层次看与适配器很像\n外观模式创建新的简单接口\n适配器模式使用已存在接口\n新接口包装多个系统模块简化调用\n老接口包装其他系统达到兼容\n\n\n模板方法模式 (Template Method)\n\n模板实现算法, 子类实现步骤\n子类与父类尽量不能成环\n好莱坞模式为子类全为回调方法\n有默认实现的为钩子方法\n策略用组合封装算法,模板用继承封装算法\n工厂方法是特殊的模板方法\n\n\n迭代器模式 (Iterator)\n\n解耦游走数组而不要关心具体类型\n集合类都有自己的迭代器\n一般的迭代器具备hasNext与next两个方法\n聚合器持有数据并创建迭代器\n\n\n组合模式 (Composite)\n\n组合模式的节点分为子节点与叶节点\n子与叶都实现了同样的组合接口,所谓透明性\n子节点会额外实现add与get\n为了叶节点安全也可以具有不同接口\n组合模式可以与迭代器共生\n迭代器需要配合栈来实现树的遍历\n子节点可以实现空迭代器来减少Null判断\n\n\n状态模式 (State)\n\n与策略模式类图相似\n状态接口定义状态切换行为\n所有状态实现统一接口\n状态机定义并持有所有状态\n状态机储存当前状态\n状态切换由不同状态自己控制\n状态内通过持有的状态机来切换下一状态\n\n\n代理模式 (Proxy)\n\n可分为远程代理与虚拟代理\n与装饰者很像\n代理更多的是控制真实对象的访问, 解耦客户与真实对象, 也可能帮助创建真实对象\n装饰器更多是增加行为, 而且不创建对象\n可通过工厂方法返回主体的代理\n与适配器很像\n代理不改变接口, 适配器改变接口\n保护代理可以限制访问部分接口,更像适配器\n\n\n复合模式 (Compound)\n\n多用几种\n比如MVC就融合了策略,组合,适配器等\n\n\n\n\n\n一些冷门模式\n\n桥接模式 (Bridge)\n\n与策略模式很像\n主体都依赖于功能组件的抽象\n策略模式的主体是具体算法的实现\n桥接模式的主更抽象,需要子类来实现不同算法\n可以做到主体和功能组件解耦\n增加了复杂度\n\n\n生成器 (Builder)\n\n封装复杂对象的创建过程\n隐藏内部实现\n创建时需要对所创对象有更多认识\n\n\n责任链 (Resposibility)\n\n简单理解为一个Handler的对象链\n比如很多程序里常用的Dispatcher链\n或者很多系统启动时需要加载的数据链\n不能保证一定会有对象对数据进行处理\n\n\n享元 (Flyweight)\n\n多个同样的实例可被一个方法控制, 就可以封装在一起轮询数组进行处理\n但是不能有独立不同行为了\n\n\n解释器 (Intepretor)\n\n主要是做简单固定语法解析\n抽象解释接口, 并实现多个解释器\n如And, Or之类的, 可相互嵌套.\n如果语法复杂, 种类繁多, 会不太适合\n\n\n中介者 (Mediator)\n\n解耦不同对象\n它们只需要通知中介者, 中介者根据不同状态来控制整个逻辑\n可能会让中介者逻辑过于复杂\n\n\n备忘录 (Momento)\n\n将对象的储存抽出来, 更好的维护了业务的内聚\n一般会提供储存与获取接口\n储存过程可能会耗时\n可能需要考虑序列化\n\n\n原型 (Prototype)\n\n提供复制对象的方法\n比如clone\n如果对象层次深,复制起来可能复杂\n\n\n访问者 (Visitor)\n\n解耦对象与每个对象的具体操作, 如对电脑的不同部件进行不同操作\n在对象种类变化小而操作变化大的时候使用\n每一个对象实现visitor接口, 接受(accept)一个visitor,并把自己传给visitor (visit)\n缺点是具体元素对访问者暴露, 而不是抽象接口\n\n\n\n\n有很多种分类方式, 不必拘泥, 也可忽略.\n\n分类方式 I\n\n创建型\n单例\n抽象工厂\n工厂方法\n生成器\n原型\n\n\n行为型\n模板方法\n迭代器\n状态\n策略\n观察者\n命令\n解释器\n中介者\n访问者\n备忘录\n责任链\n\n\n结构型\n装饰器\n代理\n外观\n组合\n适配器\n桥接\n享元\n\n\n\n\n分类方式 II\n\n类\n模板方法\n工厂方法\n适配器\n解释器\n\n\n对象\n单例\n抽象工厂\n装饰器\n代理\n外观\n组合\n适配器\n迭代器\n状态\n策略\n观察者\n命令\n桥接\n享元\n生成器\n中介者\n访问者\n备忘录\n责任链\n原型 \n\n\n\n\n\n","dateCreated":"2019-09-30T16:06:52+08:00","dateModified":"2020-09-08T12:28:35+08:00","datePublished":"2019-09-30T16:06:52+08:00","description":"多年后, 再次翻阅设计模式书籍, 将每种模式的要点总结于此, 需要本身有一定设计模式基础, 再结合要点, 帮助更好理解与运用.","headline":"Refresh design pattern","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1569816716/design_chunyd.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2019/09/30/Refresh-design-pattern/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2019/09/30/Refresh-design-pattern/","keywords":"Note, Design Pattern","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1569816716/design_chunyd.jpg"}</script>
     <meta name="description" content="Design Pattern">
 <meta name="keywords" content="Note,Design Pattern">
 <meta property="og:type" content="blog">
@@ -195,7 +195,7 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/talentprince"
                             
                                 target="_blank"
                             
@@ -597,7 +597,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -647,7 +647,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -667,7 +667,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+        Copyrights &copy; 2021 Prince Chen. All Rights Reserved.
     </span>
 </footer>
 
@@ -712,7 +712,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -762,7 +762,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>

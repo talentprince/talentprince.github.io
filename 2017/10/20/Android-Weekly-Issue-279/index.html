@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"October 15th, 2017\nAndroid Weekly Issue #279本期主要内容包含与Clean Architecture相关的两篇(包结构,离线app),IoT,Google AI (DialogFlow),以及Kotlin Coroutines的相关知识,还包含如何使用Kotlin以及RxJava2提升编码效能的文章,以及Dagger与Firbase配置的文章,以及一篇有意思的制作世界上最小APK的文章.\n代码主要看点在于Kotlin Coroutines.\n\nARTICLES &amp; TUTORIALSPackage-by-Feature in Modularised Android Projects 文章介绍了对于Android Clean Architecture如何按照feature来分包,app会被分为Data,Remote,Cache,Presentation,View五个部分,每个部分都会有一个Conversations的子包包含Model,Mapper等相关模块,并且还包含一些特有的子包,如View会有Inject模块,具体可看原文.\nExploring the .class side of Kotlin — Part 2 文章继续介绍作者的习惯,开一个CS Bytecode Viewer关注每次Kotlin代码改变后, .class的变化.\nAndroid Things – Temperature Sensor, I2C on the Rainbow Hat 文章介绍了如何通过I2C协议开发IoT,这里用到的是Rainbow Hat,一个温度传感器.\nBuilding Offline-First App using MVVM, RxJava, Room and Job Queue 文章介绍了作者的一个Demo,实现了离线功能,架构上使用了Clean Architecture,UI与Database唯一绑定,后台运行SchedulerJob对数据库的数据进行Sync,如果成功将isSynced更新为True,如果失败则将其删掉.\nExploring Dialogflow: Understanding Agent Interaction Google的API.IA十月份换名字啦,现在叫DialogFlow,听起来是不是更生动了一些.文章介绍了DialogFlow的一些概念,如Invocation定义如何启动会话,Intent定义一个话题,User Saying定义某个话题的关键词来触发话题,Entities是Request关键字的映射,Fulfillment Request是通过Entity Value来查询结果填充问题答案的过程,Response是最终给User的答案.\nSetup Firebase on Android with multiple environments 如何在Android与iOS上配置Firebase…\nImprove your tests with Kotlin in Android — Pt.2 文章介绍了通过kotlin的特点以及mockito-kotlin来对传统的代码进行改造.\n如使用了(backticks)把你的test方法名包起来可以加空格标点成为一句话,更有意义.\n使用apply或者with来省略receiver\n使用1mock &#123; on &#123;&#125; then &#123;&#125; &#125;\n来封装一些无参的when().then()等.\nPlaying APK Golf 文章讲述了如何制作一个世界上最小的APK,只有1757Bytes,并称如果谁能再缩小可以提pr,这个最小的apk连dex文件都删掉了,整个apk只有包含一个touch出来的dex与简化后的manifest,而且在Android O上是合法的apk.\nKeeping the Daggers Sharp 介绍了Dagger2的一些基本知识,包括@Provides与@Inject,@Binds等等,内容不多.\nThe missing RxJava 2 guide: Supercharge your Android development 文章是一个帮助你从异步回调世界来到React世界的说明书,先讲述了RxJava的优势.\n\n轻松掌管多线程\n再也不会为回调无底洞烦恼\n很好的错误处理机制\n强大的operator\n代码更少错误更少bug更少\n跨平台(主要每个平台都有对应的Rx框架)\n\n而后介绍了3O,Observable,Observer,Operator,以及线程相关的操作符.\nModular Architecture for faster Build Time 介绍了如何提升Build速度,当然除了常设置的gralde属性,如开启daemon,parallel,单元测试开启多线程,多VM支持.更重要的是,程序最好模块化,这样不改动的module将不会编译,提升了整体速度.\nDiving deep into Kotlin Coroutines 介绍了Kotlin实验室的Coroutines的一些知识,最简单的launch{}与可以返回值的async{},可以阻塞当前coroutine的suspend function,以及可以等待线程完成的await()与join()\nReactive Mythology: Interrupt Patterns 文章介绍了通过一些操作符来实现Intercept,如takeUtil,或者通过compose来截断(switchOnNext到Observable.nerver),或者与会抛异常的Observable来merge,具体可以查看他的code.\nLIBRARIES &amp; CODEliterallytoast 说是Toast,但实际上是个弹框,这个库给你真正弹出一个烤面包来.\nchips-input-layout 可以把输入框输入字串包在一个Chips里面,每一个Chips可以单独关闭或者放大..有的库可能叫Pills.\n","dateCreated":"2017-10-20T12:42:58+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-10-20T12:42:58+08:00","description":"October 15th, 2017\nAndroid Weekly Issue #279本期主要内容包含与Clean Architecture相关的两篇(包结构,离线app),IoT,Google AI (DialogFlow),以及Kotlin Coroutines的相关知识,还包含如何使用Kotlin以及RxJava2提升编码效能的文章,以及Dagger与Firbase配置的文章,以及一篇有意思的制作世界上最小APK的文章.\n代码主要看点在于Kotlin Coroutines.","headline":"Android Weekly Issue #279","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1508475006/279_eqp0pr.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/10/20/Android-Weekly-Issue-279/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/10/20/Android-Weekly-Issue-279/","keywords":"Kotlin Coroutines, RxJava, Clean Architecture, IoT, DialogFlow, Firebase, Dagger, Modular Architecture","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1508475006/279_eqp0pr.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"October 15th, 2017\nAndroid Weekly Issue #279本期主要内容包含与Clean Architecture相关的两篇(包结构,离线app),IoT,Google AI (DialogFlow),以及Kotlin Coroutines的相关知识,还包含如何使用Kotlin以及RxJava2提升编码效能的文章,以及Dagger与Firbase配置的文章,以及一篇有意思的制作世界上最小APK的文章.\n代码主要看点在于Kotlin Coroutines.\n\nARTICLES &amp; TUTORIALSPackage-by-Feature in Modularised Android Projects 文章介绍了对于Android Clean Architecture如何按照feature来分包,app会被分为Data,Remote,Cache,Presentation,View五个部分,每个部分都会有一个Conversations的子包包含Model,Mapper等相关模块,并且还包含一些特有的子包,如View会有Inject模块,具体可看原文.\nExploring the .class side of Kotlin — Part 2 文章继续介绍作者的习惯,开一个CS Bytecode Viewer关注每次Kotlin代码改变后, .class的变化.\nAndroid Things – Temperature Sensor, I2C on the Rainbow Hat 文章介绍了如何通过I2C协议开发IoT,这里用到的是Rainbow Hat,一个温度传感器.\nBuilding Offline-First App using MVVM, RxJava, Room and Job Queue 文章介绍了作者的一个Demo,实现了离线功能,架构上使用了Clean Architecture,UI与Database唯一绑定,后台运行SchedulerJob对数据库的数据进行Sync,如果成功将isSynced更新为True,如果失败则将其删掉.\nExploring Dialogflow: Understanding Agent Interaction Google的API.IA十月份换名字啦,现在叫DialogFlow,听起来是不是更生动了一些.文章介绍了DialogFlow的一些概念,如Invocation定义如何启动会话,Intent定义一个话题,User Saying定义某个话题的关键词来触发话题,Entities是Request关键字的映射,Fulfillment Request是通过Entity Value来查询结果填充问题答案的过程,Response是最终给User的答案.\nSetup Firebase on Android with multiple environments 如何在Android与iOS上配置Firebase…\nImprove your tests with Kotlin in Android — Pt.2 文章介绍了通过kotlin的特点以及mockito-kotlin来对传统的代码进行改造.\n如使用了(backticks)把你的test方法名包起来可以加空格标点成为一句话,更有意义.\n使用apply或者with来省略receiver\n使用1mock &#123; on &#123;&#125; then &#123;&#125; &#125;\n来封装一些无参的when().then()等.\nPlaying APK Golf 文章讲述了如何制作一个世界上最小的APK,只有1757Bytes,并称如果谁能再缩小可以提pr,这个最小的apk连dex文件都删掉了,整个apk只有包含一个touch出来的dex与简化后的manifest,而且在Android O上是合法的apk.\nKeeping the Daggers Sharp 介绍了Dagger2的一些基本知识,包括@Provides与@Inject,@Binds等等,内容不多.\nThe missing RxJava 2 guide: Supercharge your Android development 文章是一个帮助你从异步回调世界来到React世界的说明书,先讲述了RxJava的优势.\n\n轻松掌管多线程\n再也不会为回调无底洞烦恼\n很好的错误处理机制\n强大的operator\n代码更少错误更少bug更少\n跨平台(主要每个平台都有对应的Rx框架)\n\n而后介绍了3O,Observable,Observer,Operator,以及线程相关的操作符.\nModular Architecture for faster Build Time 介绍了如何提升Build速度,当然除了常设置的gralde属性,如开启daemon,parallel,单元测试开启多线程,多VM支持.更重要的是,程序最好模块化,这样不改动的module将不会编译,提升了整体速度.\nDiving deep into Kotlin Coroutines 介绍了Kotlin实验室的Coroutines的一些知识,最简单的launch{}与可以返回值的async{},可以阻塞当前coroutine的suspend function,以及可以等待线程完成的await()与join()\nReactive Mythology: Interrupt Patterns 文章介绍了通过一些操作符来实现Intercept,如takeUtil,或者通过compose来截断(switchOnNext到Observable.nerver),或者与会抛异常的Observable来merge,具体可以查看他的code.\nLIBRARIES &amp; CODEliterallytoast 说是Toast,但实际上是个弹框,这个库给你真正弹出一个烤面包来.\nchips-input-layout 可以把输入框输入字串包在一个Chips里面,每一个Chips可以单独关闭或者放大..有的库可能叫Pills.\n","dateCreated":"2017-10-20T12:42:58+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-10-20T12:42:58+08:00","description":"October 15th, 2017\nAndroid Weekly Issue #279本期主要内容包含与Clean Architecture相关的两篇(包结构,离线app),IoT,Google AI (DialogFlow),以及Kotlin Coroutines的相关知识,还包含如何使用Kotlin以及RxJava2提升编码效能的文章,以及Dagger与Firbase配置的文章,以及一篇有意思的制作世界上最小APK的文章.\n代码主要看点在于Kotlin Coroutines.","headline":"Android Weekly Issue #279","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1508475006/279_eqp0pr.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/10/20/Android-Weekly-Issue-279/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/10/20/Android-Weekly-Issue-279/","keywords":"Kotlin Coroutines, RxJava, Clean Architecture, IoT, DialogFlow, Firebase, Dagger, Modular Architecture","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1508475006/279_eqp0pr.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Kotlin Coroutines,RxJava,Clean Architecture,IoT,DialogFlow,Firebase,Dagger,Modular Architecture">
 <meta property="og:type" content="blog">
@@ -195,7 +195,7 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/talentprince"
                             
                                 target="_blank"
                             
@@ -349,7 +349,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -399,7 +399,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -419,7 +419,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+        Copyrights &copy; 2021 Prince Chen. All Rights Reserved.
     </span>
 </footer>
 
@@ -464,7 +464,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -514,7 +514,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>

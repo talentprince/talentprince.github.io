@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.\n\nARTICLES &amp; TUTORIALSExploring Android P: Priority Buckets 这次Google IO Android P推出了Priority Buckets来提供更好的电池管理.\n通过使用频率,将App分为Active,Working Set,Frequent,Rare,Never几个级别, 不同级别会对Jobs还有Alarms有不同的最大延时.\n分组是动态改变的.\nMy checklist for fixing build issues 作者的AndroidTest里面Import都无法识别了,提示Cannot find symbol,解决办法是清掉一些缓存.\n包括本地Gradle,Project idea与gradle,以及AS的Cache…而后解决了.\nUnderstanding the emotions of users through NLP 作者讲解了通过Firebase functions platform + Google Cloud Natural搭建一个App的客服系统.\nIntroducing Billingx Google唯一渠道实现App内购买的API就是Billing Library,但是对于测试者来说使用起来很麻烦,而且直到2018 Google I/O也没有新的动作.\n之前也分享过一个叫做Register,通过Mock,实现了本地的测试,但是会在Production Apk中引入没必要的代码.\n作者自己封装了一个叫BillingX的库,提供了空实现给Production版,通过releaseImplementation引入.\nText Recognition with ML Kit 介绍了这次ML Kit中的云端文字识别API,通过Firebase服务Enable,可以实现图片中文字的in-cloud text recognition,不想掏钱可以试用哦,选择Blaze Plan按需缴费,头1000次请求免费的.\nPublishing your Android, Kotlin or Java library to mavenCentral 大家平时常用的Chris Banes的脚本要迁移到Kotlin上还要做一些改动,作者自己弄了一份,并且把它做成了plugin,只需要加到自己的plugin dependencies里面就行了.\nPerformance Improvements for Search on The Yelp Android App - Part 3 本篇为系列文章的最后一部分,主要介绍了CI上面的Performance如何检测系统帧率变化.\nYelp通过FrameMetrics API来获取帧率信息,低于16ms就是快帧,高于就是慢帧,他们会对装有信息的JSON进行分析,其中dopped frame会列出各个部分所消耗的时间.\n最后又总结了整个性能提升过程中所采取的措施,除去这节的Performance Monitoring来防止Regression导致的问题,还包括之前的减少主线程工作,异步inflating layout,对搜索结果view model的caching等.\nAndroid Things client library for Google Cloud IoT Core 为广大IoT爱好者带来福音,client library提供了硬件设备轻松连接google Cloud IoT Core,通过几行代码,便可以轻松的上传传感器信息到云端进行控制.\n1implementation &apos;com.google.android.things:cloud-iot-core:1.0.0&apos;\n由于硬件设备所在的环境多变,library还提供了很多错误处理机制,数据信息缓存等.\nHow to Migrate from Android-Job to WorkManager 作者以前用的是Evernote搞的AndroidJob,本篇介绍了他如何迁移到google最新的WorkManager上面.\n基本使用方法跟AndroidJob类似,Woker通过OneTimeWorkRequestBuilder去build单发事件,通过PeriodicWorkRequestBuilder去build周期性事件,通过setInputData可以添加一些数据,通过setConstraints添加约束,如网络要求等,通过WorkManager.getInstance().enqueue讲Work加入队列.\nWork触发时会执行doWork方法, 返回值Worker.Result.SUCCESS表示成功,类对象inputData可以获取传进来的数据.\nWhat’s Next for Mobile at Airbnb 作者介绍了在Airbnb放弃RN之后下一步要走的路线.\n\n通过DSL定义跨平台统一的设计语言,实现Server-Driven Rendering,通过自己开发的基于Sketch的设计软件Lona做到一套设计生成不同平台的代码.当然这一切都是在Build的时候做的.\n基于之前的Epoxy,推出新的MvRx,并且支持Android与iOS,Android上是对RecyclerView的封装,可以更方便的实现复杂List的渲染.\n通过gradle product flavors来实现编译速度的提升,只去下载自己关心的Module.\n\nSQLite on Kotlin/Native Knarch, Kotlin跨平台数据库的一个非常早起的版本.很多地方还不成熟,尤其是对Android的支持,如何架构还在讨论总,在使用过程中,多线程也是个问题.\nLIBRARIES &amp; CODESaveState 保存状态的一个库,相较于Icepick支持Kotlin.\nmorph-bottom-navigation 基于Bottom Navigation的一个库,有比较好看的动画效果.\ngradle-maven-publish-plugin 支持kotlin的maven发布插件.\n","dateCreated":"2018-06-24T15:00:01+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-06-24T15:00:01+08:00","description":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.","headline":"Android Weekly Issue #315","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/","keywords":"Android Weekly, Priority Bucket, Cloud IoT Core, ML Kit, WorkManager","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.\n\nARTICLES &amp; TUTORIALSExploring Android P: Priority Buckets 这次Google IO Android P推出了Priority Buckets来提供更好的电池管理.\n通过使用频率,将App分为Active,Working Set,Frequent,Rare,Never几个级别, 不同级别会对Jobs还有Alarms有不同的最大延时.\n分组是动态改变的.\nMy checklist for fixing build issues 作者的AndroidTest里面Import都无法识别了,提示Cannot find symbol,解决办法是清掉一些缓存.\n包括本地Gradle,Project idea与gradle,以及AS的Cache…而后解决了.\nUnderstanding the emotions of users through NLP 作者讲解了通过Firebase functions platform + Google Cloud Natural搭建一个App的客服系统.\nIntroducing Billingx Google唯一渠道实现App内购买的API就是Billing Library,但是对于测试者来说使用起来很麻烦,而且直到2018 Google I/O也没有新的动作.\n之前也分享过一个叫做Register,通过Mock,实现了本地的测试,但是会在Production Apk中引入没必要的代码.\n作者自己封装了一个叫BillingX的库,提供了空实现给Production版,通过releaseImplementation引入.\nText Recognition with ML Kit 介绍了这次ML Kit中的云端文字识别API,通过Firebase服务Enable,可以实现图片中文字的in-cloud text recognition,不想掏钱可以试用哦,选择Blaze Plan按需缴费,头1000次请求免费的.\nPublishing your Android, Kotlin or Java library to mavenCentral 大家平时常用的Chris Banes的脚本要迁移到Kotlin上还要做一些改动,作者自己弄了一份,并且把它做成了plugin,只需要加到自己的plugin dependencies里面就行了.\nPerformance Improvements for Search on The Yelp Android App - Part 3 本篇为系列文章的最后一部分,主要介绍了CI上面的Performance如何检测系统帧率变化.\nYelp通过FrameMetrics API来获取帧率信息,低于16ms就是快帧,高于就是慢帧,他们会对装有信息的JSON进行分析,其中dopped frame会列出各个部分所消耗的时间.\n最后又总结了整个性能提升过程中所采取的措施,除去这节的Performance Monitoring来防止Regression导致的问题,还包括之前的减少主线程工作,异步inflating layout,对搜索结果view model的caching等.\nAndroid Things client library for Google Cloud IoT Core 为广大IoT爱好者带来福音,client library提供了硬件设备轻松连接google Cloud IoT Core,通过几行代码,便可以轻松的上传传感器信息到云端进行控制.\n1implementation &apos;com.google.android.things:cloud-iot-core:1.0.0&apos;\n由于硬件设备所在的环境多变,library还提供了很多错误处理机制,数据信息缓存等.\nHow to Migrate from Android-Job to WorkManager 作者以前用的是Evernote搞的AndroidJob,本篇介绍了他如何迁移到google最新的WorkManager上面.\n基本使用方法跟AndroidJob类似,Woker通过OneTimeWorkRequestBuilder去build单发事件,通过PeriodicWorkRequestBuilder去build周期性事件,通过setInputData可以添加一些数据,通过setConstraints添加约束,如网络要求等,通过WorkManager.getInstance().enqueue讲Work加入队列.\nWork触发时会执行doWork方法, 返回值Worker.Result.SUCCESS表示成功,类对象inputData可以获取传进来的数据.\nWhat’s Next for Mobile at Airbnb 作者介绍了在Airbnb放弃RN之后下一步要走的路线.\n\n通过DSL定义跨平台统一的设计语言,实现Server-Driven Rendering,通过自己开发的基于Sketch的设计软件Lona做到一套设计生成不同平台的代码.当然这一切都是在Build的时候做的.\n基于之前的Epoxy,推出新的MvRx,并且支持Android与iOS,Android上是对RecyclerView的封装,可以更方便的实现复杂List的渲染.\n通过gradle product flavors来实现编译速度的提升,只去下载自己关心的Module.\n\nSQLite on Kotlin/Native Knarch, Kotlin跨平台数据库的一个非常早起的版本.很多地方还不成熟,尤其是对Android的支持,如何架构还在讨论总,在使用过程中,多线程也是个问题.\nLIBRARIES &amp; CODESaveState 保存状态的一个库,相较于Icepick支持Kotlin.\nmorph-bottom-navigation 基于Bottom Navigation的一个库,有比较好看的动画效果.\ngradle-maven-publish-plugin 支持kotlin的maven发布插件.\n","dateCreated":"2018-06-24T15:00:01+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-06-24T15:00:01+08:00","description":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.","headline":"Android Weekly Issue #315","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/","keywords":"Android Weekly, Priority Bucket, Cloud IoT Core, ML Kit, WorkManager","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Android Weekly,Priority Bucket,Cloud IoT Core,ML Kit,WorkManager">
 <meta property="og:type" content="blog">
@@ -195,7 +195,7 @@
                     
                         <a
                             class="sidebar-button-link "
-                            href="https://github.com/"
+                            href="https://github.com/talentprince"
                             
                                 target="_blank"
                             
@@ -350,7 +350,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -400,7 +400,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -420,7 +420,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2020 Prince Chen. All Rights Reserved.
+        Copyrights &copy; 2021 Prince Chen. All Rights Reserved.
     </span>
 </footer>
 
@@ -465,7 +465,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -515,7 +515,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
