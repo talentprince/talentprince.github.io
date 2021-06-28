@@ -1,0 +1,2109 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Android Framework Points - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Android Framework这一系列学习了很久， 也跟了不少源码， 推荐一个查看源码的网站非常不错， 速度也很快。希望可以帮助了解Android Framework各个知识点，也作为自己的一个备忘录，便于查询。\n\n\nZygote\n作用\n启动SystemServer\n会用到\nJNI函数, 主题资源, 贡献库\n\n\n负责通过ServerManager加载各个系统服务\n\n\n孵化进程\n\n\n进程启动三步\n进程启动-&gt;准备工作-&gt;Loop\n\n\nLinux第一个进程, Init进程\ninit.rc配置文件中指定ServiceManager的启动\n紧接来启动Zygote, MediaServer, SurfaceFlinger等, 他们都是init子进程\n启动方式\nfork+handle\nfork+execve\nexecve可以替换到父进程资源\n\n\n\n\n\n\n信号处理\nSIGCHILD 父进程根据该信号重启子进程\n\n\nNative部分\n启动虚拟机\n应用进程使用Zygote孵化出来的, 虚拟机已经启动好了\n子进程会继承该虚拟机, 只需要重置状态, 重启一些守护线程\n\n\n注册JNI函数\n进入Java\n\n\nJava部分\n预加载资源\n启动system server (fork单独进程)\nLoop循环等待socket消息\n得到消息调用runOnce, 调用Zygote.forkAndSpecialize()\n在子进程执行参数列表指定的ActivityThread.main函数\n\n\n特点\nZygote fork保证单线程\n父进程有多个线程, 子进程只有一个, 会造成状态不一致或者死锁\n在fork之前将所有线程都停掉, fork完成后再父进程内重启\n\n\nZygote的IPC(与SystemServer)采用socket而不是binder\n原因有多个, 主要是因为binder需要注册在ServiceManager, 然后AMS与Zygote通信的时候又要在ServiceManager中查询binder对象, 来来回回繁琐\n其次如果zygote启动binder再启动SystemServer, 两个进程会同一描述符, 得在SystemService中关闭旧的再次重启新的, 增加复杂度\nApp与SystemServer内各个服务通过Binder通信\n\n\n\n\n\n\nAndroid系统的启动\nInit fork出Zygote\nZygote进程内启动虚拟机, 注册JNI函数, 预加载资源\n启动SystemService, 进入Socket Loop\nZygote.forkSystemServer启动进程\nhandleSystemServerProcess加载逻辑\nnativeZygoteInit启动binder线程池与app以及ServiceManager通信\napplicationInit启动Java SystemServer类main函数\nmain函数启动了MainLooper, 加载共享库\nStart Bootstrap, Core, Other三个service\n进入Loop循环, 但不一定处理主线程消息, 只是为了不让SystemServer App退出\n\n\n\n\n启动Launcher, 通过PKMS获取所有安装程序, 进行显示\n系统服务的发布\npublishBinderService(name, binderService)调用ServiceManager注册自己的Binder\n\n\n系统服务的线程\n工作线程 DisplayThread, FgThread, IoThread, UiThread\nbinder线程\n\n\n服务相互依赖\n分批启动\nAMS, PMS, PKMS先启动\n\n\n分阶段启动\n通知已经启动的service, 根据阶段使用相关服务\n\n\n\n\n\n\n添加系统服务\n添加\n通过ServiceManager.addService进行注册\n在SystemService启动的时候来启动其他系统服务\n服务不完全在SystemService进程, 小部分服务开了自己的进程, 如SurfaceFlinger\nSurfaceFlinger是纯底层服务注册\n创建ProcessState启动binder, 分配缓冲区等\n打开binder驱动\n映射内存, 分配缓冲区\n启动binder线程, 进入loop, 可以创建也可以使用进程主线程\n\n\n创建SurfaceFlinger, init初始化\n通过底层IServiceManger.addService将上一步创建的flinger注册\n由于ServiceManager跟SurfaceFlinger都是init进程拉起来的, 需循环等待拿取IServiceManager\nflinger进入loop循环\n\n\n\n\n获取\ngetSystemService最终在ContextImp里通过SystemServiceRegistry获取已经注册的SYSTEM_SERVICE_FETCHERSMap, 拿到对应Fetcher来getService\ngetService内有加锁的cache数组来缓存不同Service\n如果cache不存在, 则调用CachedServiceFetcher的createService来创建\ncreateService里调用ServiceManager.getService来或许远端服务的IBinder,  其中ServiceManager对象也是远端的IBinder\n\n\n如何添加一个系统服务\n时机\n跑在SystermServer\n单独跑进程, 加入init.rc中\n\n\n启动binder机制, 如果在SystemServer, 可以利用已有\n服务初始化\n注册到ServiceManager\n最好给客户端提供ServiceFetcher, 保持与其他服务调用一直\n\n\n系统服务与应用服务\n系统服务\n系统服务大多跑在SystemService内, 大多都在binder线程池, 少数有自己工作线程, 对于独立进程的服务大多跑在native, 自己启动binder机制\n系统服务在binder线程中等待客户端请求, 分发到具体的服务\n通过ServiceManager.addService注册, 只有系统服务才能注册\n客户端通过Context.getSystemService获取系统服务对象, 进行使用\n\n\n应用服务\n应用服务启动都是由应用端发起, 内部调用AMS, 创建Service的Record\nAMS只负责调度, 应用服务还是在应用端创建启动\n应用向AMS发起bindService, 如果已经在AMS注册过则返回Binder, 否则通知客户端创建, 并注册, 再返回\n应用服务通过bindService回调的onServiceConnected的IBinder对象调用远端服务\n\n\n\n\n\n\nServiceManager\n启动\n单独进程, 通过init.rc启动\n启动binder\n打开binder驱动, 映射128k空间作为数据传输 (普通程序有1m)\n\n\n发布服务\n通过ioctl, 告诉binder驱动ServiceManager就绪, 传入BINDER_SET_CONTEXT_MGR指令\n\n\n等待响应请求\nbinder_loop内调用binder_write\nbinder_write通过ioctl传入BINDER_WRITE_READ, 第三个参数binder_write_read中的write_size与read_size的大小来控制读写, 如果都大于0, 优先写\nioctl第三个参数控制写入BC_ENTER_LOOP, 将当前线程注册为binder线程\n将write_size置为0, 进入死循环, 将read_size置为sizeof(readbuf), 通过ioctl读取数据\n通过binder_parse解析readbuf, 并通过最后一个回调函数bind_handle返回\n\n\n\n\n获取\n底层获取ServiceManager\n通过defaultServiceManger()获取对象\n通过全局锁, 内部循环sleep(1), 通过ProcessState::getContextObject获取gDefaultServiceManager\n之所以循环, 因为底层例如surfaceflinger与servicemanager都是一起初始化的, 可能还没有创建好\ngetContextObject内部调用getStrongProxyForHandle(0), 0为数组索引, 返回BpBinder(IBinder)对象\ninterface_cast(bpBinder)相当于IServiceManager::asInterface(), 最终调用new BpServiceManager(bpBinder)\nIServiceManager通过宏定义DECLARE_META_INTERFACE与IMPLEMENT_META_INTERFACE实现asInterface方法, 内部创建Bp###\n\n\n\n\n\n\n获取Service\nJava层通过ServiceManager#getService\n底层通过ServiceManager的getService\n通过remote()拿到的BpBinder, 带上name发送transact CHECK_SERVICE_TRANSACTION获取\nsvcmgr_handler得到消息后, 查询链表\n\n\n\n\n添加\ndefaultServicce\n通过remote()拿到BpBinder对象\n再调用transact发送ADD_SERVICE_TRANSACTION, 发送name与binder对象\nBpBinder内部通过调用IPCThreadState单例的transact发送\n\n\n处理\nServiceManger通过svcmgr_handler(service_manager.c)进行处理请求\n接收到SVC_MGR_ADD_SERVICE后调用do_add_service将binder加入链表\n\n\n\n\n\n\nBinder\n启动时机\nZygote在fork进程后, 子进程nativeZygoteInit中启动binder\n\n\n应用启动binder\nzygote创建进程初始化过程中, 通过ProcessState的构造函数, 打开binder驱动, 打开成功则分配缓冲区大小\nProcessState::startThreadPool通过IPCThreadState线程单例, 向mOut的Parcel写入, 告诉驱动, 注册线程\n进入Loop循环, 死循环不断从mIn读取驱动数据\n\n\n\n\nApplication\nApplication跟着进程走\n作用\n保存进程内全局变量\n初始化\n提供Context\n\n\n创建\nActivityThread#attatch -&gt; AMS -&gt; AMS#attachApplicationLocked -&gt; IApplicationThread#bindApplication -&gt; sendMessage -&gt; handleBindApplication -&gt; makeApplication + onCreate\nmakeApplication通过反射创建Application, 并调用attach(attachBaseContext)传入context(ContextImpl)\n\n\n不能在applicaiton初始化内做耗时操作, 它会影响后续activity, service, broadcast的初始化\n\n\nContext\nContext才是各个组件的核心, 没有它, Application只是个空壳\n内部持有了ActivityThread, LoadedApk(PackageInfo), ResourceManager, Resource, PackageManger, mServiceCache\n三种Context\nApplication Context\n继承关系\nApplication &lt;- ContextWrapper { Context mBase } &lt;- Context\n\n\n调用关系\n -&gt; attatchBaseContext -&gt; onCreate\n\n\nZygote启动子进程后, 在makeApplication时创建ContextImpl, 并attatch到Application里\n\n\nActivity Context\nperformLaunchActivty中反射创建Activity\n获取application, 创建ContextImpl, 调用Activity#attatch\n调用onCreate\n继承关系\nActivity &lt;- ContextThemeWrapper &lt;- ContextWrapper\nContextThemeWrapper多了Resources.Theme\n\n\n调用关系\n -&gt; attatchBaseContext -&gt; onCreate\n\n\n\n\nService Context\n与Application类似, 反射创建Service, 创建ContextImpl, attatch后调用onCreate\n也继承了ContextWrapper\n\n\nBroadcast\n不继承ContextWrapper\nonReceive的context, 动态注册为注册时的context, 静态注册的则是以application为mBase的ContextWrapper\n\n\nContentProvider\n不继承ContextWrapper\n成员变量mContext是创建的时候传入的Application\n虽然ContentProvider在Application的attatch之后创建并onCreate, 但是它是在Application的onCreate之前.\n\n\n\n\nApp的Context的个数为Activity个体数+Service个数+Application*进程数\ngetApplication是Activity与Service特有返回Application的, 而getApplicationContext是Context的方法, 虽然都返回Application\nActivity的getBaseContext获取的是mBase, 而this是Activity本身\n\n\nActivity\n启动 \nActivityManagerNative.getDefault()获取到AMS的代理Binder, startActivity\n通过transact发送START_ACTIVITY_TRANSACTION\nAMS收到onTransact回调后startActivity\n检测Process是否启动, ProcessRecord是否为空, appthread是否注册\n如果进程未创建, 则通知zygote启动, 这个是基于socket\n启动后父进程将子进程pid返回给AMS, 而子进程启动binder, 并执行ActivityThread的main函数, 通过attatchApplication向AMS注册ApplicationThread, 即应用端的Binder\nAMS中attatchApplication里会通知应用创建Application, 然后启动Activity, Service, Broadcast等挂起的组件\n其中Activity \n通过mFocusedStack获取栈顶Activity\n通过ApplicationThread#scheduleLaunchActivity通知应用端启动\n应用收到消息后发送LAUNCH_ACTIVITY消息到主线程\n主线程调用handleLaunchActivity, 其中performLaunchActivity负责创建启动, handleResumeActivity负责进入resume\n\n\n\n\n\n\n显示\nsetContentView\nWindow.setContentView\nwindow是在attach的时候创建的PhotoWindow\n内部installDecor创建DecorView, 将根布局inflate后加入, 通过ID_ANDROID_CONTENT获取ContentView\n然后再将自己的View inflate到ContentView上\n\n\n\n\nhandleResumeActivity\nWindowManager.addView(decor)\n创建ViewRootImpl, 负责跟WMS交互, 调用setView设置decorView\nrequestLayout\n通过choreographer触发绘制回调, doTraversal负责跟WMS进行交互, 进行绘制\n分为四步, relayout申请surface, measure, layout, draw\n\n\nwindowSession.addToDisplay注册window\n其中windowSession是与WMS通信的binder\nWMS负责分配Surface, 掌管其尺寸位置, 控制窗口动画, 输入时间分发\n\n\n注册后就与WMS形成双向调用\n\n\n\n\n\n\n然后activity.makeVisible, 只是触发重绘\n\n\n\n\nUI线程启动\n通过runOnUiThread在UI线程执行\nonResume之前, 会post到RunQueue等待ViewRootImp#AttachInfo创建\nonResume之后, 直接由AttachInfo的线程handler进行处理\n所以UI线程就是ViewRootImp创建时的线程\nViewRootImp&lt;-WindowManagerImp.addView&lt;-WindowManagerGlobal.addView&lt;-ActivityThread.handleResumeActivity\n所以UI线程就是主线程, 如果自定义在子线程通过WindowManager来addView, 那么就只能在子线程刷新\n\n\n\n\n\n\nService\n启动\nstartService向AMS发起请求, 将Intent发送过去\n通过ActiveServices(mServices)进行启动准备\n内部检查到对应的Service对象后, 创建StartItem并添加到pendingStarts数组, 为之后调用onStartCommand用\n继续调用bringUpServiceLocked, 检测Service是否存在, 如果没启动, 则检测Service进程是否创建, 如果没启动则启动进程, 并添加到PendingServices里, 否则直接通过realStartServiceLocked启动Service, 内部通过scheduleCreateService让应用创建Service, 再通过scheduleServiceArgs让应用调用onStartCommand\n进程应用启动成功后会向AMS发送attatchApplicationLocked的请求, 来处理PendingServices的启动, 调用realStartServiceLocked\n\n\n绑定\n调用bindService后, 会将ServiceConnect包装成IServiceConnection交给AMS, 内部是通过ServiceDispatcher来获取\nAMS会调用该Binder的connected, 将Service的Binder发回应用, 如果Service为null, 说明Service挂了断开了, 如果不等于null, 说明连接成功, 应用有Service的Binder的缓存, 如果同样则不会重复调用onServiceConnected, 只有当Service死了才会onServiceDisconnected\nAMS接收到bind请求后, 如果Service没启动则通过bringUpServiceLocked拉起, 拉起过程在调用应用CreateService与onStartCommand之间, 调用requestServiceBindingLocked\n如果没有请求过绑定, 则调用客户端绑定, 标记requested\n应用通过onBind生成Service的Binder, 并发布到AMS, AMS标记requested/received, 并遍历ConnectionRecord通知应用(connected)\nonRebind的触发是当Service还在, 但是应用死了, 会在unBind的时候将doRebind标记为true, 下次再次bind的时候会调用onRebind\n应用端ServiceAMS的ServiceRecord多个IntentBindService (因为可多个Intent绑定一个Service)多个AppBindRecord (因为Intent可能来自不同进程)ConnectionRecord (一个进程可以有多个Connection)\n\n\n\n\n如果Service已经绑定到AMS, 即received标记true, 则直接connected返回应用\n否则检查是否请求过Service, 即requested, 没有则调用requestServiceBindingLocked\nIServiceConnection是与Context+ServiceConnect对应的, 不同组合对应不同的AMS中的Binder\n\n\n\n\nBroadcast\n动态广播注册\nBroadcastReceiver被包装成ReceiverDispatcher, 内部生成IIntentReceiver发给AMS, 则AMS可通过Dispatcher调用Broadcast\nAMS收到注册请求后, 生成BroadcastList(List), 并添加对应filter, 并且存入Map&lt;IBinder, BroadcastList&gt;, 故多个Filter可能对应同一个Receiver\n\n\n动态广播分发\nAMS通过Intent查找对应Receiver列表, 创建Record, 放入并行队列(动态广播), 触发分发scheduleBroadcastsLockeded\nHandle收到消息, 调用processNextBroadcast中循环取出record, 通过performReceiveLocked通过activityThread转换为串行, 发送给每一个receiver\nperformReceiveLocked内调用applicationThread.scheduleRegisterReceiver将广播分发给客户端, 客户端串行处理\n静态广播与动态广播带oder还需要通知AMS广播执行结束, 这样AMS才可以下发新的广播, 普通动态广播不用调用sendFinished\nAMS通过检测客户端发过来的Broadcast.state来判断, 如果串行动态广播为CALL_DONE_RECEIVE, 静态广播为APP_RECEIVE, 这两种都会触发AMS继续process下一个\n\n\n\n\n静态广播注册\nPMS在解析到Manifest的receiver标签的时候, 创建Activity Component对象, 将其注册在PMS中\nsendBroadcast到AMS中后, broadcastIntentLocked先根据Intent查找静态广播(collectReceiverComponents), 再查找动态广播(receiverResolver.queryIntent)\n如果没有oder, 且有动态广播, 则加入并行队列\n剩下的跟静态receiver合并在一起, 加入串行队列\nBroadcastQueue在处理串行广播时相对复杂\n如果有Pending, 就返回, 等待进程启动\n如果超时, 则处理下一个\n如果没超时, 则返回等待处理\n如果已经分发完一个receiver, 就继续分发下一个\n如果是动态注册, 直接分发\n如果是静态注册, 检查进程, 如果启动了就直接分发, 如果没启动, 则将广播标记为pending\n进程启动attachApplication后, 继续处理pending广播\n\n\n\n\n静态广播分发\nAMS最终调用ActivityThread.scheduleReceiver, 应用端先加载Broadcast的类, 创建BroadcastReceiver, 拿到Application, 拿到app的baseContext, 回调onReceive\n如果进程不存在, AMS请求启动进程后, 进程启动成功, 在attachApplicationLocked中, 调用sendPendingBroadcastLocked分发\n\n\n\n\nProvider\nContentResolver是在ContextImpl创建的时候创建的, ApplicationContentResolver\n当调用resolver的函数时, 在acquireProvider中先查找本地保存的provider binder对象, 没有就请求AMS, AMS返回holder, 本地需要安装再使用\n本地查找通过authority+userId, 拿到ProviderClientRecord, 该对象对应AMS的ProviderRecord, 然后从中拿出Binder检查alive, 并决定使用还是客户端+服务器进行清理\n如果本地查不到, 则请求AMS, 调用getContentProvider返回Holder\nAMS检查如果有Record就直接返回\n当不存在时, 如果能跑在调用的客户端进程(canRunHere, multiprocess=true或者进程名相同, 并且uid相同), 就返回\n当holder中的provider为空, 让应用端自己创建, 不用通过binder通信, 更快\n\n\n如果不能跑在调用者进程, 当provider进程没启动则通知Zygote启动它的进程 (process), 如果已经启动了但是Binder还未注册给AMS则请求Provider发布\n应用主动发布, Provider进程启动成功后, attach过程中, 查询PMS得到provider列表, 然后发送消息让AMS等待Provider发布binder, 同时发送给客户端bind请求, 带上provider列表, 为了让应用单安装并发布binder\n应用端收到请求后, 分别安装并将holder(内有binder)返回AMS\nAMS收到holders后, 把binder保存在自己的records里, 并notifyAll通知等待发布的线程\n\n\n如果进程已启动但没有provider, AMS则主动请求应用发布, 应用切主线程(scheduleInstallProvider), 再调用installContentProviders, 创建provider, 调用onCreate, 再发布到AMS注册\n\n\n\n\n应用端收到holder之后, 进行installProvider操作\n如果holder.provider不为空, 则使用binder proxy\n如果为空(multiprocess=true或者统一uid+进程名相同, 即允许调用着实例provider), 先反射创建ContentProvider, 从中获得IContentProvider, 实际上是binder实体, 并attach传入context(调用ContentProvider的onCreate)\n创建ProviderClientRecord对象, 赋值IContentProvider到holder.provider, 并保存在mLocalProvidersByName中, 再返回holder\n\n\n\n\n\n\nUI刷新机制\n应用申请buffer-&gt;系统返回buffer-&gt;应用绘制提交-&gt;系统显示屏幕\n屏幕缓存不止一个, 至少两个\n屏幕固定刷新, 在接收到vsync信号后\n系统的Choreographer控制消息只有等vsync消息来了后触发UI绘制, 保证跟vsync同步\nrequestLayout会给消息队列插入屏障, 再给Choreographer里post一个callback到队列, 不同线程有不同的Choreographer\n同一个vsync内, 无论掉多少次requestLayout都只能触发一次, 因为只有当下次vsync触发后, 才会将flag保护置位\ncallback如何加入队列\nChoreographer内有数组mCallbackQueues, 根据类型管理单链表, 根据时间排序\n如果当前就是Choreographer的工作线程, 直接schedule, 如果不是, 则发异步消息到其线程, 插入头部\nChoreographer调用scheduleVsyncLocked请求信号, 当vsync时机到来时, SurfaceFlinger会postSyncEvent进行通知 \nscheduleVsyncLocked用来告诉SurfaceFlinger下一个vsync通知我\nDisplayEventReceiver会调用native的函数, 再通过SurfaceFlinger在底层创建的EventConnection#requestNextSync\nConnection是在DisplayEventReceiver的构造中通过SurfaceFlinger创建的\nSurfaceFlinger创建EventThread负责监听Vsync信号, 并通过EventThread创建Connection, 并注册进EventThread等待信号\nEventThread里面等待拿取所有Connections, 便利返回Vsync事件\n等待过程首先检测Vsync信号是否已经到来, 到来就返回connection列表\nConnection通过BitTube发送信号, BitTube类似socket管道, 写端在SurfaceFlinger\nDisplayEventReceiver初始化会通过Connection获取DataChannel(remote()-&gt;transact)拿到Connection远端的Channel的parcel, 再还原回BitTube\nChoreographer构造时就会创建FrameDisplayEventReceiver, 会创建native层将Connection远端Channel接收(mReceivedFd)的fd通过Looper进行监听(addFd), 从而完成监听Vsync闭环\naddFd内部将fd加入epoll event内 (epoll_ctl), Looper内部pollInner的循环, 通过epoll_wait遍历事件, 一种是消息队列事件 (mWakeEventFd == fd), 另外一个种会放在response列表之后处理\n循环response调用response.request.callback-&gt;handleEvent, 返回0就会删除fd, 返回其他则继续监听\nBitTube的回调通过JNI调用Java层层的DisplayEventReceiver的onVsync\n\n\n\n\n\n\n通知会通过FrameDisplayEventReceiver#onVsync回调, 调用doFrame传入当前vsync时间戳来处理消息, 如果当前时间晚于vsync时间戳太多, 则会打log, 在主线程工作太多\n然后根据时间戳到了与否处理四种类型的callback, INPUT, ANIMATION, TRAVERSAL, COMMIT, 通过extractDueCallbackLocked拿出到时见的callback\ncallback内调用doTraversal-&gt;performTraversal来进行真正绘制\n所以并不是每一次Vsync都会绘制, 需要应用自己请求才能收到Vsync信号, 如果没有重绘, 屏幕还会60帧刷新, 只不过用的旧数据\nonDraw完也得等下次Vsync信号来的时候才会刷新\n\n\nSurface\nSurface是一个Parcel，Java类保存native指针，主要传递native指针\nnative层nativeWriteToPacel写入GraphicBufferProducer的binder\nnative层nativeReadToPacel从parcel里读出binder，重新构造成Surface\nperformTraversal第一次绘制通过mWindowSession#relayout请求WMS创建Surface\nWMS创建native层的SurfaceControl， 再创建native层的Surface，其中SurfaceControl负责提供GraphicBufferProducer\nSurface内部主要靠的就是GBP, client创建空Surface, WMS创建SurfaceControl, 再用其内部的GBP绑定为Surface\nSurface绘制原理\n绘制从ViewRootImpl#performTraversal开始, measure, layout, draw\n软绘制\nnativeLockCavas创建Canvas\n底层Surface创建buffer, 供SkBitmap使用, 再赋给Canvas\nSurface通过GraphicBufferProducer#dequeueBuffer获取空间\n如果buffer空间地址需要刷新, 则调用GraphicBufferProducer#requestBuffer在SurfaceFlinger里创建\n赋值给后台mLockedBuffer用于绘制\nBuffer的IPC传递知识传递了文件描述符, 让本地与远端都指向同一片物理内存\n\n\nnativeUnlockCanvasAndPost提交Buffer\n清空Canvas底层bitmap\n拿到buffer在Slot中的index, 并通过GBP-&gt;queueBuffer告诉SurfaceFlinger, 对buffer进行处理, 再通知consumer端onFrameAvailable去合成\n再把buffer赋值给前台mPostedBuffer用于渲染, 清空mLockedBuffer\n\n\n\n\n\n\n\n\nVsync\nSurfaceFlinger\nHWComposer硬件生成信号, VSyncThread软件生成信号\n信号分发给工作线程DispSyncThread\n工作线程两路分发给另外两个线程, app-EventThread, sf-EventThread, 并且加了偏移, 避免抢占CPU\n一个通知应用绘制UI, 一个通知SF对绘制完成的图像进行合成渲染\n\n\nSurfaceFlinger初始化\n初始化两个EventThread, 并传入不同的DispSyncSource, 参数会加入所谓偏移, 以及工作线程分发器(&amp;mPrimaryDispSync)\n初始化HWComposer, 内部包含硬件生成与软件生成, 传入EventHandler, 即SF自己, 再传给PrimaryDispSync工作线程进行分发 \napp线程会将sync发给app进程, sf线程会将sync发给SF主线程\nSFEventThread创建EventConnection, 并获取DataChannel即BitTube, 并将用于接收的Fd添加到Looper, 收到vSync后回调MessageQueue::cb_eventReceiver\n\n\nHWComposer\n加载硬件模块成功, 则不需要软生成, 并且将硬件hook回调hook_vsync赋值\nhook_vsync会调用HWComposer::vsync\n回调EventHandler, 即SurfaceFlinger#onVSyncReceived\n\n\n如果加载失败, 启动VSyncThread\n线程不断执行threadLoop, 通过计算进行sleep(clock_nanosleep)\n回调SurfaceFlinger#onVSyncReceived\n\n\n\n\nSurfaceFlinger#onVSyncReceived内调用PrimaryDispSync#addResyncSample, 保存timestamp到mResyncSamples里, 再通过DispSync#updateModel- updateModel会调用mThread发送信号(mCond.signal())\n- DispSync内的mThread是其工作线程, 循环内等待Vsync信号(mCond), 得到信号后拿到所有callbacks并分发出去\n- Callback就是DispSyncSource的cb, 即SurfaceFlinger自己\n    - 而这个cb内又调用了EventThread的cb(onVSyncEvent)\n    - EventThread将时间戳保存到mVSyncEvent数组, 再通过mCondition.broadcase()唤醒线程\n    - threadLoop等待信号, 循环等待检测mVSyncEvent\n    - 将所有事件通过Connection#postEvent分发\n        - 即DisplayEventReceiver也就是BitTube#sendObject发送出去\n        - tube通过mSendFd发送, mReceiveFd接收\n        - 应用进程通过Connection的Binder接收\n        - 而SF在初始化时添加了接收Fd\n\n\n\n\n\n跨进程通信\n管道\n单向通信, 无名管道父子进程使用, 有名管道也可以给任意多进程使用\npipe(fd)可以生成一堆描述符, fd[0]来读, fd[1]来写\ntips: fork()返回0位子进程, &gt;0位父进程, &lt;0开进程失败\n\n\n进程内, 跨进城都可以使用, 数据量不大的通信常用\n低版本的Looper底层用pipe, 高版本用event_fd\n\n\nsocket\n全双工, 用于无亲缘进程之间\nzygote接收AMS的请求用的就是socket \n通过读取到的参数创建应用, 再把创建的pid写给对方\n\n\n\n\n共享内存\n快, 不需要多次拷贝, 比前两者支持数据量大\n进程之间不需要有关系, 只要能拿到fd\n安卓的匿名共享内存Ashmem\n通过native_open创建匿名共享内存\n再通过native_mmap将共享内存映射到本进程\n\n\n\n\n信号\n单向, 收不到回复\n只能带信号, 不支持参数\n只要知道pid就能发信号, 也可以给一群进程发信号\n但是只有root权限才能随便发, 或者同一个uid下才能发\n\n\nAndroid里Process.killProcess使用的就是信号\n虽然进程都是Zygote启动的, 但启动后会重新设置uid, 所以不能乱杀\nZygote关注SIGCHLD信号, 子进程死掉后清理资源\n\n\n\n\nBinder\n主要实现远程调用\n一般跨进程流程: 参数序列化-&gt;buffer传递-&gt;参数反序列化\n需要注意: 性能好, 方便, 安全, 相当复杂\nBinder跑在驱动层, 在内核, 没有用Linux跨进程机制, 不用内核进行中转, 多次拷贝\n性能好, binder做内存映射, 映射内核与目标应用进程内存空间\n比共享内存容易使用\n安全, 在内核中添加认证机制\n\n\nClient, Server, ServiceManager工作的前提就是启动binder机制\n打开binder驱动\n内存映射, 分配缓冲区\n启动binder线程, 线程注册在驱动内, 并且进入loop循环, 与binder交互\n系统Service先与ServiceManager交互, 接着才是Client\n分层\n应用层 Proxy -&gt; Stub\nJava BinderProxy -&gt; Binder\nNative BpBinder -&gt; BBinder\nbinder驱动 IPCThreadState#transact -&gt; onTransact, 通过mHandle跟对应驱动打交道, 标识接收端\n\n\n\n\n实现\nClient\ntransact内首先通过writeTransactionDate写数据到mOut中\n再调用waitForResponse\n内部调用talkWithDriver完成先写再读\n实际通过binder_ioctl进行读写\n\n\n再通过循环反复交互直到BR_TRANSACTION_COMPLETE跳出循环\n\n\n\n\nServer\nbinder线程进入loop, 调用IPCThreadState#joinThreadPool\n首先写入mOut注册线程\n进入死循环读写指令\ntalkWithDriver\n再从mIn读取指令进行执行\n\n\n执行BR_TRANSACTION指令即接收到远端请求\n从读取的数据(binder_transaction_data)中拿出cookie, 即binder的server实现\n通过该BBinder-&gt;transact返回Server端上层\n\n\n\n\n\n\nClient: BC_TRANSACTION -&gt; BR_TRRANSACTION_COMPLETE -&gt; 休眠 -&gt; BR_REPLY\nServer: 休眠 -&gt; BR_TRANSACTIOn -&gt; BC_REPLY -&gt; BR_TRANSACTION_COMPLETE -&gt; 休眠\n\n\n原理\n如何写入\nJava层传递Binder对象, 调用writeStrongBinder, 传入mNativePtr(底层Parcel)\n底层通过ibinderForJavaObject转换binder并写入底层Parcel\n如果Java层传入是Binder实体\n通过Java层对象内拿出native holder的指针\n再从holder中拿出真实的native层binder对象, 是一个继承了BBinder(BnInterface:BBinder:IBinder)的对象\n\n\n如果Java层传入是Proxy对象\n直接从Java层拿到native层IBinder(BpBinder)的指针\nTips: BpInterface父类mRemote为BpBinder类型\n\n\n底层writeStrongBinder通过flatten_binder来写入Parcel\n创建flat_binder_object, cookie赋值localBinder\nmObjects保存偏移, mData按顺序排列flat_binder_object\n\n\n驱动层\n调用binder_transaction\n取出所有flat_binder_object\n如果BINDER_TYPE_BINDER实体对象\n检查是否在binder驱动内有对应binder_node, 没有创建\n检查是否在目标进程有无对应引用对象\n然后把实体对象类型改为代理对象BINDER_TYPE_HANDLE\n并把flat_binder_object里的handle改为刚创建引用的handle(desc)\n\n\n\n\n\n\n\n\n如何读取\nJava层通过readStrongBinder传入mNativePtr\n底层通过unflatten_binder\n如果是BINDER_TYPE_BINDER, 则为同进程传递, 直接返回cookie, 即binder实体\n如果是BINDER_TYPE_HANDLE, 则通过handle生成BpBinder\nhandle是偏移, 在数组中查找handle_entry \n如果entry拿不到IBinder, 就创建BpBinder, 传入handle, 并赋值给entry的binder\n返回BpBinder\n\n\n\n\n\n\n返回Java\n如果是实体, 就返回JavaBBinder\n如果是代理, 需要生成一个BinderProxy, 且该对象mObject保存了native的指针\n\n\noneway机制\n异步binder调用\nAIDL函数没有返回值\noneway多个客户端调用在Server端是同步的\nServer端是在前一个处理完Parcel的freeBuffer的析构中, 从todo队列拿出下一个放在tode线程处理\n例如scheduleLaunchActivity就是oneway\nIWindow, IServiceConnection, IIntentReceiver都是异步\n\n\n一次拷贝\n只发生在读取方做了内存映射到内核\n另外的拷贝都是外围结构体到内核, 不包含data\n\n\n\n\n\n\n消息队列\n子线程Looper可以退出, 主线程Looper设置不可退出\n创建子线程Handler需要在子线程内prepare looper, 再传入handler\n一个Looper对应一个MessageQueue, 一个Looper会有多个Handler\nLooper创建后会创建MessageQueue, 上层MessageQueue创建会创建底层MessageQueue, 底层MessageQueue会创建底层Looper\n底层MessageQueue初始化时拿去/创建当前线程Looper\n底层Looper创建\n创建eventFd, 比管道性能好, 只有计数器加减, 无拷贝\nLooper#wake往fd写东西\nLooper#pollOnce死循环监听fd\nepoll_wait等待fd事件\n等待到循环eventCount从eventItems里拿出\n\n\n\n\n\n\n消息传递\n分发handler.dispatchMessage\n顺序为msg自己有callback-&gt;全局callback-&gt;handler自己callback, 任意个返回true则不继续\n\n\n接收 循环调用queue.next\n循环调用nativePollOnce阻塞, 有消息或者时间到会返回\n底层最终通过MessageQueue调用了Looper的pollOnce, 循环调用\n核心通过epoll_wait等待, 返回-1出错, 0没消息, 非0为消息个数\n循环消息Count, 如果事件使用的fd是被唤醒的fd(mWakedEventFd), 且是读事件(event&amp;EPOLLIN), 则通过awoken来消化管道事件\n\n\n从mMessage取一条消息, 并将msg标记为InUse (当obtainMessage时候标记不使用, 即把消息从空闲链表里拿出)\n\n\n发消息 handler.sendMessage\n消息会直接放入队列, 只是在某个时间才会被分发\nequeueMessage根据触发时间插入到queue的位置 (循环查找位置)\n底层pollOnce拿消息\n如果没拿到消息, 则设置超时为-1, 一直等待\n如果拿到的没到点, 则设置超时为还差的那一段时间\n如果到点了, 则取出消息, 标记next为null, 返回msg\n因为主要靠epoll_wait等待, 所以精度不行\n\n\n\n\n消息被插入messageQueue后, 通过nativeWake唤醒消息队列线程\n底层调用了Looper.wake, 然后往mWakeEventFd写数唤醒等待在某线程的Looper\n\n\n\n\n\n\nIdleHandler\n消息队列当前没有可处理消息的时候, 就会调queueIdle\n当消息处理完后 (Message#next循环内), 会查询pendingIdleHandlerCount, 如果有则逐个处理\n当idler.queueIdle返回false,则将该handler从mIdleHandlers删掉\nFramework中的应用\nActivityThread里加入了GcHandler, return false, 进行一次性GC\nwaitForIdle, 内部也是往主线程queue加入IdleHandler, 返回false, 一次性调用\n为了防止本身就是Idle不会调用, 则post一个EmptyHandler, 触发Idle\n\n\nwaitForSync, 与上一条的差别是最后循环等待信号, 当queueIdle被调用时, notify等待.\nTips: wait要配合while循环使用, 防止notify之后, 获得锁之前, 条件变化, 所以配合mIdle标记为一起, notifyAll之前mIdle=true\n\n\n\n\n适用场景\n延迟执行, 替代postDelay\n密集操作, 可以先往线程队列放进行处理, 当队列空闲再汇总刷新界面\n\n\nIdleHandler不会重复调用, 当消息队列为空或者没有可执行的消息时, 会调用一次, 如果再被唤醒还是没有, 则不调用, 因为pendingIdleHandlerCount会被设置为0, 且一直循环poll, 不会跳出next, 直到有消息处理, 再次进入next后会被设置为-1进而重新读取size\n\n\nANR\nService, BroadcastQueue, ContentProvider, InputDispatching Timeout都会触发ANR\n比如Service, AMS发起让客户端启动Service后, 启动超时定时器(delay message), 当客户端响应启动Service之后, 移除超时消息, 如果未及时移除, 则AMS会弹框\nAMS通知客户端的Binder线程, Binder线程再往主线程发消息来启动Activity, Service, BroadcastReceive \n主线程在无消息时休眠, 其他线程需要写入eventFd才能唤醒主线程\nANR是由于主线程有耗时任务, 或者创建本身有耗时, 而不是由于主线程消息循环阻塞\n\n\n消息屏障\n普通消息, 屏障消息, 异步消息\n屏障消息没有target, 正常消息没有target会抛异常\n屏障消息会有时间戳, 且影响后面的消息\n屏障消息不会唤醒线程来处理\n屏障插入(postSyncBarrier)会返回屏号\n删除屏障需要屏障号, 会唤醒线程, 只有当消息阻拦了消息\n如果当前要处理的消息是屏障, 则会往后遍历, 处理异步消息\n如果要插入消息, 但消息已经被屏障block, 且当前消息是最早的异步消息, 则要唤醒\nFramework应用\n绘制界面scheduleTraversal时, 会加入barrier, 再往Choreographer里放入Runnable callback, 等vsync执行该回调后, 去除屏障, 为了使屏幕绘制的异步消息优先执行, block普通消息\n\n\n消息屏障的api都是隐藏的, 需要反射或者其他方式\n\n\n实践经验\n跨进程传输大图片\n考虑点\n性能, 减少拷贝\n内存泄露, 资源释放\n\n\nBinder启动时映射内存为1M, 是所有事务共享的\n\n\n直接通过Intent传输bitmap, 在未允许传fd或者size小于16K的情况下, 会直接直接存parcel, 太大就会报错\n如果通过传binder到Intent, 则会打开allowFds, bitmap的数据会开辟ashmem空间, 再把空间地址fd写入parcel, 图片将会被拷贝到共享内存空间\n如果传输大文件可以用ContentProvider或者MemoryFile, 底层都是用共享内存实现\n\n\nThreadLocal\nLooper里用到, 作为静态变量, 里面存放Looper, 不同线程拿到不同的looper\nChoreographer里也有静态变量初始化ThreadLocal并且在initialValue回调中创建对象\n原理\n每一个线程都有thread对象, 里面有一个数组, 按照key + value排列\nkey是WeakReference, value是存储对象\n可以定义多个ThreadLocal, 每一个ThreadLocal都有自己的hash值作为数组下标\nhash算法每次增加一个值(是一个偶数)再对table的size取余数得到index\n如果冲突了, 则从当前遍历找空的存储\nThreadLocal.get()\n先获取当前线程Thread, Thread.currentThread()\n从thread里拿出Values, 在Values.table中提取\n如果Values不存在, 则创建一个\n如果提取的Key不等于当前ThreadLocal, 说明冲突, 继续调用Values.getAfterMiss\n\n\nThreadLocal.set()\n拿到当前线程的Values, 如果不存在就创建一个\n然后调用Values.put, 找合适位置放进去\n\n\n\n\n\n\nLooper的副业\n当epoll_wait被唤醒后, 轮询event发现fd不等于mWakeEventFd, 则进入else开始副业\n这些事件是通过addFd添加到EpollFd中让其进行监听的(epoll_ctl)\n通过Java的MessageQueue#addOnFileDescriptorEventListener, 底层在调用NativeMessageQueue::setFileDescriptorEvent进行添加\nFramework层没用这个机制, Native有使用\nVsync机制唤醒, Choreographer初始化的时候, 在底层给自己的Looper添加了Fd, 该Fd在SurfaceFlinger进行创建, 其中读的fd被跨进程传递到应用进程, 再在Choreographer的线程中将其添加到Looper监听的Fd中\n当新来来的时候, 就会将信号写入SurfaceFlinger中的写fd, 应用进程就可以监听到可读事件\n通过监听fd与bindCall的抉择\n使用fd, 应用端可以控制监听fd的线程, 并且可以一次拿到所有的事件, 自己决定何时进行分发\n使用binderCall的话, 应用端接收到消息只能带binder线程, 如果不采用oneway, 会阻塞服务端, 如果采用oneway, 客户端只能按照顺序处理事件, 灵活性差\n\n\n小Demo\nMainActivity创建管道, 并通过bindService与其他进程的Service通信, 将读fd传递给它, Service将该Fd添加到Looper监听, 然后MainActivity向自己的写fd写入信息, 处于其他进程的Service收到消息, 并通过binder返回给MainActivity\n管道创建: ParcelFileDescriptor.createPipe, 0号读, 1号写\n写管道: AutoCloseOutputStream(fd[1])\n需要通过反射将读fd设置为非阻塞, 否则读不到消息就阻塞了\n监听描述符: \n通过Queue#addOnFileDescriptorEventListener添加fd与回调\n在回调中, 使用AutoCloseInputStream包装fd\n循环读取直到没数据\n\n\n\n\n\n\n\n\n检查线程耗时任务\nWatchDog, 系统来检查死锁\n检查哪个线程就把它加入WatchDog的Looper\n可以同时检测多个线程, 锁\n自己就是个线程, 继承了Thread\n内部会有多个HandlerChecker(Runnable), 每个Checker可以添加多个Monitor进行监听\nBinderThreadMonitor监控Binder线程使用\nMonitor的monitor回调调用native函数\nblockUnitlThreadAvailable循环检测mExecutingThreadCount与mMaxThreads, 当有空闲线程时返回\nmExecutingThreadCount会在binder线程每次从驱动读取东西时++, 返回广播之前–\n\n\nWatchDog线程跑一个死循环, 遍历所有checker, 调用scheduleCheckLocked\n如果没有Monitor, 并且Handler一直在polling状态, 则标记Complete, return\n如果还没Complete, 则不继续执行新任务, 返回\n继续向下则标记Complete为false, 并向Handler头部post一个消息, 记下startTime\nPost中的Runnable会遍历Monitor列表, 调用monitor函数, 标记Complete为true\nWatchdog会每隔30s检测Checker完成状况, 遍历所有Checker, 通过getCompletionStateLocked拿到所有完成情况, 取最大值\n检测过程中, 执行完了则COMPLETE, 如果还没执行完, 则用当前时间-startTime, 小于30秒, 则继续等待(WAIT), 大于30秒小于60秒再给一次机会(WAIT_HALF), 否则超时(OVERDUE)\n\n\n\n\n系统服务添加\nAPS, WMS, PMS通过addMonitor, 通过sychronized(this)尝试获取锁来监控死锁, 在单独的线程中检查, 这个monitor会被添加到WatchDog的main checker里\nAPS, WMS, PMS通过addThread, 内部会添加了一个新的HandlerChecker, 检测工作线程(Handler的thread)是否阻塞\n\n\n\n\nBlockCanary, 检查消息有没有耗时\n因为消息队列在拿到消息后, dispatching前后会打log, 并且logging可以自己配置, 则可以通过这个获取消息处理时间\n\n\n\n\n同步处理消息\n在发消息后, 进行等待, 待消息处理完成后, 获取消息结果\nNative\n底层调用MessageBase::wait等待消息\n返回后通过MessageBase::getResult获取结果\n\n\nJava\nHandle#runWithScissors, 将Runnable包装到BlockingRunnable里\npostAndWait会发送之后在同步块内循环检测mDone, 并且wait()\nrun内执行runnable, 返回结果后标记mDone, 并notifyAll()\n可以改进BlockingRunnable, 传入Callable, 通过getResult获取结果\n也可以直接使用FutureTask, 它既是Runnable, 又可以阻塞获取结果\n\n\nbinder调用统一切换工作线程\n通过动态代理\n自定义ProxyInvocationHandler, 传入对象, Handler, Async标识\n在invoke里, 判断没有Handler, 则直接调用, 如果有, 则将方法调用包装到FutureTask里, 并post到Handler里进行执行, 并且根据Async标识判断是否需要等待task执行结果\n\n\n\n\nActivityThread与ApplicationThread\nActivityThread里持有ApplicationThread\nActivityThread是Zygote创建的运行主线程的对象\nApplicationThread是一个Binder实现, AMS通过它与App进行通信, 它再通过ActivityThread内的H (handler)与主线程通信\n\n\nFramework解决实际问题\n空Activity也会占用内存20m\nzygote启动会预加载系统资源, 主要跟主题相关的\nzygote启动应用进程则会继承资源\ngetDrawable先拿cache, 再拿预加载资源\n加载完成后, 缓存到cache\n所以不需要UI的单独进程后台Service可以反射清掉他们\n\n\n为何Activity onResume后才显示\n在handleResumeActivity中, 需要window被加入windowmanager, willBeVisible才会为true\n获取window的decorview添加到wm中\nrequestLayout内部通过choreographer触发绘制\n通过windowSession注册window, 与WMS形成双向调用\n\n\nActivity.makeVisible重绘\n\n\n为何bindService时候onRebind掉不到\nonRebind的触发是当Service还在, 但是应用死了, 会在unBind的时候将doRebind标记为true, 下次再次bind的时候会调用onRebind\n\n\n广播onReceive的context可否启动Activity\nonReceive的context, 动态注册为注册时的context, 静态注册的则是以application为mBase的ContextWrapper, 不是Activity本身\n所以动态注册可以直接启动, 静态需要添加FLAG_ACTIVITY_NEW_TASK\n静态不能弹出AlertDialog\n\n\nContentProvider的onCreate早\n虽然ContentProvider在Application的attatch之后创建并onCreate, 但是它是在Application的onCreate之前.\n\n\nIntent带数据量大会异常\nBinder共享共建1M所有事务共享\n当数据小于16K会直接写Parcel, 但未开allowFd且大于16K也会直接写, 就会报错\n所以需要传binder来开启fd传输, 将ashmen共享内存的fd传过去\n\n\nHandler延时精度\nhandler取message后, 遍历所有, 如果时间未到则设置剩余时间, 通过epoll_wait来等待\n所以精度不高\n\n\nIdleHandler有时候不掉\n当无消息, 或者没可执行消息时, 调用一次, 如果再次唤醒, 则不会再调\n\n\n\n\nFramework用到的设计模式\n单例\n同进程\n系统有Singleton的抽象, 如IActivityManager\n\n\n同线程\n通过ThreadLocal, 保证线程内每次都拿到同一个对象, 不同线程拿到的确是不同对象\n\n\n进程间\nServiceManager与binder驱动结合, 形成进程单例\nServiceManager对应的binder句柄都是0\n\n\n\n\n观察者\nBroadcast可以进程间, 进程内\n进程内\n系统抽象类Observable\n\n\n进程间\nContentService可以注册通过Transport实现的IContentObserver, 其实是一个Binder, 这样远端的Service就可以通过Binder来通知, 本地的Transport收到onChange后再通过内持有ContentObserver进行分发\nRemoteCallbackList利用同一个binder实体在目标进程只会有一个binder proxy对象, 虽然有多个业务层封装, 但是通过asBinder可以拿到唯一, 来实现注册与反注册, 这样Binder Proxy作为Map的key, 而Callback (业务层Binder)作为Value\n\n\n\n\n代理\n静态代理\nActivityManagerProxy实现IActivityManager将所有业务代理给内部的mRemote(IBinder, binder proxy)对象\nActivityManagerNative#asInterface, 通过binder.queryLocalInterface, 如果返回不为空, 则与Binder实体在一个进程, 直接返回, 如果未空, 则创建Proxy, 封装为业务代理对象\n比如startActivity就会通过mRemote#transact, 它就是binder proxy对象\n\n\n动态代理\nDecorator实现了InvocationHandler\n它的newInstance(T obj, DecorationLinstener l), 通过反射给obj加上动态代理(Proxy.newProxyInstance, 需要三个参数, ClassLoader, Interface, InvocationHandler), 在调用obj方法前后时, 回调listener\n\n\n\n\n\n\nFramework设计\n\nBinder, 跨进程, 模糊进程边界\n请求转发, 从客户端进程转发到目标进程, 处理完再把结果返回\nBinder对象传递, 实体对象跨进程后就变代理对象, 代理对象回到所在进程又变实体, 都是在驱动层转换, 但应用层永远拿到的是统一接口对象\n分层结构\n应用端BinderProxy (Java) -&gt; BpBinder (Native) -&gt; 驱动\n服务端Binder (Java) -&gt; BBinder (Native) -&gt; 驱动\n\n\n转换\nBinder为实体\n是否创建node (实体), 没有则创建, 且localBinder实体复制给cookie\n是否创建目标进程引用, 没有则创建\n改类型为Handle, 且handle复值上一步创建的引用\n\n\nBinder为引用\n是否是同一进程, 如果是, 查找node, 改类型为Binder, 给cookie赋值\n非同一进程, 则查找目标进程引用, 没有创建, 赋值给handle\n\n\n\n\n\n\nBitmap大图传输, 传输匿名共享内存句柄, 到目标进程再映射内存\n常规的数据得先拷贝到Parcel, 再拷贝到Binder驱动, 到目标进程再从Parcel拷出来, 三次拷贝\n通过匿名共享内存只需要一次甚至不需要拷贝\n将图片拷贝到Ashmem空间传输fd, 但是这个fd没有被写到Bitmap中, 所以每次发送都需要拷贝\n读取的话如果是Ashmem, 则直接映射, 作为Bitmap的像素缓冲区, 这次生成的Bitmap内会写入Ashmem的Fd, 则这张图如果再次传输, 就会非常快, 省去上一步的拷贝\n\n\n\n\nZygote创建进程, 预加载资源, 每次应用启动, 不需要重复做事, 加速应用启动\n\nIntent, 模糊进程边界, 如Broadcast\n\n\n\n\n","dateCreated":"2021-06-28T09:09:50+08:00","dateModified":"2021-06-28T09:15:48+08:00","datePublished":"2021-06-28T09:09:50+08:00","description":"Android Framework这一系列学习了很久， 也跟了不少源码， 推荐一个查看源码的网站非常不错， 速度也很快。希望可以帮助了解Android Framework各个知识点，也作为自己的一个备忘录，便于查询。","headline":"Android Framework Points","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1624842938/framework_yg2dyj.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2021/06/28/Android-Framework-Points/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2021/06/28/Android-Framework-Points/","keywords":"Android，Android Framework","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1624842938/framework_yg2dyj.jpg"}</script>
+    <meta name="description" content="Android Framework 知识点">
+<meta name="keywords" content="Android，Android Framework">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Android Framework Points">
+<meta property="og:url" content="http://talentprince.github.io/2021/06/28/Android-Framework-Points/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="Android Framework 知识点">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2021-06-28T01:15:48.870Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Framework Points">
+<meta name="twitter:description" content="Android Framework 知识点">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1624842938/framework_yg2dyj.jpg"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1624842938/framework_yg2dyj.jpg"/>
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
+    <!--STYLES END-->
+    
+
+    
+    <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?26839bbbc9c89fbe9eb99aba7bceb413";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="5">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/ "
+            aria-label=""
+        >
+            Weyoung&#39;s Blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="5">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/talentprince"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/mailto"
+                            
+                            rel="noopener"
+                            title="邮箱"
+                        >
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="5"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            Android Framework Points
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2021-06-28T09:09:50+08:00">
+	
+		    6月 28, 2021
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Android-Framework/">Android Framework</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>Android Framework这一系列学习了很久， 也跟了不少源码， 推荐一个查看源码的<a href="https://www.androidos.net.cn/sourcecode" target="_blank" rel="noopener">网站</a>非常不错， 速度也很快。<br>希望可以帮助了解Android Framework各个知识点，也作为自己的一个备忘录，便于查询。</p>
+<a id="more"></a>
+<ul>
+<li>Zygote<ul>
+<li>作用<ul>
+<li>启动SystemServer<ul>
+<li>会用到<ul>
+<li>JNI函数, 主题资源, 贡献库</li>
+</ul>
+</li>
+<li>负责通过ServerManager加载各个系统服务</li>
+</ul>
+</li>
+<li>孵化进程</li>
+</ul>
+</li>
+<li>进程启动三步<ul>
+<li>进程启动-&gt;准备工作-&gt;Loop</li>
+</ul>
+</li>
+<li>Linux第一个进程, Init进程<ul>
+<li>init.rc配置文件中指定ServiceManager的启动</li>
+<li>紧接来启动Zygote, MediaServer, SurfaceFlinger等, 他们都是init子进程</li>
+<li>启动方式<ul>
+<li>fork+handle</li>
+<li>fork+execve<ul>
+<li>execve可以替换到父进程资源</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>信号处理<ul>
+<li>SIGCHILD 父进程根据该信号重启子进程</li>
+</ul>
+</li>
+<li>Native部分<ul>
+<li>启动虚拟机<ul>
+<li>应用进程使用Zygote孵化出来的, 虚拟机已经启动好了</li>
+<li>子进程会继承该虚拟机, 只需要重置状态, 重启一些守护线程</li>
+</ul>
+</li>
+<li>注册JNI函数</li>
+<li>进入Java</li>
+</ul>
+</li>
+<li>Java部分<ul>
+<li>预加载资源</li>
+<li>启动system server (fork单独进程)</li>
+<li>Loop循环等待socket消息</li>
+<li>得到消息调用runOnce, 调用Zygote.forkAndSpecialize()</li>
+<li>在子进程执行参数列表指定的ActivityThread.main函数</li>
+</ul>
+</li>
+<li>特点<ul>
+<li>Zygote fork保证单线程<ul>
+<li>父进程有多个线程, 子进程只有一个, 会造成状态不一致或者死锁</li>
+<li>在fork之前将所有线程都停掉, fork完成后再父进程内重启</li>
+</ul>
+</li>
+<li>Zygote的IPC(与SystemServer)采用socket而不是binder<ul>
+<li>原因有多个, 主要是因为binder需要注册在ServiceManager, 然后AMS与Zygote通信的时候又要在ServiceManager中查询binder对象, 来来回回繁琐</li>
+<li>其次如果zygote启动binder再启动SystemServer, 两个进程会同一描述符, 得在SystemService中关闭旧的再次重启新的, 增加复杂度</li>
+<li>App与SystemServer内各个服务通过Binder通信</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Android系统的启动<ul>
+<li>Init fork出Zygote</li>
+<li>Zygote进程内启动虚拟机, 注册JNI函数, 预加载资源</li>
+<li>启动SystemService, 进入Socket Loop<ul>
+<li>Zygote.forkSystemServer启动进程</li>
+<li>handleSystemServerProcess加载逻辑<ul>
+<li>nativeZygoteInit启动binder线程池与app以及ServiceManager通信</li>
+<li>applicationInit启动Java SystemServer类main函数</li>
+<li>main函数启动了MainLooper, 加载共享库</li>
+<li>Start Bootstrap, Core, Other三个service</li>
+<li>进入Loop循环, 但不一定处理主线程消息, 只是为了不让SystemServer App退出</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>启动Launcher, 通过PKMS获取所有安装程序, 进行显示</li>
+<li>系统服务的发布<ul>
+<li>publishBinderService(name, binderService)调用ServiceManager注册自己的Binder</li>
+</ul>
+</li>
+<li>系统服务的线程<ul>
+<li>工作线程 DisplayThread, FgThread, IoThread, UiThread</li>
+<li>binder线程</li>
+</ul>
+</li>
+<li>服务相互依赖<ul>
+<li>分批启动<ul>
+<li>AMS, PMS, PKMS先启动</li>
+</ul>
+</li>
+<li>分阶段启动<ul>
+<li>通知已经启动的service, 根据阶段使用相关服务</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>添加系统服务<ul>
+<li>添加<ul>
+<li>通过ServiceManager.addService进行注册</li>
+<li>在SystemService启动的时候来启动其他系统服务</li>
+<li>服务不完全在SystemService进程, 小部分服务开了自己的进程, 如SurfaceFlinger</li>
+<li>SurfaceFlinger是纯底层服务注册<ul>
+<li>创建ProcessState启动binder, 分配缓冲区等<ul>
+<li>打开binder驱动</li>
+<li>映射内存, 分配缓冲区</li>
+<li>启动binder线程, 进入loop, 可以创建也可以使用进程主线程</li>
+</ul>
+</li>
+<li>创建SurfaceFlinger, init初始化</li>
+<li>通过底层IServiceManger.addService将上一步创建的flinger注册</li>
+<li>由于ServiceManager跟SurfaceFlinger都是init进程拉起来的, 需循环等待拿取IServiceManager</li>
+<li>flinger进入loop循环</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取<ul>
+<li>getSystemService最终在ContextImp里通过SystemServiceRegistry获取已经注册的<code>SYSTEM_SERVICE_FETCHERS</code>Map, 拿到对应Fetcher来getService</li>
+<li>getService内有加锁的cache数组来缓存不同Service</li>
+<li>如果cache不存在, 则调用CachedServiceFetcher的createService来创建</li>
+<li>createService里调用ServiceManager.getService来或许远端服务的IBinder,  其中ServiceManager对象也是远端的IBinder</li>
+</ul>
+</li>
+<li>如何添加一个系统服务<ul>
+<li>时机<ul>
+<li>跑在SystermServer</li>
+<li>单独跑进程, 加入init.rc中</li>
+</ul>
+</li>
+<li>启动binder机制, 如果在SystemServer, 可以利用已有</li>
+<li>服务初始化</li>
+<li>注册到ServiceManager</li>
+<li>最好给客户端提供ServiceFetcher, 保持与其他服务调用一直</li>
+</ul>
+</li>
+<li>系统服务与应用服务<ul>
+<li>系统服务<ul>
+<li>系统服务大多跑在SystemService内, 大多都在binder线程池, 少数有自己工作线程, 对于独立进程的服务大多跑在native, 自己启动binder机制</li>
+<li>系统服务在binder线程中等待客户端请求, 分发到具体的服务</li>
+<li>通过ServiceManager.addService注册, 只有系统服务才能注册</li>
+<li>客户端通过Context.getSystemService获取系统服务对象, 进行使用</li>
+</ul>
+</li>
+<li>应用服务<ul>
+<li>应用服务启动都是由应用端发起, 内部调用AMS, 创建Service的Record</li>
+<li>AMS只负责调度, 应用服务还是在应用端创建启动</li>
+<li>应用向AMS发起bindService, 如果已经在AMS注册过则返回Binder, 否则通知客户端创建, 并注册, 再返回</li>
+<li>应用服务通过bindService回调的onServiceConnected的IBinder对象调用远端服务</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ServiceManager<ul>
+<li>启动<ul>
+<li>单独进程, 通过init.rc启动</li>
+<li>启动binder<ul>
+<li>打开binder驱动, 映射128k空间作为数据传输 (普通程序有1m)</li>
+</ul>
+</li>
+<li>发布服务<ul>
+<li>通过ioctl, 告诉binder驱动ServiceManager就绪, 传入<code>BINDER_SET_CONTEXT_MGR</code>指令</li>
+</ul>
+</li>
+<li>等待响应请求<ul>
+<li><code>binder_loop</code>内调用<code>binder_write</code></li>
+<li><code>binder_write</code>通过ioctl传入<code>BINDER_WRITE_READ</code>, 第三个参数<code>binder_write_read</code>中的<code>write_size</code>与<code>read_size</code>的大小来控制读写, 如果都大于0, 优先写</li>
+<li>ioctl第三个参数控制写入<code>BC_ENTER_LOOP</code>, 将当前线程注册为binder线程</li>
+<li>将<code>write_size</code>置为0, 进入死循环, 将<code>read_size</code>置为sizeof(readbuf), 通过ioctl读取数据</li>
+<li>通过<code>binder_parse</code>解析<code>readbuf</code>, 并通过最后一个回调函数<code>bind_handle</code>返回</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取<ul>
+<li>底层获取ServiceManager<ul>
+<li>通过defaultServiceManger()获取对象<ul>
+<li>通过全局锁, 内部循环sleep(1), 通过ProcessState::getContextObject获取gDefaultServiceManager</li>
+<li>之所以循环, 因为底层例如surfaceflinger与servicemanager都是一起初始化的, 可能还没有创建好</li>
+<li>getContextObject内部调用getStrongProxyForHandle(0), 0为数组索引, 返回BpBinder(IBinder)对象</li>
+<li>interface_cast<iservicemanager>(bpBinder)相当于IServiceManager::asInterface(), 最终调用new BpServiceManager(bpBinder)<ul>
+<li>IServiceManager通过宏定义<code>DECLARE_META_INTERFACE</code>与<code>IMPLEMENT_META_INTERFACE</code>实现asInterface方法, 内部创建Bp###</li>
+</ul>
+</iservicemanager></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>获取Service<ul>
+<li>Java层通过ServiceManager#getService</li>
+<li>底层通过ServiceManager的getService</li>
+<li>通过remote()拿到的BpBinder, 带上name发送transact CHECK_SERVICE_TRANSACTION获取</li>
+<li>svcmgr_handler得到消息后, 查询链表</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>添加<ul>
+<li>defaultServicce</li>
+<li>通过remote()拿到BpBinder对象</li>
+<li>再调用transact发送<code>ADD_SERVICE_TRANSACTION</code>, 发送name与binder对象<ul>
+<li>BpBinder内部通过调用IPCThreadState单例的transact发送</li>
+</ul>
+</li>
+<li>处理<ul>
+<li>ServiceManger通过<code>svcmgr_handler(service_manager.c)</code>进行处理请求</li>
+<li>接收到SVC_MGR_ADD_SERVICE后调用<code>do_add_service</code>将binder加入链表</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Binder<ul>
+<li>启动时机<ul>
+<li>Zygote在fork进程后, 子进程nativeZygoteInit中启动binder</li>
+</ul>
+</li>
+<li>应用启动binder<ul>
+<li>zygote创建进程初始化过程中, 通过ProcessState的构造函数, 打开binder驱动, 打开成功则分配缓冲区大小</li>
+<li>ProcessState::startThreadPool通过IPCThreadState线程单例, 向mOut的Parcel写入, 告诉驱动, 注册线程</li>
+<li>进入Loop循环, 死循环不断从mIn读取驱动数据</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Application<ul>
+<li>Application跟着进程走</li>
+<li>作用<ul>
+<li>保存进程内全局变量</li>
+<li>初始化</li>
+<li>提供Context</li>
+</ul>
+</li>
+<li>创建<ul>
+<li>ActivityThread#attatch -&gt; AMS -&gt; AMS#attachApplicationLocked -&gt; IApplicationThread#bindApplication -&gt; sendMessage -&gt; handleBindApplication -&gt; makeApplication + onCreate</li>
+<li>makeApplication通过反射创建Application, 并调用attach(attachBaseContext)传入context(ContextImpl)</li>
+</ul>
+</li>
+<li>不能在applicaiton初始化内做耗时操作, 它会影响后续activity, service, broadcast的初始化</li>
+</ul>
+</li>
+<li>Context<ul>
+<li>Context才是各个组件的核心, 没有它, Application只是个空壳</li>
+<li>内部持有了ActivityThread, LoadedApk(PackageInfo), ResourceManager, Resource, PackageManger, mServiceCache</li>
+<li>三种Context<ul>
+<li>Application Context<ul>
+<li>继承关系<ul>
+<li>Application &lt;- ContextWrapper { Context mBase } &lt;- Context</li>
+</ul>
+</li>
+<li>调用关系<ul>
+<li><init> -&gt; attatchBaseContext -&gt; onCreate</init></li>
+</ul>
+</li>
+<li>Zygote启动子进程后, 在makeApplication时创建ContextImpl, 并attatch到Application里</li>
+</ul>
+</li>
+<li>Activity Context<ul>
+<li>performLaunchActivty中反射创建Activity</li>
+<li>获取application, 创建ContextImpl, 调用Activity#attatch</li>
+<li>调用onCreate</li>
+<li>继承关系<ul>
+<li>Activity &lt;- ContextThemeWrapper &lt;- ContextWrapper</li>
+<li>ContextThemeWrapper多了<code>Resources.Theme</code></li>
+</ul>
+</li>
+<li>调用关系<ul>
+<li><init> -&gt; attatchBaseContext -&gt; onCreate</init></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Service Context<ul>
+<li>与Application类似, 反射创建Service, 创建ContextImpl, attatch后调用onCreate</li>
+<li>也继承了ContextWrapper</li>
+</ul>
+</li>
+<li>Broadcast<ul>
+<li>不继承ContextWrapper</li>
+<li>onReceive的context, 动态注册为注册时的context, 静态注册的则是以application为mBase的ContextWrapper</li>
+</ul>
+</li>
+<li>ContentProvider<ul>
+<li>不继承ContextWrapper</li>
+<li>成员变量mContext是创建的时候传入的Application</li>
+<li>虽然ContentProvider在Application的attatch之后创建并onCreate, 但是它是在Application的onCreate之前.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>App的Context的个数为Activity个体数+Service个数+Application*进程数</li>
+<li>getApplication是Activity与Service特有返回Application的, 而getApplicationContext是Context的方法, 虽然都返回Application</li>
+<li>Activity的getBaseContext获取的是mBase, 而this是Activity本身</li>
+</ul>
+</li>
+<li>Activity<ul>
+<li>启动 <ul>
+<li>ActivityManagerNative.getDefault()获取到AMS的代理Binder, startActivity</li>
+<li>通过transact发送<code>START_ACTIVITY_TRANSACTION</code></li>
+<li>AMS收到onTransact回调后startActivity</li>
+<li>检测Process是否启动, ProcessRecord是否为空, appthread是否注册</li>
+<li>如果进程未创建, 则通知zygote启动, 这个是基于socket</li>
+<li>启动后父进程将子进程pid返回给AMS, 而子进程启动binder, 并执行ActivityThread的main函数, 通过attatchApplication向AMS注册ApplicationThread, 即应用端的Binder</li>
+<li>AMS中attatchApplication里会通知应用创建Application, 然后启动Activity, Service, Broadcast等挂起的组件<ul>
+<li>其中Activity <ul>
+<li>通过mFocusedStack获取栈顶Activity</li>
+<li>通过ApplicationThread#scheduleLaunchActivity通知应用端启动</li>
+<li>应用收到消息后发送LAUNCH_ACTIVITY消息到主线程</li>
+<li>主线程调用handleLaunchActivity, 其中performLaunchActivity负责创建启动, handleResumeActivity负责进入resume</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>显示<ul>
+<li>setContentView<ul>
+<li>Window.setContentView<ul>
+<li>window是在attach的时候创建的PhotoWindow</li>
+<li>内部installDecor创建DecorView, 将根布局inflate后加入, 通过<code>ID_ANDROID_CONTENT</code>获取ContentView</li>
+<li>然后再将自己的View inflate到ContentView上</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>handleResumeActivity<ul>
+<li>WindowManager.addView(decor)<ul>
+<li>创建ViewRootImpl, 负责跟WMS交互, 调用setView设置decorView<ul>
+<li>requestLayout<ul>
+<li>通过choreographer触发绘制回调, doTraversal负责跟WMS进行交互, 进行绘制</li>
+<li>分为四步, relayout申请surface, measure, layout, draw</li>
+</ul>
+</li>
+<li>windowSession.addToDisplay注册window<ul>
+<li>其中windowSession是与WMS通信的binder<ul>
+<li>WMS负责分配Surface, 掌管其尺寸位置, 控制窗口动画, 输入时间分发</li>
+</ul>
+</li>
+<li>注册后就与WMS形成双向调用</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>然后activity.makeVisible, 只是触发重绘</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>UI线程启动<ul>
+<li>通过runOnUiThread在UI线程执行<ul>
+<li>onResume之前, 会post到RunQueue等待ViewRootImp#AttachInfo创建</li>
+<li>onResume之后, 直接由AttachInfo的线程handler进行处理</li>
+<li>所以UI线程就是ViewRootImp创建时的线程</li>
+<li>ViewRootImp&lt;-WindowManagerImp.addView&lt;-WindowManagerGlobal.addView&lt;-ActivityThread.handleResumeActivity</li>
+<li>所以UI线程就是主线程, 如果自定义在子线程通过WindowManager来addView, 那么就只能在子线程刷新</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Service<ul>
+<li>启动<ul>
+<li>startService向AMS发起请求, 将Intent发送过去</li>
+<li>通过ActiveServices(mServices)进行启动准备</li>
+<li>内部检查到对应的Service对象后, 创建StartItem并添加到pendingStarts数组, 为之后调用onStartCommand用</li>
+<li>继续调用bringUpServiceLocked, 检测Service是否存在, 如果没启动, 则检测Service进程是否创建, 如果没启动则启动进程, 并添加到PendingServices里, 否则直接通过realStartServiceLocked启动Service, 内部通过scheduleCreateService让应用创建Service, 再通过scheduleServiceArgs让应用调用onStartCommand</li>
+<li>进程应用启动成功后会向AMS发送attatchApplicationLocked的请求, 来处理PendingServices的启动, 调用realStartServiceLocked</li>
+</ul>
+</li>
+<li>绑定<ul>
+<li>调用bindService后, 会将ServiceConnect包装成IServiceConnection交给AMS, 内部是通过ServiceDispatcher来获取</li>
+<li>AMS会调用该Binder的connected, 将Service的Binder发回应用, 如果Service为null, 说明Service挂了断开了, 如果不等于null, 说明连接成功, 应用有Service的Binder的缓存, 如果同样则不会重复调用onServiceConnected, 只有当Service死了才会onServiceDisconnected</li>
+<li>AMS接收到bind请求后, 如果Service没启动则通过bringUpServiceLocked拉起, 拉起过程在调用应用CreateService与onStartCommand之间, 调用requestServiceBindingLocked<ul>
+<li>如果没有请求过绑定, 则调用客户端绑定, 标记requested<ul>
+<li>应用通过onBind生成Service的Binder, 并发布到AMS, AMS标记requested/received, 并遍历ConnectionRecord通知应用(connected)</li>
+<li>onRebind的触发是当Service还在, 但是应用死了, 会在unBind的时候将doRebind标记为true, 下次再次bind的时候会调用onRebind</li>
+<li>应用端Service<->AMS的ServiceRecord<->多个IntentBindService (因为可多个Intent绑定一个Service)<->多个AppBindRecord (因为Intent可能来自不同进程)<->ConnectionRecord (一个进程可以有多个Connection)</-></-></-></-></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果Service已经绑定到AMS, 即received标记true, 则直接connected返回应用</li>
+<li>否则检查是否请求过Service, 即requested, 没有则调用requestServiceBindingLocked</li>
+<li>IServiceConnection是与Context+ServiceConnect对应的, 不同组合对应不同的AMS中的Binder</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Broadcast<ul>
+<li>动态广播注册<ul>
+<li>BroadcastReceiver被包装成ReceiverDispatcher, 内部生成IIntentReceiver发给AMS, 则AMS可通过Dispatcher调用Broadcast</li>
+<li>AMS收到注册请求后, 生成BroadcastList(List<broadcastfilter>), 并添加对应filter, 并且存入Map&lt;IBinder, BroadcastList&gt;, 故多个Filter可能对应同一个Receiver</broadcastfilter></li>
+</ul>
+</li>
+<li>动态广播分发<ul>
+<li>AMS通过Intent查找对应Receiver列表, 创建Record, 放入并行队列(动态广播), 触发分发scheduleBroadcastsLockeded</li>
+<li>Handle收到消息, 调用processNextBroadcast中循环取出record, 通过performReceiveLocked通过activityThread转换为串行, 发送给每一个receiver</li>
+<li>performReceiveLocked内调用applicationThread.scheduleRegisterReceiver将广播分发给客户端, 客户端串行处理</li>
+<li>静态广播与动态广播带oder还需要通知AMS广播执行结束, 这样AMS才可以下发新的广播, 普通动态广播不用调用sendFinished<ul>
+<li>AMS通过检测客户端发过来的Broadcast.state来判断, 如果串行动态广播为<code>CALL_DONE_RECEIVE</code>, 静态广播为<code>APP_RECEIVE</code>, 这两种都会触发AMS继续process下一个</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>静态广播注册<ul>
+<li>PMS在解析到Manifest的receiver标签的时候, 创建Activity Component对象, 将其注册在PMS中</li>
+<li>sendBroadcast到AMS中后, broadcastIntentLocked先根据Intent查找静态广播(collectReceiverComponents), 再查找动态广播(receiverResolver.queryIntent)</li>
+<li>如果没有oder, 且有动态广播, 则加入并行队列</li>
+<li>剩下的跟静态receiver合并在一起, 加入串行队列</li>
+<li>BroadcastQueue在处理串行广播时相对复杂<ul>
+<li>如果有Pending, 就返回, 等待进程启动</li>
+<li>如果超时, 则处理下一个</li>
+<li>如果没超时, 则返回等待处理</li>
+<li>如果已经分发完一个receiver, 就继续分发下一个</li>
+<li>如果是动态注册, 直接分发</li>
+<li>如果是静态注册, 检查进程, 如果启动了就直接分发, 如果没启动, 则将广播标记为pending</li>
+<li>进程启动attachApplication后, 继续处理pending广播</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>静态广播分发<ul>
+<li>AMS最终调用ActivityThread.scheduleReceiver, 应用端先加载Broadcast的类, 创建BroadcastReceiver, 拿到Application, 拿到app的baseContext, 回调onReceive</li>
+<li>如果进程不存在, AMS请求启动进程后, 进程启动成功, 在attachApplicationLocked中, 调用sendPendingBroadcastLocked分发</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Provider<ul>
+<li>ContentResolver是在ContextImpl创建的时候创建的, ApplicationContentResolver</li>
+<li>当调用resolver的函数时, 在acquireProvider中先查找本地保存的provider binder对象, 没有就请求AMS, AMS返回holder, 本地需要安装再使用<ul>
+<li>本地查找通过authority+userId, 拿到ProviderClientRecord, 该对象对应AMS的ProviderRecord, 然后从中拿出Binder检查alive, 并决定使用还是客户端+服务器进行清理</li>
+<li>如果本地查不到, 则请求AMS, 调用getContentProvider返回Holder<ul>
+<li>AMS检查如果有Record就直接返回</li>
+<li>当不存在时, 如果能跑在调用的客户端进程(canRunHere, multiprocess=true或者进程名相同, 并且uid相同), 就返回<ul>
+<li>当holder中的provider为空, 让应用端自己创建, 不用通过binder通信, 更快</li>
+</ul>
+</li>
+<li>如果不能跑在调用者进程, 当provider进程没启动则通知Zygote启动它的进程 (process), 如果已经启动了但是Binder还未注册给AMS则请求Provider发布<ul>
+<li>应用主动发布, Provider进程启动成功后, attach过程中, 查询PMS得到provider列表, 然后发送消息让AMS等待Provider发布binder, 同时发送给客户端bind请求, 带上provider列表, 为了让应用单安装并发布binder<ul>
+<li>应用端收到请求后, 分别安装并将holder(内有binder)返回AMS</li>
+<li>AMS收到holders后, 把binder保存在自己的records里, 并notifyAll通知等待发布的线程</li>
+</ul>
+</li>
+<li>如果进程已启动但没有provider, AMS则主动请求应用发布, 应用切主线程(scheduleInstallProvider), 再调用installContentProviders, 创建provider, 调用onCreate, 再发布到AMS注册</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>应用端收到holder之后, 进行installProvider操作<ul>
+<li>如果holder.provider不为空, 则使用binder proxy</li>
+<li>如果为空(multiprocess=true或者统一uid+进程名相同, 即允许调用着实例provider), 先反射创建ContentProvider, 从中获得IContentProvider, 实际上是binder实体, 并attach传入context(调用ContentProvider的onCreate)</li>
+<li>创建ProviderClientRecord对象, 赋值IContentProvider到holder.provider, 并保存在mLocalProvidersByName中, 再返回holder</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>UI刷新机制<ul>
+<li>应用申请buffer-&gt;系统返回buffer-&gt;应用绘制提交-&gt;系统显示屏幕</li>
+<li>屏幕缓存不止一个, 至少两个</li>
+<li>屏幕固定刷新, 在接收到vsync信号后</li>
+<li>系统的Choreographer控制消息只有等vsync消息来了后触发UI绘制, 保证跟vsync同步</li>
+<li>requestLayout会给消息队列插入屏障, 再给Choreographer里post一个callback到队列, 不同线程有不同的Choreographer</li>
+<li>同一个vsync内, 无论掉多少次requestLayout都只能触发一次, 因为只有当下次vsync触发后, 才会将flag保护置位</li>
+<li>callback如何加入队列<ul>
+<li>Choreographer内有数组mCallbackQueues, 根据类型管理单链表, 根据时间排序</li>
+<li>如果当前就是Choreographer的工作线程, 直接schedule, 如果不是, 则发异步消息到其线程, 插入头部</li>
+<li>Choreographer调用scheduleVsyncLocked请求信号, 当vsync时机到来时, SurfaceFlinger会postSyncEvent进行通知 <ul>
+<li>scheduleVsyncLocked用来告诉SurfaceFlinger下一个vsync通知我</li>
+<li>DisplayEventReceiver会调用native的函数, 再通过SurfaceFlinger在底层创建的EventConnection#requestNextSync<ul>
+<li>Connection是在DisplayEventReceiver的构造中通过SurfaceFlinger创建的</li>
+<li>SurfaceFlinger创建EventThread负责监听Vsync信号, 并通过EventThread创建Connection, 并注册进EventThread等待信号</li>
+<li>EventThread里面等待拿取所有Connections, 便利返回Vsync事件</li>
+<li>等待过程首先检测Vsync信号是否已经到来, 到来就返回connection列表</li>
+<li>Connection通过BitTube发送信号, BitTube类似socket管道, 写端在SurfaceFlinger</li>
+<li>DisplayEventReceiver初始化会通过Connection获取DataChannel(remote()-&gt;transact)拿到Connection远端的Channel的parcel, 再还原回BitTube</li>
+<li>Choreographer构造时就会创建FrameDisplayEventReceiver, 会创建native层将Connection远端Channel接收(mReceivedFd)的fd通过Looper进行监听(addFd), 从而完成监听Vsync闭环<ul>
+<li>addFd内部将fd加入epoll event内 (epoll_ctl), Looper内部pollInner的循环, 通过epoll_wait遍历事件, 一种是消息队列事件 (mWakeEventFd == fd), 另外一个种会放在response列表之后处理</li>
+<li>循环response调用response.request.callback-&gt;handleEvent, 返回0就会删除fd, 返回其他则继续监听</li>
+<li>BitTube的回调通过JNI调用Java层层的DisplayEventReceiver的onVsync</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通知会通过FrameDisplayEventReceiver#onVsync回调, 调用doFrame传入当前vsync时间戳来处理消息, 如果当前时间晚于vsync时间戳太多, 则会打log, 在主线程工作太多</li>
+<li>然后根据时间戳到了与否处理四种类型的callback, INPUT, ANIMATION, TRAVERSAL, COMMIT, 通过extractDueCallbackLocked拿出到时见的callback</li>
+<li>callback内调用doTraversal-&gt;performTraversal来进行真正绘制</li>
+<li>所以并不是每一次Vsync都会绘制, 需要应用自己请求才能收到Vsync信号, 如果没有重绘, 屏幕还会60帧刷新, 只不过用的旧数据</li>
+<li>onDraw完也得等下次Vsync信号来的时候才会刷新</li>
+</ul>
+</li>
+<li>Surface<ul>
+<li>Surface是一个Parcel，Java类保存native指针，主要传递native指针</li>
+<li>native层nativeWriteToPacel写入GraphicBufferProducer的binder</li>
+<li>native层nativeReadToPacel从parcel里读出binder，重新构造成Surface</li>
+<li>performTraversal第一次绘制通过mWindowSession#relayout请求WMS创建Surface</li>
+<li>WMS创建native层的SurfaceControl， 再创建native层的Surface，其中SurfaceControl负责提供GraphicBufferProducer</li>
+<li>Surface内部主要靠的就是GBP, client创建空Surface, WMS创建SurfaceControl, 再用其内部的GBP绑定为Surface</li>
+<li>Surface绘制原理<ul>
+<li>绘制从ViewRootImpl#performTraversal开始, measure, layout, draw</li>
+<li>软绘制<ul>
+<li>nativeLockCavas创建Canvas<ul>
+<li>底层Surface创建buffer, 供SkBitmap使用, 再赋给Canvas</li>
+<li>Surface通过GraphicBufferProducer#dequeueBuffer获取空间</li>
+<li>如果buffer空间地址需要刷新, 则调用GraphicBufferProducer#requestBuffer在SurfaceFlinger里创建</li>
+<li>赋值给后台mLockedBuffer用于绘制</li>
+<li>Buffer的IPC传递知识传递了文件描述符, 让本地与远端都指向同一片物理内存</li>
+</ul>
+</li>
+<li>nativeUnlockCanvasAndPost提交Buffer<ul>
+<li>清空Canvas底层bitmap</li>
+<li>拿到buffer在Slot中的index, 并通过GBP-&gt;queueBuffer告诉SurfaceFlinger, 对buffer进行处理, 再通知consumer端onFrameAvailable去合成</li>
+<li>再把buffer赋值给前台mPostedBuffer用于渲染, 清空mLockedBuffer</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Vsync<ul>
+<li>SurfaceFlinger<ul>
+<li>HWComposer硬件生成信号, VSyncThread软件生成信号</li>
+<li>信号分发给工作线程DispSyncThread</li>
+<li>工作线程两路分发给另外两个线程, app-EventThread, sf-EventThread, 并且加了偏移, 避免抢占CPU</li>
+<li>一个通知应用绘制UI, 一个通知SF对绘制完成的图像进行合成渲染</li>
+</ul>
+</li>
+<li>SurfaceFlinger初始化<ul>
+<li>初始化两个EventThread, 并传入不同的DispSyncSource, 参数会加入所谓偏移, 以及工作线程分发器(&amp;mPrimaryDispSync)</li>
+<li>初始化HWComposer, 内部包含硬件生成与软件生成, 传入EventHandler, 即SF自己, 再传给PrimaryDispSync工作线程进行分发 </li>
+<li>app线程会将sync发给app进程, sf线程会将sync发给SF主线程</li>
+<li>SFEventThread创建EventConnection, 并获取DataChannel即BitTube, 并将用于接收的Fd添加到Looper, 收到vSync后回调MessageQueue::cb_eventReceiver</li>
+</ul>
+</li>
+<li>HWComposer<ul>
+<li>加载硬件模块成功, 则不需要软生成, 并且将硬件hook回调hook_vsync赋值<ul>
+<li>hook_vsync会调用HWComposer::vsync</li>
+<li>回调EventHandler, 即SurfaceFlinger#onVSyncReceived</li>
+</ul>
+</li>
+<li>如果加载失败, 启动VSyncThread<ul>
+<li>线程不断执行threadLoop, 通过计算进行sleep(clock_nanosleep)</li>
+<li>回调SurfaceFlinger#onVSyncReceived</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>SurfaceFlinger#onVSyncReceived内调用PrimaryDispSync#addResyncSample, 保存timestamp到mResyncSamples里, 再通过DispSync#updateModel<pre><code>- updateModel会调用mThread发送信号(mCond.signal())
+- DispSync内的mThread是其工作线程, 循环内等待Vsync信号(mCond), 得到信号后拿到所有callbacks并分发出去
+- Callback就是DispSyncSource的cb, 即SurfaceFlinger自己
+    - 而这个cb内又调用了EventThread的cb(onVSyncEvent)
+    - EventThread将时间戳保存到mVSyncEvent数组, 再通过mCondition.broadcase()唤醒线程
+    - threadLoop等待信号, 循环等待检测mVSyncEvent
+    - 将所有事件通过Connection#postEvent分发
+        - 即DisplayEventReceiver也就是BitTube#sendObject发送出去
+        - tube通过mSendFd发送, mReceiveFd接收
+        - 应用进程通过Connection的Binder接收
+        - 而SF在初始化时添加了接收Fd
+</code></pre></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>跨进程通信<ul>
+<li>管道<ul>
+<li>单向通信, 无名管道父子进程使用, 有名管道也可以给任意多进程使用</li>
+<li>pipe(fd)可以生成一堆描述符, fd[0]来读, fd[1]来写<ul>
+<li>tips: fork()返回0位子进程, &gt;0位父进程, &lt;0开进程失败</li>
+</ul>
+</li>
+<li>进程内, 跨进城都可以使用, 数据量不大的通信常用</li>
+<li>低版本的Looper底层用pipe, 高版本用event_fd</li>
+</ul>
+</li>
+<li>socket<ul>
+<li>全双工, 用于无亲缘进程之间</li>
+<li>zygote接收AMS的请求用的就是socket <ul>
+<li>通过读取到的参数创建应用, 再把创建的pid写给对方</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>共享内存<ul>
+<li>快, 不需要多次拷贝, 比前两者支持数据量大</li>
+<li>进程之间不需要有关系, 只要能拿到fd</li>
+<li>安卓的匿名共享内存Ashmem<ul>
+<li>通过<code>native_open</code>创建匿名共享内存</li>
+<li>再通过<code>native_mmap</code>将共享内存映射到本进程</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>信号<ul>
+<li>单向, 收不到回复</li>
+<li>只能带信号, 不支持参数</li>
+<li>只要知道pid就能发信号, 也可以给一群进程发信号<ul>
+<li>但是只有root权限才能随便发, 或者同一个uid下才能发</li>
+</ul>
+</li>
+<li>Android里Process.killProcess使用的就是信号</li>
+<li>虽然进程都是Zygote启动的, 但启动后会重新设置uid, 所以不能乱杀</li>
+<li>Zygote关注SIGCHLD信号, 子进程死掉后清理资源</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Binder<ul>
+<li>主要实现远程调用</li>
+<li>一般跨进程流程: 参数序列化-&gt;buffer传递-&gt;参数反序列化</li>
+<li>需要注意: 性能好, 方便, 安全, 相当复杂</li>
+<li>Binder跑在驱动层, 在内核, 没有用Linux跨进程机制, 不用内核进行中转, 多次拷贝<ul>
+<li>性能好, binder做内存映射, 映射内核与目标应用进程内存空间</li>
+<li>比共享内存容易使用</li>
+<li>安全, 在内核中添加认证机制</li>
+</ul>
+</li>
+<li>Client, Server, ServiceManager工作的前提就是启动binder机制<ul>
+<li>打开binder驱动</li>
+<li>内存映射, 分配缓冲区</li>
+<li>启动binder线程, 线程注册在驱动内, 并且进入loop循环, 与binder交互</li>
+<li>系统Service先与ServiceManager交互, 接着才是Client</li>
+<li>分层<ul>
+<li>应用层 Proxy -&gt; Stub</li>
+<li>Java BinderProxy -&gt; Binder</li>
+<li>Native BpBinder -&gt; BBinder</li>
+<li>binder驱动 IPCThreadState#transact -&gt; onTransact, 通过mHandle跟对应驱动打交道, 标识接收端</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>实现<ul>
+<li>Client<ul>
+<li>transact内首先通过writeTransactionDate写数据到mOut中</li>
+<li>再调用waitForResponse<ul>
+<li>内部调用talkWithDriver完成先写再读<ul>
+<li>实际通过binder_ioctl进行读写</li>
+</ul>
+</li>
+<li>再通过循环反复交互直到<code>BR_TRANSACTION_COMPLETE</code>跳出循环</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Server<ul>
+<li>binder线程进入loop, 调用IPCThreadState#joinThreadPool<ul>
+<li>首先写入mOut注册线程</li>
+<li>进入死循环读写指令<ul>
+<li>talkWithDriver</li>
+<li>再从mIn读取指令进行执行</li>
+</ul>
+</li>
+<li>执行BR_TRANSACTION指令即接收到远端请求<ul>
+<li>从读取的数据(binder_transaction_data)中拿出cookie, 即binder的server实现</li>
+<li>通过该BBinder-&gt;transact返回Server端上层</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Client: BC_TRANSACTION -&gt; BR_TRRANSACTION_COMPLETE -&gt; 休眠 -&gt; BR_REPLY</li>
+<li>Server: 休眠 -&gt; BR_TRANSACTIOn -&gt; BC_REPLY -&gt; BR_TRANSACTION_COMPLETE -&gt; 休眠</li>
+</ul>
+</li>
+<li>原理<ul>
+<li>如何写入<ul>
+<li>Java层传递Binder对象, 调用writeStrongBinder, 传入mNativePtr(底层Parcel)</li>
+<li>底层通过ibinderForJavaObject转换binder并写入底层Parcel</li>
+<li>如果Java层传入是Binder实体<ul>
+<li>通过Java层对象内拿出native holder的指针</li>
+<li>再从holder中拿出真实的native层binder对象, 是一个继承了BBinder(BnInterface:BBinder:IBinder)的对象</li>
+</ul>
+</li>
+<li>如果Java层传入是Proxy对象<ul>
+<li>直接从Java层拿到native层IBinder(BpBinder)的指针</li>
+<li>Tips: BpInterface父类mRemote为BpBinder类型</li>
+</ul>
+</li>
+<li>底层writeStrongBinder通过flatten_binder来写入Parcel<ul>
+<li>创建<code>flat_binder_object</code>, cookie赋值localBinder</li>
+<li>mObjects保存偏移, mData按顺序排列<code>flat_binder_object</code></li>
+</ul>
+</li>
+<li>驱动层<ul>
+<li>调用binder_transaction<ul>
+<li>取出所有<code>flat_binder_object</code></li>
+<li>如果<code>BINDER_TYPE_BINDER</code>实体对象<ul>
+<li>检查是否在binder驱动内有对应binder_node, 没有创建</li>
+<li>检查是否在目标进程有无对应引用对象</li>
+<li>然后把实体对象类型改为代理对象<code>BINDER_TYPE_HANDLE</code></li>
+<li>并把flat_binder_object里的handle改为刚创建引用的handle(desc)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如何读取<ul>
+<li>Java层通过readStrongBinder传入mNativePtr</li>
+<li>底层通过unflatten_binder<ul>
+<li>如果是<code>BINDER_TYPE_BINDER</code>, 则为同进程传递, 直接返回cookie, 即binder实体</li>
+<li>如果是<code>BINDER_TYPE_HANDLE</code>, 则通过handle生成BpBinder<ul>
+<li>handle是偏移, 在数组中查找handle_entry </li>
+<li>如果entry拿不到IBinder, 就创建BpBinder, 传入handle, 并赋值给entry的binder</li>
+<li>返回BpBinder</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>返回Java<ul>
+<li>如果是实体, 就返回JavaBBinder</li>
+<li>如果是代理, 需要生成一个BinderProxy, 且该对象mObject保存了native的指针</li>
+</ul>
+</li>
+<li>oneway机制<ul>
+<li>异步binder调用</li>
+<li>AIDL函数没有返回值</li>
+<li>oneway多个客户端调用在Server端是同步的</li>
+<li>Server端是在前一个处理完Parcel的freeBuffer的析构中, 从todo队列拿出下一个放在tode线程处理</li>
+<li>例如scheduleLaunchActivity就是oneway</li>
+<li>IWindow, IServiceConnection, IIntentReceiver都是异步</li>
+</ul>
+</li>
+<li>一次拷贝<ul>
+<li>只发生在读取方做了内存映射到内核</li>
+<li>另外的拷贝都是外围结构体到内核, 不包含data</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>消息队列<ul>
+<li>子线程Looper可以退出, 主线程Looper设置不可退出</li>
+<li>创建子线程Handler需要在子线程内prepare looper, 再传入handler</li>
+<li>一个Looper对应一个MessageQueue, 一个Looper会有多个Handler</li>
+<li>Looper创建后会创建MessageQueue, 上层MessageQueue创建会创建底层MessageQueue, 底层MessageQueue会创建底层Looper</li>
+<li>底层MessageQueue初始化时拿去/创建当前线程Looper</li>
+<li>底层Looper创建<ul>
+<li>创建eventFd, 比管道性能好, 只有计数器加减, 无拷贝</li>
+<li>Looper#wake往fd写东西</li>
+<li>Looper#pollOnce死循环监听fd<ul>
+<li>epoll_wait等待fd事件</li>
+<li>等待到循环eventCount从eventItems里拿出</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>消息传递<ul>
+<li>分发handler.dispatchMessage<ul>
+<li>顺序为msg自己有callback-&gt;全局callback-&gt;handler自己callback, 任意个返回true则不继续</li>
+</ul>
+</li>
+<li>接收 循环调用queue.next<ul>
+<li>循环调用nativePollOnce阻塞, 有消息或者时间到会返回<ul>
+<li>底层最终通过MessageQueue调用了Looper的pollOnce, 循环调用</li>
+<li>核心通过epoll_wait等待, 返回-1出错, 0没消息, 非0为消息个数</li>
+<li>循环消息Count, 如果事件使用的fd是被唤醒的fd(mWakedEventFd), 且是读事件(event&amp;EPOLLIN), 则通过awoken来消化管道事件</li>
+</ul>
+</li>
+<li>从mMessage取一条消息, 并将msg标记为InUse (当obtainMessage时候标记不使用, 即把消息从空闲链表里拿出)</li>
+</ul>
+</li>
+<li>发消息 handler.sendMessage<ul>
+<li>消息会直接放入队列, 只是在某个时间才会被分发<ul>
+<li>equeueMessage根据触发时间插入到queue的位置 (循环查找位置)</li>
+<li>底层pollOnce拿消息<ul>
+<li>如果没拿到消息, 则设置超时为-1, 一直等待</li>
+<li>如果拿到的没到点, 则设置超时为还差的那一段时间</li>
+<li>如果到点了, 则取出消息, 标记next为null, 返回msg</li>
+<li>因为主要靠epoll_wait等待, 所以精度不行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>消息被插入messageQueue后, 通过nativeWake唤醒消息队列线程<ul>
+<li>底层调用了Looper.wake, 然后往mWakeEventFd写数唤醒等待在某线程的Looper</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>IdleHandler<ul>
+<li>消息队列当前没有可处理消息的时候, 就会调queueIdle</li>
+<li>当消息处理完后 (Message#next循环内), 会查询pendingIdleHandlerCount, 如果有则逐个处理</li>
+<li>当idler.queueIdle返回false,则将该handler从mIdleHandlers删掉</li>
+<li>Framework中的应用<ul>
+<li>ActivityThread里加入了GcHandler, return false, 进行一次性GC</li>
+<li>waitForIdle, 内部也是往主线程queue加入IdleHandler, 返回false, 一次性调用<ul>
+<li>为了防止本身就是Idle不会调用, 则post一个EmptyHandler, 触发Idle</li>
+</ul>
+</li>
+<li>waitForSync, 与上一条的差别是最后循环等待信号, 当queueIdle被调用时, notify等待.<ul>
+<li>Tips: wait要配合while循环使用, 防止notify之后, 获得锁之前, 条件变化, 所以配合mIdle标记为一起, notifyAll之前mIdle=true</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>适用场景<ul>
+<li>延迟执行, 替代postDelay</li>
+<li>密集操作, 可以先往线程队列放进行处理, 当队列空闲再汇总刷新界面</li>
+</ul>
+</li>
+<li>IdleHandler不会重复调用, 当消息队列为空或者没有可执行的消息时, 会调用一次, 如果再被唤醒还是没有, 则不调用, 因为pendingIdleHandlerCount会被设置为0, 且一直循环poll, 不会跳出next, 直到有消息处理, 再次进入next后会被设置为-1进而重新读取size</li>
+</ul>
+</li>
+<li>ANR<ul>
+<li>Service, BroadcastQueue, ContentProvider, InputDispatching Timeout都会触发ANR</li>
+<li>比如Service, AMS发起让客户端启动Service后, 启动超时定时器(delay message), 当客户端响应启动Service之后, 移除超时消息, 如果未及时移除, 则AMS会弹框</li>
+<li>AMS通知客户端的Binder线程, Binder线程再往主线程发消息来启动Activity, Service, BroadcastReceive </li>
+<li>主线程在无消息时休眠, 其他线程需要写入eventFd才能唤醒主线程</li>
+<li>ANR是由于主线程有耗时任务, 或者创建本身有耗时, 而不是由于主线程消息循环阻塞</li>
+</ul>
+</li>
+<li>消息屏障<ul>
+<li>普通消息, 屏障消息, 异步消息</li>
+<li>屏障消息没有target, 正常消息没有target会抛异常</li>
+<li>屏障消息会有时间戳, 且影响后面的消息</li>
+<li>屏障消息不会唤醒线程来处理</li>
+<li>屏障插入(postSyncBarrier)会返回屏号</li>
+<li>删除屏障需要屏障号, 会唤醒线程, 只有当消息阻拦了消息</li>
+<li>如果当前要处理的消息是屏障, 则会往后遍历, 处理异步消息</li>
+<li>如果要插入消息, 但消息已经被屏障block, 且当前消息是最早的异步消息, 则要唤醒</li>
+<li>Framework应用<ul>
+<li>绘制界面scheduleTraversal时, 会加入barrier, 再往Choreographer里放入Runnable callback, 等vsync执行该回调后, 去除屏障, 为了使屏幕绘制的异步消息优先执行, block普通消息</li>
+</ul>
+</li>
+<li>消息屏障的api都是隐藏的, 需要反射或者其他方式</li>
+</ul>
+</li>
+<li>实践经验<ul>
+<li>跨进程传输大图片<ul>
+<li>考虑点<ul>
+<li>性能, 减少拷贝</li>
+<li>内存泄露, 资源释放</li>
+</ul>
+</li>
+<li>Binder启动时映射内存为1M, 是所有事务共享的</li>
+</ul>
+</li>
+<li>直接通过Intent传输bitmap, 在未允许传fd或者size小于16K的情况下, 会直接直接存parcel, 太大就会报错</li>
+<li>如果通过传binder到Intent, 则会打开allowFds, bitmap的数据会开辟ashmem空间, 再把空间地址fd写入parcel, 图片将会被拷贝到共享内存空间</li>
+<li>如果传输大文件可以用ContentProvider或者MemoryFile, 底层都是用共享内存实现</li>
+</ul>
+</li>
+<li>ThreadLocal<ul>
+<li>Looper里用到, 作为静态变量, 里面存放Looper, 不同线程拿到不同的looper</li>
+<li>Choreographer里也有静态变量初始化ThreadLocal并且在initialValue回调中创建对象</li>
+<li>原理<ul>
+<li>每一个线程都有thread对象, 里面有一个数组, 按照key + value排列</li>
+<li>key是WeakReference<threadlocal>, value是存储对象</threadlocal></li>
+<li>可以定义多个ThreadLocal, 每一个ThreadLocal都有自己的hash值作为数组下标</li>
+<li>hash算法每次增加一个值(是一个偶数)再对table的size取余数得到index</li>
+<li>如果冲突了, 则从当前遍历找空的存储</li>
+<li>ThreadLocal.get()<ul>
+<li>先获取当前线程Thread, Thread.currentThread()</li>
+<li>从thread里拿出Values, 在Values.table中提取</li>
+<li>如果Values不存在, 则创建一个</li>
+<li>如果提取的Key不等于当前ThreadLocal, 说明冲突, 继续调用Values.getAfterMiss</li>
+</ul>
+</li>
+<li>ThreadLocal.set()<ul>
+<li>拿到当前线程的Values, 如果不存在就创建一个</li>
+<li>然后调用Values.put, 找合适位置放进去</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Looper的副业<ul>
+<li>当epoll_wait被唤醒后, 轮询event发现fd不等于mWakeEventFd, 则进入else开始副业</li>
+<li>这些事件是通过addFd添加到EpollFd中让其进行监听的(epoll_ctl)</li>
+<li>通过Java的MessageQueue#addOnFileDescriptorEventListener, 底层在调用NativeMessageQueue::setFileDescriptorEvent进行添加</li>
+<li>Framework层没用这个机制, Native有使用<ul>
+<li>Vsync机制唤醒, Choreographer初始化的时候, 在底层给自己的Looper添加了Fd, 该Fd在SurfaceFlinger进行创建, 其中读的fd被跨进程传递到应用进程, 再在Choreographer的线程中将其添加到Looper监听的Fd中</li>
+<li>当新来来的时候, 就会将信号写入SurfaceFlinger中的写fd, 应用进程就可以监听到可读事件</li>
+<li>通过监听fd与bindCall的抉择<ul>
+<li>使用fd, 应用端可以控制监听fd的线程, 并且可以一次拿到所有的事件, 自己决定何时进行分发</li>
+<li>使用binderCall的话, 应用端接收到消息只能带binder线程, 如果不采用oneway, 会阻塞服务端, 如果采用oneway, 客户端只能按照顺序处理事件, 灵活性差</li>
+</ul>
+</li>
+<li>小Demo<ul>
+<li>MainActivity创建管道, 并通过bindService与其他进程的Service通信, 将读fd传递给它, Service将该Fd添加到Looper监听, 然后MainActivity向自己的写fd写入信息, 处于其他进程的Service收到消息, 并通过binder返回给MainActivity</li>
+<li>管道创建: ParcelFileDescriptor.createPipe, 0号读, 1号写</li>
+<li>写管道: AutoCloseOutputStream(fd[1])</li>
+<li>需要通过反射将读fd设置为非阻塞, 否则读不到消息就阻塞了</li>
+<li>监听描述符: <ul>
+<li>通过Queue#addOnFileDescriptorEventListener添加fd与回调</li>
+<li>在回调中, 使用AutoCloseInputStream包装fd</li>
+<li>循环读取直到没数据</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>检查线程耗时任务<ul>
+<li>WatchDog, 系统来检查死锁<ul>
+<li>检查哪个线程就把它加入WatchDog的Looper</li>
+<li>可以同时检测多个线程, 锁</li>
+<li>自己就是个线程, 继承了Thread</li>
+<li>内部会有多个HandlerChecker(Runnable), 每个Checker可以添加多个Monitor进行监听</li>
+<li>BinderThreadMonitor监控Binder线程使用<ul>
+<li>Monitor的monitor回调调用native函数</li>
+<li>blockUnitlThreadAvailable循环检测mExecutingThreadCount与mMaxThreads, 当有空闲线程时返回</li>
+<li>mExecutingThreadCount会在binder线程每次从驱动读取东西时++, 返回广播之前–</li>
+</ul>
+</li>
+<li>WatchDog线程跑一个死循环, 遍历所有checker, 调用scheduleCheckLocked<ul>
+<li>如果没有Monitor, 并且Handler一直在polling状态, 则标记Complete, return</li>
+<li>如果还没Complete, 则不继续执行新任务, 返回</li>
+<li>继续向下则标记Complete为false, 并向Handler头部post一个消息, 记下startTime</li>
+<li>Post中的Runnable会遍历Monitor列表, 调用monitor函数, 标记Complete为true</li>
+<li>Watchdog会每隔30s检测Checker完成状况, 遍历所有Checker, 通过getCompletionStateLocked拿到所有完成情况, 取最大值<ul>
+<li>检测过程中, 执行完了则COMPLETE, 如果还没执行完, 则用当前时间-startTime, 小于30秒, 则继续等待(WAIT), 大于30秒小于60秒再给一次机会(WAIT_HALF), 否则超时(OVERDUE)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>系统服务添加<ul>
+<li>APS, WMS, PMS通过addMonitor, 通过sychronized(this)尝试获取锁来监控死锁, 在单独的线程中检查, 这个monitor会被添加到WatchDog的main checker里</li>
+<li>APS, WMS, PMS通过addThread, 内部会添加了一个新的HandlerChecker, 检测工作线程(Handler的thread)是否阻塞</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>BlockCanary, 检查消息有没有耗时<ul>
+<li>因为消息队列在拿到消息后, dispatching前后会打log, 并且logging可以自己配置, 则可以通过这个获取消息处理时间</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>同步处理消息<ul>
+<li>在发消息后, 进行等待, 待消息处理完成后, 获取消息结果</li>
+<li>Native<ul>
+<li>底层调用MessageBase::wait等待消息</li>
+<li>返回后通过MessageBase::getResult获取结果</li>
+</ul>
+</li>
+<li>Java<ul>
+<li>Handle#runWithScissors, 将Runnable包装到BlockingRunnable里</li>
+<li>postAndWait会发送之后在同步块内循环检测mDone, 并且wait()</li>
+<li>run内执行runnable, 返回结果后标记mDone, 并notifyAll()</li>
+<li>可以改进BlockingRunnable, 传入Callable<t>, 通过getResult获取结果</t></li>
+<li>也可以直接使用FutureTask, 它既是Runnable, 又可以阻塞获取结果</li>
+</ul>
+</li>
+<li>binder调用统一切换工作线程<ul>
+<li>通过动态代理</li>
+<li>自定义ProxyInvocationHandler, 传入对象, Handler, Async标识</li>
+<li>在invoke里, 判断没有Handler, 则直接调用, 如果有, 则将方法调用包装到FutureTask里, 并post到Handler里进行执行, 并且根据Async标识判断是否需要等待task执行结果</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ActivityThread与ApplicationThread<ul>
+<li>ActivityThread里持有ApplicationThread</li>
+<li>ActivityThread是Zygote创建的运行主线程的对象</li>
+<li>ApplicationThread是一个Binder实现, AMS通过它与App进行通信, 它再通过ActivityThread内的H (handler)与主线程通信</li>
+</ul>
+</li>
+<li>Framework解决实际问题<ul>
+<li>空Activity也会占用内存20m<ul>
+<li>zygote启动会预加载系统资源, 主要跟主题相关的</li>
+<li>zygote启动应用进程则会继承资源</li>
+<li>getDrawable先拿cache, 再拿预加载资源</li>
+<li>加载完成后, 缓存到cache</li>
+<li>所以不需要UI的单独进程后台Service可以反射清掉他们</li>
+</ul>
+</li>
+<li>为何Activity onResume后才显示<ul>
+<li>在handleResumeActivity中, 需要window被加入windowmanager, willBeVisible才会为true</li>
+<li>获取window的decorview添加到wm中<ul>
+<li>requestLayout内部通过choreographer触发绘制</li>
+<li>通过windowSession注册window, 与WMS形成双向调用</li>
+</ul>
+</li>
+<li>Activity.makeVisible重绘</li>
+</ul>
+</li>
+<li>为何bindService时候onRebind掉不到<ul>
+<li>onRebind的触发是当Service还在, 但是应用死了, 会在unBind的时候将doRebind标记为true, 下次再次bind的时候会调用onRebind</li>
+</ul>
+</li>
+<li>广播onReceive的context可否启动Activity<ul>
+<li>onReceive的context, 动态注册为注册时的context, 静态注册的则是以application为mBase的ContextWrapper, 不是Activity本身</li>
+<li>所以动态注册可以直接启动, 静态需要添加<code>FLAG_ACTIVITY_NEW_TASK</code></li>
+<li>静态不能弹出AlertDialog</li>
+</ul>
+</li>
+<li>ContentProvider的onCreate早<ul>
+<li>虽然ContentProvider在Application的attatch之后创建并onCreate, 但是它是在Application的onCreate之前.</li>
+</ul>
+</li>
+<li>Intent带数据量大会异常<ul>
+<li>Binder共享共建1M所有事务共享</li>
+<li>当数据小于16K会直接写Parcel, 但未开allowFd且大于16K也会直接写, 就会报错</li>
+<li>所以需要传binder来开启fd传输, 将ashmen共享内存的fd传过去</li>
+</ul>
+</li>
+<li>Handler延时精度<ul>
+<li>handler取message后, 遍历所有, 如果时间未到则设置剩余时间, 通过epoll_wait来等待</li>
+<li>所以精度不高</li>
+</ul>
+</li>
+<li>IdleHandler有时候不掉<ul>
+<li>当无消息, 或者没可执行消息时, 调用一次, 如果再次唤醒, 则不会再调</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Framework用到的设计模式<ul>
+<li>单例<ul>
+<li>同进程<ul>
+<li>系统有Singleton<t>的抽象, 如IActivityManager</t></li>
+</ul>
+</li>
+<li>同线程<ul>
+<li>通过ThreadLocal<t>, 保证线程内每次都拿到同一个对象, 不同线程拿到的确是不同对象</t></li>
+</ul>
+</li>
+<li>进程间<ul>
+<li>ServiceManager与binder驱动结合, 形成进程单例</li>
+<li>ServiceManager对应的binder句柄都是0</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>观察者<ul>
+<li>Broadcast可以进程间, 进程内</li>
+<li>进程内<ul>
+<li>系统抽象类Observable<t></t></li>
+</ul>
+</li>
+<li>进程间<ul>
+<li>ContentService可以注册通过Transport实现的IContentObserver, 其实是一个Binder, 这样远端的Service就可以通过Binder来通知, 本地的Transport收到onChange后再通过内持有ContentObserver进行分发</li>
+<li>RemoteCallbackList利用同一个binder实体在目标进程只会有一个binder proxy对象, 虽然有多个业务层封装, 但是通过asBinder可以拿到唯一, 来实现注册与反注册, 这样Binder Proxy作为Map的key, 而Callback (业务层Binder)作为Value</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>代理<ul>
+<li>静态代理<ul>
+<li>ActivityManagerProxy实现IActivityManager将所有业务代理给内部的mRemote(IBinder, binder proxy)对象</li>
+<li>ActivityManagerNative#asInterface, 通过binder.queryLocalInterface, 如果返回不为空, 则与Binder实体在一个进程, 直接返回, 如果未空, 则创建Proxy, 封装为业务代理对象</li>
+<li>比如startActivity就会通过mRemote#transact, 它就是binder proxy对象</li>
+</ul>
+</li>
+<li>动态代理<ul>
+<li>Decorator<t>实现了InvocationHandler</t></li>
+<li>它的newInstance(T obj, DecorationLinstener l), 通过反射给obj加上动态代理(Proxy.newProxyInstance, 需要三个参数, ClassLoader, Interface, InvocationHandler), 在调用obj方法前后时, 回调listener</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Framework设计</p>
+<ul>
+<li>Binder, 跨进程, 模糊进程边界<ul>
+<li>请求转发, 从客户端进程转发到目标进程, 处理完再把结果返回</li>
+<li>Binder对象传递, 实体对象跨进程后就变代理对象, 代理对象回到所在进程又变实体, 都是在驱动层转换, 但应用层永远拿到的是统一接口对象</li>
+<li>分层结构<ul>
+<li>应用端BinderProxy (Java) -&gt; BpBinder (Native) -&gt; 驱动</li>
+<li>服务端Binder (Java) -&gt; BBinder (Native) -&gt; 驱动</li>
+</ul>
+</li>
+<li>转换<ul>
+<li>Binder为实体<ul>
+<li>是否创建node (实体), 没有则创建, 且localBinder实体复制给cookie</li>
+<li>是否创建目标进程引用, 没有则创建</li>
+<li>改类型为Handle, 且handle复值上一步创建的引用</li>
+</ul>
+</li>
+<li>Binder为引用<ul>
+<li>是否是同一进程, 如果是, 查找node, 改类型为Binder, 给cookie赋值</li>
+<li>非同一进程, 则查找目标进程引用, 没有创建, 赋值给handle</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Bitmap大图传输, 传输匿名共享内存句柄, 到目标进程再映射内存<ul>
+<li>常规的数据得先拷贝到Parcel, 再拷贝到Binder驱动, 到目标进程再从Parcel拷出来, 三次拷贝</li>
+<li>通过匿名共享内存只需要一次甚至不需要拷贝<ul>
+<li>将图片拷贝到Ashmem空间传输fd, 但是这个fd没有被写到Bitmap中, 所以每次发送都需要拷贝</li>
+<li>读取的话如果是Ashmem, 则直接映射, 作为Bitmap的像素缓冲区, 这次生成的Bitmap内会写入Ashmem的Fd, 则这张图如果再次传输, 就会非常快, 省去上一步的拷贝</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Zygote创建进程, 预加载资源, 每次应用启动, 不需要重复做事, 加速应用启动</p>
+</li>
+<li><p>Intent, 模糊进程边界, 如Broadcast</p>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Android，Android-Framework/">Android，Android Framework</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/12/14/Custom-your-own-k8s-resource/"
+                    data-tooltip="如何自定义Kubernetes资源"
+                    aria-label="下一篇: 如何自定义Kubernetes资源"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2021 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/12/14/Custom-your-own-k8s-resource/"
+                    data-tooltip="如何自定义Kubernetes资源"
+                    aria-label="下一篇: 如何自定义Kubernetes资源"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://talentprince.github.io/2021/06/28/Android-Framework-Points/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>Xidian B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Worker</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an
+            </div>
+        
+    </div>
+</div>
+
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            aria-label=": First Blog"
+                        >
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 47 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/new_cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+    <script src="/assets/js/moment-with-locales.js"></script>
+    <script src="/assets/js/algoliasearch.js"></script>
+    <script>
+      var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+    </body>
+</html>
