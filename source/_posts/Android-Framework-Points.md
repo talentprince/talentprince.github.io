@@ -1,0 +1,702 @@
+---
+title: Android Framework知识总结
+date: 2021-06-28 09:09:50
+tags: [Android，Android Framework]
+comments: true
+description: Android Framework 知识点
+categories: Android Framework
+thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1624842938/framework_yg2dyj.jpg
+---
+
+Android Framework这一系列学习了很久， 也跟了不少源码， 推荐一个查看源码的[网站](https://www.androidos.net.cn/sourcecode)非常不错， 速度也很快。
+希望可以帮助了解Android Framework各个知识点，也作为自己的一个备忘录，便于查询。
+
+<!--more-->
+
+- Zygote
+    - 作用
+        - 启动SystemServer
+            - 会用到
+                - JNI函数, 主题资源, 贡献库
+            - 负责通过ServerManager加载各个系统服务
+        - 孵化进程
+    - 进程启动三步
+        - 进程启动->准备工作->Loop
+    - Linux第一个进程, Init进程
+        - init.rc配置文件中指定ServiceManager的启动
+        - 紧接来启动Zygote, MediaServer, SurfaceFlinger等, 他们都是init子进程
+        - 启动方式
+            - fork+handle
+            - fork+execve
+                - execve可以替换到父进程资源
+    - 信号处理
+        - SIGCHILD 父进程根据该信号重启子进程
+    - Native部分
+        - 启动虚拟机
+            - 应用进程使用Zygote孵化出来的, 虚拟机已经启动好了
+            - 子进程会继承该虚拟机, 只需要重置状态, 重启一些守护线程
+        - 注册JNI函数
+        - 进入Java
+    - Java部分
+        - 预加载资源
+        - 启动system server (fork单独进程)
+        - Loop循环等待socket消息
+        - 得到消息调用runOnce, 调用Zygote.forkAndSpecialize()
+        - 在子进程执行参数列表指定的ActivityThread.main函数
+    - 特点
+        - Zygote fork保证单线程
+            - 父进程有多个线程, 子进程只有一个, 会造成状态不一致或者死锁
+            - 在fork之前将所有线程都停掉, fork完成后再父进程内重启
+        - Zygote的IPC(与SystemServer)采用socket而不是binder
+            - 原因有多个, 主要是因为binder需要注册在ServiceManager, 然后AMS与Zygote通信的时候又要在ServiceManager中查询binder对象, 来来回回繁琐
+            - 其次如果zygote启动binder再启动SystemServer, 两个进程会同一描述符, 得在SystemService中关闭旧的再次重启新的, 增加复杂度
+            - App与SystemServer内各个服务通过Binder通信
+- Android系统的启动
+    - Init fork出Zygote
+    - Zygote进程内启动虚拟机, 注册JNI函数, 预加载资源
+    - 启动SystemService, 进入Socket Loop
+        - Zygote.forkSystemServer启动进程
+        - handleSystemServerProcess加载逻辑
+            - nativeZygoteInit启动binder线程池与app以及ServiceManager通信
+            - applicationInit启动Java SystemServer类main函数
+            - main函数启动了MainLooper, 加载共享库
+            - Start Bootstrap, Core, Other三个service
+            - 进入Loop循环, 但不一定处理主线程消息, 只是为了不让SystemServer App退出
+    - 启动Launcher, 通过PKMS获取所有安装程序, 进行显示
+    - 系统服务的发布
+        - publishBinderService(name, binderService)调用ServiceManager注册自己的Binder
+    - 系统服务的线程
+        - 工作线程 DisplayThread, FgThread, IoThread, UiThread
+        - binder线程
+    - 服务相互依赖
+        - 分批启动
+            - AMS, PMS, PKMS先启动
+        - 分阶段启动
+            - 通知已经启动的service, 根据阶段使用相关服务
+- 添加系统服务
+    - 添加
+        - 通过ServiceManager.addService进行注册
+        - 在SystemService启动的时候来启动其他系统服务
+        - 服务不完全在SystemService进程, 小部分服务开了自己的进程, 如SurfaceFlinger
+        - SurfaceFlinger是纯底层服务注册
+            - 创建ProcessState启动binder, 分配缓冲区等
+                - 打开binder驱动
+                - 映射内存, 分配缓冲区
+                - 启动binder线程, 进入loop, 可以创建也可以使用进程主线程
+            - 创建SurfaceFlinger, init初始化
+            - 通过底层IServiceManger.addService将上一步创建的flinger注册
+            - 由于ServiceManager跟SurfaceFlinger都是init进程拉起来的, 需循环等待拿取IServiceManager
+            - flinger进入loop循环
+    - 获取
+        - getSystemService最终在ContextImp里通过SystemServiceRegistry获取已经注册的`SYSTEM_SERVICE_FETCHERS`Map, 拿到对应Fetcher来getService
+        - getService内有加锁的cache数组来缓存不同Service
+        - 如果cache不存在, 则调用CachedServiceFetcher的createService来创建
+        - createService里调用ServiceManager.getService来或许远端服务的IBinder,  其中ServiceManager对象也是远端的IBinder
+    - 如何添加一个系统服务
+        - 时机
+            - 跑在SystermServer
+            - 单独跑进程, 加入init.rc中
+        - 启动binder机制, 如果在SystemServer, 可以利用已有
+        - 服务初始化
+        - 注册到ServiceManager
+        - 最好给客户端提供ServiceFetcher, 保持与其他服务调用一直
+    - 系统服务与应用服务
+        - 系统服务
+            - 系统服务大多跑在SystemService内, 大多都在binder线程池, 少数有自己工作线程, 对于独立进程的服务大多跑在native, 自己启动binder机制
+            - 系统服务在binder线程中等待客户端请求, 分发到具体的服务
+            - 通过ServiceManager.addService注册, 只有系统服务才能注册
+            - 客户端通过Context.getSystemService获取系统服务对象, 进行使用
+        - 应用服务
+            - 应用服务启动都是由应用端发起, 内部调用AMS, 创建Service的Record
+            - AMS只负责调度, 应用服务还是在应用端创建启动
+            - 应用向AMS发起bindService, 如果已经在AMS注册过则返回Binder, 否则通知客户端创建, 并注册, 再返回
+            - 应用服务通过bindService回调的onServiceConnected的IBinder对象调用远端服务
+- ServiceManager
+    - 启动
+        - 单独进程, 通过init.rc启动
+        - 启动binder
+            - 打开binder驱动, 映射128k空间作为数据传输 (普通程序有1m)
+        - 发布服务
+            - 通过ioctl, 告诉binder驱动ServiceManager就绪, 传入`BINDER_SET_CONTEXT_MGR`指令
+        - 等待响应请求
+            - `binder_loop`内调用`binder_write`
+            - `binder_write`通过ioctl传入`BINDER_WRITE_READ`, 第三个参数`binder_write_read`中的`write_size`与`read_size`的大小来控制读写, 如果都大于0, 优先写
+            - ioctl第三个参数控制写入`BC_ENTER_LOOP`, 将当前线程注册为binder线程
+            - 将`write_size`置为0, 进入死循环, 将`read_size`置为sizeof(readbuf), 通过ioctl读取数据
+            - 通过`binder_parse`解析`readbuf`, 并通过最后一个回调函数`bind_handle`返回
+    - 获取
+        - 底层获取ServiceManager
+            - 通过defaultServiceManger()获取对象
+                - 通过全局锁, 内部循环sleep(1), 通过ProcessState::getContextObject获取gDefaultServiceManager
+                - 之所以循环, 因为底层例如surfaceflinger与servicemanager都是一起初始化的, 可能还没有创建好
+                - getContextObject内部调用getStrongProxyForHandle(0), 0为数组索引, 返回BpBinder(IBinder)对象
+                - interface_cast<IServiceManager>(bpBinder)相当于IServiceManager::asInterface(), 最终调用new BpServiceManager(bpBinder)
+                    - IServiceManager通过宏定义`DECLARE_META_INTERFACE`与`IMPLEMENT_META_INTERFACE`实现asInterface方法, 内部创建Bp###
+        - 获取Service
+            - Java层通过ServiceManager#getService
+            - 底层通过ServiceManager的getService
+            - 通过remote()拿到的BpBinder, 带上name发送transact CHECK_SERVICE_TRANSACTION获取
+            - svcmgr_handler得到消息后, 查询链表
+    - 添加
+        - defaultServicce
+        - 通过remote()拿到BpBinder对象
+        - 再调用transact发送`ADD_SERVICE_TRANSACTION`, 发送name与binder对象
+            - BpBinder内部通过调用IPCThreadState单例的transact发送
+        - 处理
+            - ServiceManger通过`svcmgr_handler(service_manager.c)`进行处理请求
+            - 接收到SVC_MGR_ADD_SERVICE后调用`do_add_service`将binder加入链表
+- Binder
+    - 启动时机
+        - Zygote在fork进程后, 子进程nativeZygoteInit中启动binder
+    - 应用启动binder
+        - zygote创建进程初始化过程中, 通过ProcessState的构造函数, 打开binder驱动, 打开成功则分配缓冲区大小
+        - ProcessState::startThreadPool通过IPCThreadState线程单例, 向mOut的Parcel写入, 告诉驱动, 注册线程
+        - 进入Loop循环, 死循环不断从mIn读取驱动数据
+- Application
+    - Application跟着进程走
+    - 作用
+        - 保存进程内全局变量
+        - 初始化
+        - 提供Context
+    - 创建
+        - ActivityThread#attatch -> AMS -> AMS#attachApplicationLocked -> IApplicationThread#bindApplication -> sendMessage -> handleBindApplication -> makeApplication + onCreate
+        - makeApplication通过反射创建Application, 并调用attach(attachBaseContext)传入context(ContextImpl)
+    - 不能在applicaiton初始化内做耗时操作, 它会影响后续activity, service, broadcast的初始化
+- Context
+    - Context才是各个组件的核心, 没有它, Application只是个空壳
+    - 内部持有了ActivityThread, LoadedApk(PackageInfo), ResourceManager, Resource, PackageManger, mServiceCache
+    - 三种Context
+        - Application Context
+            - 继承关系
+                - Application <- ContextWrapper { Context mBase } <- Context
+            - 调用关系
+                - <init> -> attatchBaseContext -> onCreate
+            - Zygote启动子进程后, 在makeApplication时创建ContextImpl, 并attatch到Application里
+        - Activity Context
+            - performLaunchActivty中反射创建Activity
+            - 获取application, 创建ContextImpl, 调用Activity#attatch
+            - 调用onCreate
+            - 继承关系
+                - Activity <- ContextThemeWrapper <- ContextWrapper
+                - ContextThemeWrapper多了`Resources.Theme`
+            - 调用关系
+                - <init> -> attatchBaseContext -> onCreate
+        - Service Context
+            - 与Application类似, 反射创建Service, 创建ContextImpl, attatch后调用onCreate
+            - 也继承了ContextWrapper
+        - Broadcast
+            - 不继承ContextWrapper
+            - onReceive的context, 动态注册为注册时的context, 静态注册的则是以application为mBase的ContextWrapper
+        - ContentProvider
+            - 不继承ContextWrapper
+            - 成员变量mContext是创建的时候传入的Application
+            - 虽然ContentProvider在Application的attatch之后创建并onCreate, 但是它是在Application的onCreate之前.
+    - App的Context的个数为Activity个体数+Service个数+Application*进程数
+    - getApplication是Activity与Service特有返回Application的, 而getApplicationContext是Context的方法, 虽然都返回Application
+    - Activity的getBaseContext获取的是mBase, 而this是Activity本身
+- Activity
+    - 启动 
+        - ActivityManagerNative.getDefault()获取到AMS的代理Binder, startActivity
+        - 通过transact发送`START_ACTIVITY_TRANSACTION`
+        - AMS收到onTransact回调后startActivity
+        - 检测Process是否启动, ProcessRecord是否为空, appthread是否注册
+        - 如果进程未创建, 则通知zygote启动, 这个是基于socket
+        - 启动后父进程将子进程pid返回给AMS, 而子进程启动binder, 并执行ActivityThread的main函数, 通过attatchApplication向AMS注册ApplicationThread, 即应用端的Binder
+        - AMS中attatchApplication里会通知应用创建Application, 然后启动Activity, Service, Broadcast等挂起的组件
+            - 其中Activity 
+                - 通过mFocusedStack获取栈顶Activity
+                - 通过ApplicationThread#scheduleLaunchActivity通知应用端启动
+                - 应用收到消息后发送LAUNCH_ACTIVITY消息到主线程
+                - 主线程调用handleLaunchActivity, 其中performLaunchActivity负责创建启动, handleResumeActivity负责进入resume
+    - 显示
+        - setContentView
+            - Window.setContentView
+                - window是在attach的时候创建的PhotoWindow
+                - 内部installDecor创建DecorView, 将根布局inflate后加入, 通过`ID_ANDROID_CONTENT`获取ContentView
+                - 然后再将自己的View inflate到ContentView上
+        - handleResumeActivity
+            - WindowManager.addView(decor)
+                - 创建ViewRootImpl, 负责跟WMS交互, 调用setView设置decorView
+                    - requestLayout
+                        - 通过choreographer触发绘制回调, doTraversal负责跟WMS进行交互, 进行绘制
+                        - 分为四步, relayout申请surface, measure, layout, draw
+                    - windowSession.addToDisplay注册window
+                        - 其中windowSession是与WMS通信的binder
+                            - WMS负责分配Surface, 掌管其尺寸位置, 控制窗口动画, 输入时间分发
+                        - 注册后就与WMS形成双向调用
+            - 然后activity.makeVisible, 只是触发重绘
+    - UI线程启动
+        - 通过runOnUiThread在UI线程执行
+            - onResume之前, 会post到RunQueue等待ViewRootImp#AttachInfo创建
+            - onResume之后, 直接由AttachInfo的线程handler进行处理
+            - 所以UI线程就是ViewRootImp创建时的线程
+            - ViewRootImp<-WindowManagerImp.addView<-WindowManagerGlobal.addView<-ActivityThread.handleResumeActivity
+            - 所以UI线程就是主线程, 如果自定义在子线程通过WindowManager来addView, 那么就只能在子线程刷新
+- Service
+    - 启动
+        - startService向AMS发起请求, 将Intent发送过去
+        - 通过ActiveServices(mServices)进行启动准备
+        - 内部检查到对应的Service对象后, 创建StartItem并添加到pendingStarts数组, 为之后调用onStartCommand用
+        - 继续调用bringUpServiceLocked, 检测Service是否存在, 如果没启动, 则检测Service进程是否创建, 如果没启动则启动进程, 并添加到PendingServices里, 否则直接通过realStartServiceLocked启动Service, 内部通过scheduleCreateService让应用创建Service, 再通过scheduleServiceArgs让应用调用onStartCommand
+        - 进程应用启动成功后会向AMS发送attatchApplicationLocked的请求, 来处理PendingServices的启动, 调用realStartServiceLocked
+    - 绑定
+        - 调用bindService后, 会将ServiceConnect包装成IServiceConnection交给AMS, 内部是通过ServiceDispatcher来获取
+        - AMS会调用该Binder的connected, 将Service的Binder发回应用, 如果Service为null, 说明Service挂了断开了, 如果不等于null, 说明连接成功, 应用有Service的Binder的缓存, 如果同样则不会重复调用onServiceConnected, 只有当Service死了才会onServiceDisconnected
+        - AMS接收到bind请求后, 如果Service没启动则通过bringUpServiceLocked拉起, 拉起过程在调用应用CreateService与onStartCommand之间, 调用requestServiceBindingLocked
+            - 如果没有请求过绑定, 则调用客户端绑定, 标记requested
+                - 应用通过onBind生成Service的Binder, 并发布到AMS, AMS标记requested/received, 并遍历ConnectionRecord通知应用(connected)
+                - onRebind的触发是当Service还在, 但是应用死了, 会在unBind的时候将doRebind标记为true, 下次再次bind的时候会调用onRebind
+                - 应用端Service<->AMS的ServiceRecord<->多个IntentBindService (因为可多个Intent绑定一个Service)<->多个AppBindRecord (因为Intent可能来自不同进程)<->ConnectionRecord (一个进程可以有多个Connection)
+        - 如果Service已经绑定到AMS, 即received标记true, 则直接connected返回应用
+        - 否则检查是否请求过Service, 即requested, 没有则调用requestServiceBindingLocked
+        - IServiceConnection是与Context+ServiceConnect对应的, 不同组合对应不同的AMS中的Binder
+- Broadcast
+    - 动态广播注册
+        - BroadcastReceiver被包装成ReceiverDispatcher, 内部生成IIntentReceiver发给AMS, 则AMS可通过Dispatcher调用Broadcast
+        - AMS收到注册请求后, 生成BroadcastList(List<BroadcastFilter>), 并添加对应filter, 并且存入Map<IBinder, BroadcastList>, 故多个Filter可能对应同一个Receiver
+    - 动态广播分发
+        - AMS通过Intent查找对应Receiver列表, 创建Record, 放入并行队列(动态广播), 触发分发scheduleBroadcastsLockeded
+        - Handle收到消息, 调用processNextBroadcast中循环取出record, 通过performReceiveLocked通过activityThread转换为串行, 发送给每一个receiver
+        - performReceiveLocked内调用applicationThread.scheduleRegisterReceiver将广播分发给客户端, 客户端串行处理
+        - 静态广播与动态广播带oder还需要通知AMS广播执行结束, 这样AMS才可以下发新的广播, 普通动态广播不用调用sendFinished
+            - AMS通过检测客户端发过来的Broadcast.state来判断, 如果串行动态广播为`CALL_DONE_RECEIVE`, 静态广播为`APP_RECEIVE`, 这两种都会触发AMS继续process下一个
+    - 静态广播注册
+        - PMS在解析到Manifest的receiver标签的时候, 创建Activity Component对象, 将其注册在PMS中
+        - sendBroadcast到AMS中后, broadcastIntentLocked先根据Intent查找静态广播(collectReceiverComponents), 再查找动态广播(receiverResolver.queryIntent)
+        - 如果没有oder, 且有动态广播, 则加入并行队列
+        - 剩下的跟静态receiver合并在一起, 加入串行队列
+        - BroadcastQueue在处理串行广播时相对复杂
+            - 如果有Pending, 就返回, 等待进程启动
+            - 如果超时, 则处理下一个
+            - 如果没超时, 则返回等待处理
+            - 如果已经分发完一个receiver, 就继续分发下一个
+            - 如果是动态注册, 直接分发
+            - 如果是静态注册, 检查进程, 如果启动了就直接分发, 如果没启动, 则将广播标记为pending
+            - 进程启动attachApplication后, 继续处理pending广播
+    - 静态广播分发
+        - AMS最终调用ActivityThread.scheduleReceiver, 应用端先加载Broadcast的类, 创建BroadcastReceiver, 拿到Application, 拿到app的baseContext, 回调onReceive
+        - 如果进程不存在, AMS请求启动进程后, 进程启动成功, 在attachApplicationLocked中, 调用sendPendingBroadcastLocked分发
+- Provider
+    - ContentResolver是在ContextImpl创建的时候创建的, ApplicationContentResolver
+    - 当调用resolver的函数时, 在acquireProvider中先查找本地保存的provider binder对象, 没有就请求AMS, AMS返回holder, 本地需要安装再使用
+        - 本地查找通过authority+userId, 拿到ProviderClientRecord, 该对象对应AMS的ProviderRecord, 然后从中拿出Binder检查alive, 并决定使用还是客户端+服务器进行清理
+        - 如果本地查不到, 则请求AMS, 调用getContentProvider返回Holder
+            - AMS检查如果有Record就直接返回
+            - 当不存在时, 如果能跑在调用的客户端进程(canRunHere, multiprocess=true或者进程名相同, 并且uid相同), 就返回
+                - 当holder中的provider为空, 让应用端自己创建, 不用通过binder通信, 更快
+            - 如果不能跑在调用者进程, 当provider进程没启动则通知Zygote启动它的进程 (process), 如果已经启动了但是Binder还未注册给AMS则请求Provider发布
+                - 应用主动发布, Provider进程启动成功后, attach过程中, 查询PMS得到provider列表, 然后发送消息让AMS等待Provider发布binder, 同时发送给客户端bind请求, 带上provider列表, 为了让应用单安装并发布binder
+                    - 应用端收到请求后, 分别安装并将holder(内有binder)返回AMS
+                    - AMS收到holders后, 把binder保存在自己的records里, 并notifyAll通知等待发布的线程
+                - 如果进程已启动但没有provider, AMS则主动请求应用发布, 应用切主线程(scheduleInstallProvider), 再调用installContentProviders, 创建provider, 调用onCreate, 再发布到AMS注册
+        - 应用端收到holder之后, 进行installProvider操作
+            - 如果holder.provider不为空, 则使用binder proxy
+            - 如果为空(multiprocess=true或者统一uid+进程名相同, 即允许调用着实例provider), 先反射创建ContentProvider, 从中获得IContentProvider, 实际上是binder实体, 并attach传入context(调用ContentProvider的onCreate)
+            - 创建ProviderClientRecord对象, 赋值IContentProvider到holder.provider, 并保存在mLocalProvidersByName中, 再返回holder
+- UI刷新机制
+    - 应用申请buffer->系统返回buffer->应用绘制提交->系统显示屏幕
+    - 屏幕缓存不止一个, 至少两个
+    - 屏幕固定刷新, 在接收到vsync信号后
+    - 系统的Choreographer控制消息只有等vsync消息来了后触发UI绘制, 保证跟vsync同步
+    - requestLayout会给消息队列插入屏障, 再给Choreographer里post一个callback到队列, 不同线程有不同的Choreographer
+    - 同一个vsync内, 无论掉多少次requestLayout都只能触发一次, 因为只有当下次vsync触发后, 才会将flag保护置位
+    - callback如何加入队列
+        - Choreographer内有数组mCallbackQueues, 根据类型管理单链表, 根据时间排序
+        - 如果当前就是Choreographer的工作线程, 直接schedule, 如果不是, 则发异步消息到其线程, 插入头部
+        - Choreographer调用scheduleVsyncLocked请求信号, 当vsync时机到来时, SurfaceFlinger会postSyncEvent进行通知 
+            - scheduleVsyncLocked用来告诉SurfaceFlinger下一个vsync通知我
+            - DisplayEventReceiver会调用native的函数, 再通过SurfaceFlinger在底层创建的EventConnection#requestNextSync
+                - Connection是在DisplayEventReceiver的构造中通过SurfaceFlinger创建的
+                - SurfaceFlinger创建EventThread负责监听Vsync信号, 并通过EventThread创建Connection, 并注册进EventThread等待信号
+                - EventThread里面等待拿取所有Connections, 便利返回Vsync事件
+                - 等待过程首先检测Vsync信号是否已经到来, 到来就返回connection列表
+                - Connection通过BitTube发送信号, BitTube类似socket管道, 写端在SurfaceFlinger
+                - DisplayEventReceiver初始化会通过Connection获取DataChannel(remote()->transact)拿到Connection远端的Channel的parcel, 再还原回BitTube
+                - Choreographer构造时就会创建FrameDisplayEventReceiver, 会创建native层将Connection远端Channel接收(mReceivedFd)的fd通过Looper进行监听(addFd), 从而完成监听Vsync闭环
+                    - addFd内部将fd加入epoll event内 (epoll_ctl), Looper内部pollInner的循环, 通过epoll_wait遍历事件, 一种是消息队列事件 (mWakeEventFd == fd), 另外一个种会放在response列表之后处理
+                    - 循环response调用response.request.callback->handleEvent, 返回0就会删除fd, 返回其他则继续监听
+                    - BitTube的回调通过JNI调用Java层层的DisplayEventReceiver的onVsync
+        - 通知会通过FrameDisplayEventReceiver#onVsync回调, 调用doFrame传入当前vsync时间戳来处理消息, 如果当前时间晚于vsync时间戳太多, 则会打log, 在主线程工作太多
+        - 然后根据时间戳到了与否处理四种类型的callback, INPUT, ANIMATION, TRAVERSAL, COMMIT, 通过extractDueCallbackLocked拿出到时见的callback
+        - callback内调用doTraversal->performTraversal来进行真正绘制
+        - 所以并不是每一次Vsync都会绘制, 需要应用自己请求才能收到Vsync信号, 如果没有重绘, 屏幕还会60帧刷新, 只不过用的旧数据
+        - onDraw完也得等下次Vsync信号来的时候才会刷新
+    - Surface
+        - Surface是一个Parcel，Java类保存native指针，主要传递native指针
+        - native层nativeWriteToPacel写入GraphicBufferProducer的binder
+        - native层nativeReadToPacel从parcel里读出binder，重新构造成Surface
+        - performTraversal第一次绘制通过mWindowSession#relayout请求WMS创建Surface
+        - WMS创建native层的SurfaceControl， 再创建native层的Surface，其中SurfaceControl负责提供GraphicBufferProducer
+        - Surface内部主要靠的就是GBP, client创建空Surface, WMS创建SurfaceControl, 再用其内部的GBP绑定为Surface
+        - Surface绘制原理
+            - 绘制从ViewRootImpl#performTraversal开始, measure, layout, draw
+            - 软绘制
+                - nativeLockCavas创建Canvas
+                    - 底层Surface创建buffer, 供SkBitmap使用, 再赋给Canvas
+                    - Surface通过GraphicBufferProducer#dequeueBuffer获取空间
+                    - 如果buffer空间地址需要刷新, 则调用GraphicBufferProducer#requestBuffer在SurfaceFlinger里创建
+                    - 赋值给后台mLockedBuffer用于绘制
+                    - Buffer的IPC传递知识传递了文件描述符, 让本地与远端都指向同一片物理内存
+                - nativeUnlockCanvasAndPost提交Buffer
+                    - 清空Canvas底层bitmap
+                    - 拿到buffer在Slot中的index, 并通过GBP->queueBuffer告诉SurfaceFlinger, 对buffer进行处理, 再通知consumer端onFrameAvailable去合成
+                    - 再把buffer赋值给前台mPostedBuffer用于渲染, 清空mLockedBuffer
+    - Vsync
+        - SurfaceFlinger
+            - HWComposer硬件生成信号, VSyncThread软件生成信号
+            - 信号分发给工作线程DispSyncThread
+            - 工作线程两路分发给另外两个线程, app-EventThread, sf-EventThread, 并且加了偏移, 避免抢占CPU
+            - 一个通知应用绘制UI, 一个通知SF对绘制完成的图像进行合成渲染
+        - SurfaceFlinger初始化
+            - 初始化两个EventThread, 并传入不同的DispSyncSource, 参数会加入所谓偏移, 以及工作线程分发器(&mPrimaryDispSync)
+            - 初始化HWComposer, 内部包含硬件生成与软件生成, 传入EventHandler, 即SF自己, 再传给PrimaryDispSync工作线程进行分发 
+            - app线程会将sync发给app进程, sf线程会将sync发给SF主线程
+            - SFEventThread创建EventConnection, 并获取DataChannel即BitTube, 并将用于接收的Fd添加到Looper, 收到vSync后回调MessageQueue::cb_eventReceiver
+        - HWComposer
+            - 加载硬件模块成功, 则不需要软生成, 并且将硬件hook回调hook_vsync赋值
+                - hook_vsync会调用HWComposer::vsync
+                - 回调EventHandler, 即SurfaceFlinger#onVSyncReceived
+            - 如果加载失败, 启动VSyncThread
+                - 线程不断执行threadLoop, 通过计算进行sleep(clock_nanosleep)
+                - 回调SurfaceFlinger#onVSyncReceived
+        - SurfaceFlinger#onVSyncReceived内调用PrimaryDispSync#addResyncSample, 保存timestamp到mResyncSamples里, 再通过DispSync#updateModel
+                - updateModel会调用mThread发送信号(mCond.signal())
+                - DispSync内的mThread是其工作线程, 循环内等待Vsync信号(mCond), 得到信号后拿到所有callbacks并分发出去
+                - Callback就是DispSyncSource的cb, 即SurfaceFlinger自己
+                    - 而这个cb内又调用了EventThread的cb(onVSyncEvent)
+                    - EventThread将时间戳保存到mVSyncEvent数组, 再通过mCondition.broadcase()唤醒线程
+                    - threadLoop等待信号, 循环等待检测mVSyncEvent
+                    - 将所有事件通过Connection#postEvent分发
+                        - 即DisplayEventReceiver也就是BitTube#sendObject发送出去
+                        - tube通过mSendFd发送, mReceiveFd接收
+                        - 应用进程通过Connection的Binder接收
+                        - 而SF在初始化时添加了接收Fd
+- 跨进程通信
+    - 管道
+        - 单向通信, 无名管道父子进程使用, 有名管道也可以给任意多进程使用
+        - pipe(fd)可以生成一堆描述符, fd[0]来读, fd[1]来写
+            - tips: fork()返回0位子进程, >0位父进程, <0开进程失败
+        - 进程内, 跨进城都可以使用, 数据量不大的通信常用
+        - 低版本的Looper底层用pipe, 高版本用event_fd
+    - socket
+        - 全双工, 用于无亲缘进程之间
+        - zygote接收AMS的请求用的就是socket 
+            - 通过读取到的参数创建应用, 再把创建的pid写给对方
+    - 共享内存
+        - 快, 不需要多次拷贝, 比前两者支持数据量大
+        - 进程之间不需要有关系, 只要能拿到fd
+        - 安卓的匿名共享内存Ashmem
+            - 通过`native_open`创建匿名共享内存
+            - 再通过`native_mmap`将共享内存映射到本进程
+    - 信号
+        - 单向, 收不到回复
+        - 只能带信号, 不支持参数
+        - 只要知道pid就能发信号, 也可以给一群进程发信号
+            - 但是只有root权限才能随便发, 或者同一个uid下才能发
+        - Android里Process.killProcess使用的就是信号
+        - 虽然进程都是Zygote启动的, 但启动后会重新设置uid, 所以不能乱杀
+        - Zygote关注SIGCHLD信号, 子进程死掉后清理资源
+- Binder
+    - 主要实现远程调用
+    - 一般跨进程流程: 参数序列化->buffer传递->参数反序列化
+    - 需要注意: 性能好, 方便, 安全, 相当复杂
+    - Binder跑在驱动层, 在内核, 没有用Linux跨进程机制, 不用内核进行中转, 多次拷贝
+        - 性能好, binder做内存映射, 映射内核与目标应用进程内存空间
+        - 比共享内存容易使用
+        - 安全, 在内核中添加认证机制
+    - Client, Server, ServiceManager工作的前提就是启动binder机制
+        - 打开binder驱动
+        - 内存映射, 分配缓冲区
+        - 启动binder线程, 线程注册在驱动内, 并且进入loop循环, 与binder交互
+        - 系统Service先与ServiceManager交互, 接着才是Client
+        - 分层
+            - 应用层 Proxy -> Stub
+            - Java BinderProxy -> Binder
+            - Native BpBinder -> BBinder
+            - binder驱动 IPCThreadState#transact -> onTransact, 通过mHandle跟对应驱动打交道, 标识接收端
+    - 实现
+        - Client
+            - transact内首先通过writeTransactionDate写数据到mOut中
+            - 再调用waitForResponse
+                - 内部调用talkWithDriver完成先写再读
+                    - 实际通过binder_ioctl进行读写
+                - 再通过循环反复交互直到`BR_TRANSACTION_COMPLETE`跳出循环
+        - Server
+            - binder线程进入loop, 调用IPCThreadState#joinThreadPool
+                - 首先写入mOut注册线程
+                - 进入死循环读写指令
+                    - talkWithDriver
+                    - 再从mIn读取指令进行执行
+                - 执行BR_TRANSACTION指令即接收到远端请求
+                    - 从读取的数据(binder_transaction_data)中拿出cookie, 即binder的server实现
+                    - 通过该BBinder->transact返回Server端上层
+        - Client: BC_TRANSACTION -> BR_TRRANSACTION_COMPLETE -> 休眠 -> BR_REPLY
+        - Server: 休眠 -> BR_TRANSACTIOn -> BC_REPLY -> BR_TRANSACTION_COMPLETE -> 休眠
+    - 原理
+        - 如何写入
+            - Java层传递Binder对象, 调用writeStrongBinder, 传入mNativePtr(底层Parcel)
+            - 底层通过ibinderForJavaObject转换binder并写入底层Parcel
+            - 如果Java层传入是Binder实体
+                - 通过Java层对象内拿出native holder的指针
+                - 再从holder中拿出真实的native层binder对象, 是一个继承了BBinder(BnInterface:BBinder:IBinder)的对象
+            - 如果Java层传入是Proxy对象
+                - 直接从Java层拿到native层IBinder(BpBinder)的指针
+                - Tips: BpInterface父类mRemote为BpBinder类型
+            - 底层writeStrongBinder通过flatten_binder来写入Parcel
+                - 创建`flat_binder_object`, cookie赋值localBinder
+                - mObjects保存偏移, mData按顺序排列`flat_binder_object`
+            - 驱动层
+                - 调用binder_transaction
+                    - 取出所有`flat_binder_object`
+                    - 如果`BINDER_TYPE_BINDER`实体对象
+                        - 检查是否在binder驱动内有对应binder_node, 没有创建
+                        - 检查是否在目标进程有无对应引用对象
+                        - 然后把实体对象类型改为代理对象`BINDER_TYPE_HANDLE`
+                        - 并把flat_binder_object里的handle改为刚创建引用的handle(desc)
+        - 如何读取
+            - Java层通过readStrongBinder传入mNativePtr
+            - 底层通过unflatten_binder
+                - 如果是`BINDER_TYPE_BINDER`, 则为同进程传递, 直接返回cookie, 即binder实体
+                - 如果是`BINDER_TYPE_HANDLE`, 则通过handle生成BpBinder
+                    - handle是偏移, 在数组中查找handle_entry 
+                    - 如果entry拿不到IBinder, 就创建BpBinder, 传入handle, 并赋值给entry的binder
+                    - 返回BpBinder
+        - 返回Java
+            - 如果是实体, 就返回JavaBBinder
+            - 如果是代理, 需要生成一个BinderProxy, 且该对象mObject保存了native的指针
+        - oneway机制
+            - 异步binder调用
+            - AIDL函数没有返回值
+            - oneway多个客户端调用在Server端是同步的
+            - Server端是在前一个处理完Parcel的freeBuffer的析构中, 从todo队列拿出下一个放在tode线程处理
+            - 例如scheduleLaunchActivity就是oneway
+            - IWindow, IServiceConnection, IIntentReceiver都是异步
+        - 一次拷贝
+            - 只发生在读取方做了内存映射到内核
+            - 另外的拷贝都是外围结构体到内核, 不包含data
+- 消息队列
+    - 子线程Looper可以退出, 主线程Looper设置不可退出
+    - 创建子线程Handler需要在子线程内prepare looper, 再传入handler
+    - 一个Looper对应一个MessageQueue, 一个Looper会有多个Handler
+    - Looper创建后会创建MessageQueue, 上层MessageQueue创建会创建底层MessageQueue, 底层MessageQueue会创建底层Looper
+    - 底层MessageQueue初始化时拿去/创建当前线程Looper
+    - 底层Looper创建
+        - 创建eventFd, 比管道性能好, 只有计数器加减, 无拷贝
+        - Looper#wake往fd写东西
+        - Looper#pollOnce死循环监听fd
+            - epoll_wait等待fd事件
+            - 等待到循环eventCount从eventItems里拿出
+- 消息传递
+    - 分发handler.dispatchMessage
+        - 顺序为msg自己有callback->全局callback->handler自己callback, 任意个返回true则不继续
+    - 接收 循环调用queue.next
+        - 循环调用nativePollOnce阻塞, 有消息或者时间到会返回
+            - 底层最终通过MessageQueue调用了Looper的pollOnce, 循环调用
+            - 核心通过epoll_wait等待, 返回-1出错, 0没消息, 非0为消息个数
+            - 循环消息Count, 如果事件使用的fd是被唤醒的fd(mWakedEventFd), 且是读事件(event&EPOLLIN), 则通过awoken来消化管道事件
+        - 从mMessage取一条消息, 并将msg标记为InUse (当obtainMessage时候标记不使用, 即把消息从空闲链表里拿出)
+    - 发消息 handler.sendMessage
+        - 消息会直接放入队列, 只是在某个时间才会被分发
+            - equeueMessage根据触发时间插入到queue的位置 (循环查找位置)
+            - 底层pollOnce拿消息
+                - 如果没拿到消息, 则设置超时为-1, 一直等待
+                - 如果拿到的没到点, 则设置超时为还差的那一段时间
+                - 如果到点了, 则取出消息, 标记next为null, 返回msg
+                - 因为主要靠epoll_wait等待, 所以精度不行
+        - 消息被插入messageQueue后, 通过nativeWake唤醒消息队列线程
+            - 底层调用了Looper.wake, 然后往mWakeEventFd写数唤醒等待在某线程的Looper
+- IdleHandler
+    - 消息队列当前没有可处理消息的时候, 就会调queueIdle
+    - 当消息处理完后 (Message#next循环内), 会查询pendingIdleHandlerCount, 如果有则逐个处理
+    - 当idler.queueIdle返回false,则将该handler从mIdleHandlers删掉
+    - Framework中的应用
+        - ActivityThread里加入了GcHandler, return false, 进行一次性GC
+        - waitForIdle, 内部也是往主线程queue加入IdleHandler, 返回false, 一次性调用
+            - 为了防止本身就是Idle不会调用, 则post一个EmptyHandler, 触发Idle
+        - waitForSync, 与上一条的差别是最后循环等待信号, 当queueIdle被调用时, notify等待.
+            - Tips: wait要配合while循环使用, 防止notify之后, 获得锁之前, 条件变化, 所以配合mIdle标记为一起, notifyAll之前mIdle=true
+    - 适用场景
+        - 延迟执行, 替代postDelay
+        - 密集操作, 可以先往线程队列放进行处理, 当队列空闲再汇总刷新界面
+    - IdleHandler不会重复调用, 当消息队列为空或者没有可执行的消息时, 会调用一次, 如果再被唤醒还是没有, 则不调用, 因为pendingIdleHandlerCount会被设置为0, 且一直循环poll, 不会跳出next, 直到有消息处理, 再次进入next后会被设置为-1进而重新读取size
+- ANR
+    - Service, BroadcastQueue, ContentProvider, InputDispatching Timeout都会触发ANR
+    - 比如Service, AMS发起让客户端启动Service后, 启动超时定时器(delay message), 当客户端响应启动Service之后, 移除超时消息, 如果未及时移除, 则AMS会弹框
+    - AMS通知客户端的Binder线程, Binder线程再往主线程发消息来启动Activity, Service, BroadcastReceive 
+    - 主线程在无消息时休眠, 其他线程需要写入eventFd才能唤醒主线程
+    - ANR是由于主线程有耗时任务, 或者创建本身有耗时, 而不是由于主线程消息循环阻塞
+- 消息屏障
+    - 普通消息, 屏障消息, 异步消息
+    - 屏障消息没有target, 正常消息没有target会抛异常
+    - 屏障消息会有时间戳, 且影响后面的消息
+    - 屏障消息不会唤醒线程来处理
+    - 屏障插入(postSyncBarrier)会返回屏号
+    - 删除屏障需要屏障号, 会唤醒线程, 只有当消息阻拦了消息
+    - 如果当前要处理的消息是屏障, 则会往后遍历, 处理异步消息
+    - 如果要插入消息, 但消息已经被屏障block, 且当前消息是最早的异步消息, 则要唤醒
+    - Framework应用
+        - 绘制界面scheduleTraversal时, 会加入barrier, 再往Choreographer里放入Runnable callback, 等vsync执行该回调后, 去除屏障, 为了使屏幕绘制的异步消息优先执行, block普通消息
+    - 消息屏障的api都是隐藏的, 需要反射或者其他方式
+- 实践经验
+    - 跨进程传输大图片
+        - 考虑点
+            - 性能, 减少拷贝
+            - 内存泄露, 资源释放
+        - Binder启动时映射内存为1M, 是所有事务共享的
+    - 直接通过Intent传输bitmap, 在未允许传fd或者size小于16K的情况下, 会直接直接存parcel, 太大就会报错
+    - 如果通过传binder到Intent, 则会打开allowFds, bitmap的数据会开辟ashmem空间, 再把空间地址fd写入parcel, 图片将会被拷贝到共享内存空间
+    - 如果传输大文件可以用ContentProvider或者MemoryFile, 底层都是用共享内存实现
+- ThreadLocal
+    - Looper里用到, 作为静态变量, 里面存放Looper, 不同线程拿到不同的looper
+    - Choreographer里也有静态变量初始化ThreadLocal并且在initialValue回调中创建对象
+    - 原理
+        - 每一个线程都有thread对象, 里面有一个数组, 按照key + value排列
+        - key是WeakReference<ThreadLocal>, value是存储对象
+        - 可以定义多个ThreadLocal, 每一个ThreadLocal都有自己的hash值作为数组下标
+        - hash算法每次增加一个值(是一个偶数)再对table的size取余数得到index
+        - 如果冲突了, 则从当前遍历找空的存储
+        - ThreadLocal.get()
+            - 先获取当前线程Thread, Thread.currentThread()
+            - 从thread里拿出Values, 在Values.table中提取
+            - 如果Values不存在, 则创建一个
+            - 如果提取的Key不等于当前ThreadLocal, 说明冲突, 继续调用Values.getAfterMiss
+        - ThreadLocal.set()
+            - 拿到当前线程的Values, 如果不存在就创建一个
+            - 然后调用Values.put, 找合适位置放进去
+- Looper的副业
+    - 当epoll_wait被唤醒后, 轮询event发现fd不等于mWakeEventFd, 则进入else开始副业
+    - 这些事件是通过addFd添加到EpollFd中让其进行监听的(epoll_ctl)
+    - 通过Java的MessageQueue#addOnFileDescriptorEventListener, 底层在调用NativeMessageQueue::setFileDescriptorEvent进行添加
+    - Framework层没用这个机制, Native有使用
+        - Vsync机制唤醒, Choreographer初始化的时候, 在底层给自己的Looper添加了Fd, 该Fd在SurfaceFlinger进行创建, 其中读的fd被跨进程传递到应用进程, 再在Choreographer的线程中将其添加到Looper监听的Fd中
+        - 当新来来的时候, 就会将信号写入SurfaceFlinger中的写fd, 应用进程就可以监听到可读事件
+        - 通过监听fd与bindCall的抉择
+            - 使用fd, 应用端可以控制监听fd的线程, 并且可以一次拿到所有的事件, 自己决定何时进行分发
+            - 使用binderCall的话, 应用端接收到消息只能带binder线程, 如果不采用oneway, 会阻塞服务端, 如果采用oneway, 客户端只能按照顺序处理事件, 灵活性差
+        - 小Demo
+            - MainActivity创建管道, 并通过bindService与其他进程的Service通信, 将读fd传递给它, Service将该Fd添加到Looper监听, 然后MainActivity向自己的写fd写入信息, 处于其他进程的Service收到消息, 并通过binder返回给MainActivity
+            - 管道创建: ParcelFileDescriptor.createPipe, 0号读, 1号写
+            - 写管道: AutoCloseOutputStream(fd[1])
+            - 需要通过反射将读fd设置为非阻塞, 否则读不到消息就阻塞了
+            - 监听描述符: 
+                - 通过Queue#addOnFileDescriptorEventListener添加fd与回调
+                - 在回调中, 使用AutoCloseInputStream包装fd
+                - 循环读取直到没数据
+- 检查线程耗时任务
+    - WatchDog, 系统来检查死锁
+        - 检查哪个线程就把它加入WatchDog的Looper
+        - 可以同时检测多个线程, 锁
+        - 自己就是个线程, 继承了Thread
+        - 内部会有多个HandlerChecker(Runnable), 每个Checker可以添加多个Monitor进行监听
+        - BinderThreadMonitor监控Binder线程使用
+            - Monitor的monitor回调调用native函数
+            - blockUnitlThreadAvailable循环检测mExecutingThreadCount与mMaxThreads, 当有空闲线程时返回
+            - mExecutingThreadCount会在binder线程每次从驱动读取东西时++, 返回广播之前--
+        - WatchDog线程跑一个死循环, 遍历所有checker, 调用scheduleCheckLocked
+            - 如果没有Monitor, 并且Handler一直在polling状态, 则标记Complete, return
+            - 如果还没Complete, 则不继续执行新任务, 返回
+            - 继续向下则标记Complete为false, 并向Handler头部post一个消息, 记下startTime
+            - Post中的Runnable会遍历Monitor列表, 调用monitor函数, 标记Complete为true
+            - Watchdog会每隔30s检测Checker完成状况, 遍历所有Checker, 通过getCompletionStateLocked拿到所有完成情况, 取最大值
+                - 检测过程中, 执行完了则COMPLETE, 如果还没执行完, 则用当前时间-startTime, 小于30秒, 则继续等待(WAIT), 大于30秒小于60秒再给一次机会(WAIT_HALF), 否则超时(OVERDUE)
+        - 系统服务添加
+            - APS, WMS, PMS通过addMonitor, 通过sychronized(this)尝试获取锁来监控死锁, 在单独的线程中检查, 这个monitor会被添加到WatchDog的main checker里
+            - APS, WMS, PMS通过addThread, 内部会添加了一个新的HandlerChecker, 检测工作线程(Handler的thread)是否阻塞
+    - BlockCanary, 检查消息有没有耗时
+        - 因为消息队列在拿到消息后, dispatching前后会打log, 并且logging可以自己配置, 则可以通过这个获取消息处理时间
+- 同步处理消息
+    - 在发消息后, 进行等待, 待消息处理完成后, 获取消息结果
+    - Native
+        - 底层调用MessageBase::wait等待消息
+        - 返回后通过MessageBase::getResult获取结果
+    - Java
+        - Handle#runWithScissors, 将Runnable包装到BlockingRunnable里
+        - postAndWait会发送之后在同步块内循环检测mDone, 并且wait()
+        - run内执行runnable, 返回结果后标记mDone, 并notifyAll()
+        - 可以改进BlockingRunnable, 传入Callable<T>, 通过getResult获取结果
+        - 也可以直接使用FutureTask, 它既是Runnable, 又可以阻塞获取结果
+    - binder调用统一切换工作线程
+        - 通过动态代理
+        - 自定义ProxyInvocationHandler, 传入对象, Handler, Async标识
+        - 在invoke里, 判断没有Handler, 则直接调用, 如果有, 则将方法调用包装到FutureTask里, 并post到Handler里进行执行, 并且根据Async标识判断是否需要等待task执行结果
+- ActivityThread与ApplicationThread
+    - ActivityThread里持有ApplicationThread
+    - ActivityThread是Zygote创建的运行主线程的对象
+    - ApplicationThread是一个Binder实现, AMS通过它与App进行通信, 它再通过ActivityThread内的H (handler)与主线程通信
+- Framework解决实际问题
+    - 空Activity也会占用内存20m
+        - zygote启动会预加载系统资源, 主要跟主题相关的
+        - zygote启动应用进程则会继承资源
+        - getDrawable先拿cache, 再拿预加载资源
+        - 加载完成后, 缓存到cache
+        - 所以不需要UI的单独进程后台Service可以反射清掉他们
+    - 为何Activity onResume后才显示
+        - 在handleResumeActivity中, 需要window被加入windowmanager, willBeVisible才会为true
+        - 获取window的decorview添加到wm中
+            - requestLayout内部通过choreographer触发绘制
+            - 通过windowSession注册window, 与WMS形成双向调用
+        - Activity.makeVisible重绘
+    - 为何bindService时候onRebind掉不到
+        - onRebind的触发是当Service还在, 但是应用死了, 会在unBind的时候将doRebind标记为true, 下次再次bind的时候会调用onRebind
+    - 广播onReceive的context可否启动Activity
+        - onReceive的context, 动态注册为注册时的context, 静态注册的则是以application为mBase的ContextWrapper, 不是Activity本身
+        - 所以动态注册可以直接启动, 静态需要添加`FLAG_ACTIVITY_NEW_TASK`
+        - 静态不能弹出AlertDialog
+    - ContentProvider的onCreate早
+        - 虽然ContentProvider在Application的attatch之后创建并onCreate, 但是它是在Application的onCreate之前.
+    - Intent带数据量大会异常
+        - Binder共享共建1M所有事务共享
+        - 当数据小于16K会直接写Parcel, 但未开allowFd且大于16K也会直接写, 就会报错
+        - 所以需要传binder来开启fd传输, 将ashmen共享内存的fd传过去
+    - Handler延时精度
+        - handler取message后, 遍历所有, 如果时间未到则设置剩余时间, 通过epoll_wait来等待
+        - 所以精度不高
+    - IdleHandler有时候不掉
+        - 当无消息, 或者没可执行消息时, 调用一次, 如果再次唤醒, 则不会再调
+- Framework用到的设计模式
+    - 单例
+        - 同进程
+            - 系统有Singleton<T>的抽象, 如IActivityManager
+        - 同线程
+            - 通过ThreadLocal<T>, 保证线程内每次都拿到同一个对象, 不同线程拿到的确是不同对象
+        - 进程间
+            - ServiceManager与binder驱动结合, 形成进程单例
+            - ServiceManager对应的binder句柄都是0
+    - 观察者
+        - Broadcast可以进程间, 进程内
+        - 进程内
+            - 系统抽象类Observable<T>
+        - 进程间
+            - ContentService可以注册通过Transport实现的IContentObserver, 其实是一个Binder, 这样远端的Service就可以通过Binder来通知, 本地的Transport收到onChange后再通过内持有ContentObserver进行分发
+            - RemoteCallbackList利用同一个binder实体在目标进程只会有一个binder proxy对象, 虽然有多个业务层封装, 但是通过asBinder可以拿到唯一, 来实现注册与反注册, 这样Binder Proxy作为Map的key, 而Callback (业务层Binder)作为Value
+    - 代理
+        - 静态代理
+            - ActivityManagerProxy实现IActivityManager将所有业务代理给内部的mRemote(IBinder, binder proxy)对象
+            - ActivityManagerNative#asInterface, 通过binder.queryLocalInterface, 如果返回不为空, 则与Binder实体在一个进程, 直接返回, 如果未空, 则创建Proxy, 封装为业务代理对象
+            - 比如startActivity就会通过mRemote#transact, 它就是binder proxy对象
+        - 动态代理
+            - Decorator<T>实现了InvocationHandler
+            - 它的newInstance(T obj, DecorationLinstener l), 通过反射给obj加上动态代理(Proxy.newProxyInstance, 需要三个参数, ClassLoader, Interface, InvocationHandler), 在调用obj方法前后时, 回调listener
+- Framework设计
+    - Binder, 跨进程, 模糊进程边界
+        - 请求转发, 从客户端进程转发到目标进程, 处理完再把结果返回
+        - Binder对象传递, 实体对象跨进程后就变代理对象, 代理对象回到所在进程又变实体, 都是在驱动层转换, 但应用层永远拿到的是统一接口对象
+        - 分层结构
+            - 应用端BinderProxy (Java) -> BpBinder (Native) -> 驱动
+            - 服务端Binder (Java) -> BBinder (Native) -> 驱动
+        - 转换
+            - Binder为实体
+                - 是否创建node (实体), 没有则创建, 且localBinder实体复制给cookie
+                - 是否创建目标进程引用, 没有则创建
+                - 改类型为Handle, 且handle复值上一步创建的引用
+            - Binder为引用
+                - 是否是同一进程, 如果是, 查找node, 改类型为Binder, 给cookie赋值
+                - 非同一进程, 则查找目标进程引用, 没有创建, 赋值给handle
+    - Bitmap大图传输, 传输匿名共享内存句柄, 到目标进程再映射内存
+        - 常规的数据得先拷贝到Parcel, 再拷贝到Binder驱动, 到目标进程再从Parcel拷出来, 三次拷贝
+        - 通过匿名共享内存只需要一次甚至不需要拷贝
+            - 将图片拷贝到Ashmem空间传输fd, 但是这个fd没有被写到Bitmap中, 所以每次发送都需要拷贝
+            - 读取的话如果是Ashmem, 则直接映射, 作为Bitmap的像素缓冲区, 这次生成的Bitmap内会写入Ashmem的Fd, 则这张图如果再次传输, 就会非常快, 省去上一步的拷贝
+    - Zygote创建进程, 预加载资源, 每次应用启动, 不需要重复做事, 加速应用启动
+    - Intent, 模糊进程边界, 如Broadcast
+        - 动态广播会并送发送，AMS通过binder进行one-way通信到app进程
