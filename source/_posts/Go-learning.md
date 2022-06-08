@@ -7,7 +7,7 @@ description: Golang learning
 thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1654595986/golang_cwzyke.jpg
 ---
 
-由于项目上有Golang需求， 虽然照猫画虎的构建一个简单restful service不算难，不过熟悉一下Golang的基本知识还是很有必要。
+由于项目上有Golang需求， 虽然照猫画虎的构建一个简单RESTFUL Service不算难，不过熟悉一下Golang的基本知识还是很有必要。
 这里记录下在学习过程中认为有价值的points， 以供日后查看。
 
 <!--more-->
