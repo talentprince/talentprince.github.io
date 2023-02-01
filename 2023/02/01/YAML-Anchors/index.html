@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.\n\n首先我们可以使用Anchor来标记我们期望复用的配置, 我们知道YAML的结构其实也是一种树的结构, 那么Anchor标记的就可以是树里面任意树枝下的整个叶子结点.\n比如:\n12345678definitions:  steps:    - step: &amp;build-test        name: Build and Test        script:           - ./gradlew build        artifacts:          - build/**\n我们将step这个树枝标记为一个Anchor &amp;build-test, 那么它就代表了整个step下的所有叶子节点, 包括script与artifects.\nAnrchor与Alias如果在其他的定义过程中, 想复用这个step的配置, 那么就变得简单了, 我们只需要使用Alias来引用即可.\n123456pipelines:  branches:    dev:    - step: *build-test    main:    - step: *build-test\n这样就很容易实现同样配置的复用, 你的Anchor跟Alias可以定义到一个文件, 也可分开定义, 通过一些小trick再讲他们整合, 比如:\n1cat anchors.yaml pipeline.yaml | buildkite-agent pipeline upload\n1cat anchors.yaml config.yaml | &gt; full_config.yaml\n复用与复写在编程语言中, 我们经常会提到这两个词, 当然YAML已经可以复用了, 那当然也可以复写喽.\n如果我们在复用的过程中需要改变一些叶子节点的配置, 对其进行重新定义, 那么可以使用&lt;&lt;来进行.\n比如:\n123- step:   &lt;&lt; *build-test  name: Buid &amp; Test on main\n如果想要通过复写来完全清除掉某个复用的配置, 我们可以使用~.\n比如:\n123- step:   &lt;&lt; *build-test  artifacts: ~\n虽然配置文件复制起来更容易, 但是何不尝试一下复用与复写来简化之呢 …\n","dateCreated":"2023-02-01T13:20:57+08:00","dateModified":"2023-02-01T16:12:12+08:00","datePublished":"2023-02-01T13:20:57+08:00","description":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.","headline":"使用Anchor来简化YAML","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2023/02/01/YAML-Anchors/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2023/02/01/YAML-Anchors/","keywords":"ops, yaml","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.\n\n首先我们可以使用Anchor来标记我们期望复用的配置, 我们知道YAML的结构其实也是一种树的结构, 那么Anchor标记的就可以是树里面任意树枝下的整个叶子结点.\n比如:\n12345678definitions:  steps:    - step: &amp;build-test        name: Build and Test        script:           - ./gradlew build        artifacts:          - build/**\n我们将step这个树枝标记为一个Anchor &amp;build-test, 那么它就代表了整个step下的所有叶子节点, 包括script与artifects.\nAnchor与Alias如果在其他的定义过程中, 想复用这个step的配置, 那么就变得简单了, 我们只需要使用Alias来引用即可.\n123456pipelines:  branches:    dev:    - step: *build-test    main:    - step: *build-test\n这样就很容易实现同样配置的复用, 你的Anchor跟Alias可以定义到一个文件, 也可分开定义, 通过一些小trick再讲他们整合, 比如:\n1cat anchors.yaml pipeline.yaml | buildkite-agent pipeline upload\n1cat anchors.yaml config.yaml | &gt; full_config.yaml\n复用与复写在编程语言中, 我们经常会提到这两个词, 当然YAML已经可以复用了, 那当然也可以复写喽.\n如果我们在复用的过程中需要改变一些叶子节点的配置, 对其进行重新定义, 那么可以使用&lt;&lt;来进行.\n比如:\n123- step:   &lt;&lt; *build-test  name: Buid &amp; Test on main\n如果想要通过复写来完全清除掉某个复用的配置, 我们可以使用~.\n比如:\n123- step:   &lt;&lt; *build-test  artifacts: ~\n虽然配置文件复制起来更容易, 但是何不尝试一下复用与复写来简化之呢 …\n","dateCreated":"2023-02-01T13:20:57+08:00","dateModified":"2023-02-01T17:31:03+08:00","datePublished":"2023-02-01T13:20:57+08:00","description":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.","headline":"使用Anchor来简化YAML","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2023/02/01/YAML-Anchors/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2023/02/01/YAML-Anchors/","keywords":"ops, yaml","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"}</script>
     <meta name="description" content="YAML Achors">
 <meta name="keywords" content="ops,yaml">
 <meta property="og:type" content="blog">
@@ -26,7 +26,7 @@
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="YAML Achors">
 <meta property="og:locale" content="zh-cn">
-<meta property="og:updated_time" content="2023-02-01T08:12:12.728Z">
+<meta property="og:updated_time" content="2023-02-01T09:31:03.560Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Anchor来简化YAML">
 <meta name="twitter:description" content="YAML Achors">
@@ -269,7 +269,7 @@
 <p>比如:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">definitions:</span><br><span class="line">  steps:</span><br><span class="line">    - step: &amp;build-test</span><br><span class="line">        name: Build and Test</span><br><span class="line">        script: </span><br><span class="line">          - ./gradlew build</span><br><span class="line">        artifacts:</span><br><span class="line">          - build/**</span><br></pre></td></tr></table></figure>
 <p>我们将<code>step</code>这个树枝标记为一个Anchor <code>&amp;build-test</code>, 那么它就代表了整个<code>step</code>下的所有叶子节点, 包括<code>script</code>与<code>artifects</code>.</p>
-<h3 id="Anrchor与Alias"><a href="#Anrchor与Alias" class="headerlink" title="Anrchor与Alias"></a>Anrchor与Alias</h3><p>如果在其他的定义过程中, 想复用这个step的配置, 那么就变得简单了, 我们只需要使用<code>Alias</code>来引用即可.</p>
+<h3 id="Anchor与Alias"><a href="#Anchor与Alias" class="headerlink" title="Anchor与Alias"></a>Anchor与Alias</h3><p>如果在其他的定义过程中, 想复用这个step的配置, 那么就变得简单了, 我们只需要使用<code>Alias</code>来引用即可.</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">pipelines:</span><br><span class="line">  branches:</span><br><span class="line">    dev:</span><br><span class="line">    - step: *build-test</span><br><span class="line">    main:</span><br><span class="line">    - step: *build-test</span><br></pre></td></tr></table></figure>
 <p>这样就很容易实现同样配置的复用, 你的Anchor跟Alias可以定义到一个文件, 也可分开定义, 通过一些小trick再讲他们整合, 比如:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat anchors.yaml pipeline.yaml | buildkite-agent pipeline upload</span><br></pre></td></tr></table></figure>
@@ -333,7 +333,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -383,7 +383,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -445,7 +445,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Diesen Beitrag teilen"
+                aria-label="Share this post"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -495,7 +495,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
