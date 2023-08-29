@@ -19,11 +19,11 @@ thumbnailImage: https://res.cloudinary.com/dtn0pkdmg/image/upload/v1693298600/ru
     - rust的包叫crate, 在crates.io
 - Memory
     - stack, heap, smart pointer, pointer
-    - 使用GDB去debug, 需要添加, [Ref](https://doc.rust-lang.org/cargo/reference/profiles.html#split-debuginfo)
-        ```    
-        [profile.dev] 
-        split-debuginfo = "packed"
-        ``` 
+    - 使用GDB去debug, 需要添加, [Ref](https://doc.rust-lang.org/cargo/reference/profiles.html#split-debuginfo)   
+      ```
+      [profile.dev]      
+      split-debuginfo = "packed"
+      ```
     - mac使用gdb有限制, 无法run, 切换lldb后可行
     - [commands map](https://lldb.llvm.org/use/map.html)
     - 需要sudo启动
