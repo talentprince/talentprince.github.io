@@ -1,0 +1,1063 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Weyoung&#39;s Blog">
+    <title>Rust Basic - Weyoung&#39;s Blog</title>
+    <meta name="author" content="Prince Chen">
+    
+    
+        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"学习总结了一些Rust基础知识, 不包括Thread与Asyc Program, 后面如果有涉猎, 会单独出来.\n\n\nIntroduction\n无运行时, 无垃圾回收\nNo null and exception\n更先进的包管理 cargo\n没有资源竞争\nrust的包叫crate, 在crates.io\n\n\nMemory\n\nstack, heap, smart pointer, pointer\n使用GDB去debug, 需要添加, Ref\n  123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122        [profile.dev]         split-debuginfo = &quot;packed&quot;        ```     - mac使用gdb有限制, 无法run, 切换lldb后可行    - [commands map](https://lldb.llvm.org/use/map.html)    - 需要sudo启动- Variables    - Booleans, Characters, Integers, Floats    - Integer        - u8 i8, u16 i16, u32 i32, u64 i64, u128 i128        - usize isize 64bit or 32bit    - Float        - f32 f64    - Booleans        - bool (1 byte)     - Char        - 4 bytes        - full unicode value- Functions    - 使用snake case来命名, 即小写加下划线    - 函数最后一行不加`;`可以直接做返回值    - 如果需要fast return可继续使用`return`    - 函数调用加`!`是一个宏调用        - `println!`        - `dbg!`    - 可以使用cargo expand来查看宏- Mutability    - let与let mut    - 自动类型推断- Standard Library    - https://doc.rust-lang.org/std/- Ownership    - 每一个变量自己持有自己    - 跳出作用于就自己析构(drop function)        - RAII resource acquisition is initialization     - 同一时间只能有一个owner        - 指针类型如果copy, 之前的指针就无法使用, 会编译错误        - 作为形参传入函数也会pass ownership, 编译会报错        - 使用引用`&amp;`((ampersand))做参数就可以Borrow Ownership, 如果需要对这个参数进行操作, 需要`mut &amp;`        - 同一个指针对象的Mutable borrow只能有一个        - 这样就能在编译的时候消除资源竞争        - 编译器自动检测immutable borrow中间不能加入mutable borrow        - 可以有多个immutable的引用, 但是只能有一个mutable的引用- Result    - 封装了成功与失败的结果    - unwrap会直接获取成功, 如果失败程序会崩溃    - 在编译器会检测是否正确处理了异常    - enum Ok / Err- Option    - 包装可以为空的类型Option&lt;XXX&gt;    - enum Some / None    - 可以通过`ok_or`转换为Result    - 可以通过`if let Some(i) = XXX`从中获取值- Structs    - struct构造函数使用`::`来初始化    - 构造函数返回类型与初始化可以直接使用`Self`关键字来代替类名    - `impl Name &#123;&#125;`来实现function    - `&amp;self`作为函数参数来获取类的指针, 需要是引用, 否则就borrow了    - 第一个参数是`&amp;self`是类方法, 否则就是静态方法- Strings    - parse可以根据类型智能转换    - `&amp;str`是immutable string slice类型, 如果数据不需要改变， 可以使用slice取代String，避免Heap的拷贝，节省空间    - `&amp;string[x..y]`可以对borrow的string进行slice    - String会在堆上开辟空间, 并且可以自动伸缩    - 如果不想copy, 则需要使用`&amp;str`来做slice指向需要的区域    - 定义的静态字符串就是`&amp;str`    - rust使用utf8编码, slice必须包含整个字符, 但是下标只能是byte级别, 如果slice到未完整的字符, 会报`panicked character boundary`错误- Enums    - 默认枚举实际内存中是数字从0开始    - 如果显式指定数字, 则后面定义的累加, 前面的仍然从0开始    - 枚举可以承载不同的类型在内, 最终在struct里占用的空间以最大的为准- Module    - mod xxx &#123; &#125;    - 所有内部定义的都是private, 如果公开需要加pub    - mod可以嵌套    - 嵌套的mod可以使用`super::`引用上一级    - 同时使用`crate::`可以获取root level的module    - 每一个文件都是一个module, 文件名就是mod的名字, 所以就免去了写mod    - 如果是嵌套的, 则可以使用文件夹, 但是需要在文件夹里添加`mod.js`来export里面的module    - 使用`mod Name`来引用, 类似以import    - 使用`use ModName::StructName`来声明, 类似与命名空间声明, 便可直接使用    - `std`默认就被引用了, 所以不需要自己添加`mod std`- Loops    - loop可以加label    - `&apos;lable: loop &#123;&#125; condition;`- Match    - 类似于switch或者when    - `match variable &#123; case1 =&gt; xxx &#125;`    - 枚举值内的元素可以使用元组(tuple)来接多个值    - 如果不需要使用, 使用下划线    - `_ =&gt;`可以接收default值    - 多个case并列在一起使用`case1 | case2`- Array    - `[initial; size]`定义array的初始化值与长度    - initial值决定了array内数据的类型- Trait    - 类似于interface, 或者extension, 可以给已有struct扩展方法    - 实现方式 `impl TraitName for StructName`    - 还可以定义一个Associate Type `type XXX;`来当泛型用, 当你只期望有一种扩展的时候可以使用    - 如果使用了泛型, 则可以扩展多种次, 每次使用trait方法时候, 需要指定类型帮助推断    - `unimplemented!()` 或者 `todo!()`可以supress未实现异常- TryFrom    - 它是一个trait, 有一个静态方法`try_from`, 实现了从指定的泛型&lt;T&gt;转换到你扩展的struc上, `impl TryFrom&lt;Input&gt; for Struct`    - 它还还转自动实现`TryInto`, 不同的是, 里面是一个对象方法, `try_into`.    - 它们都有一个协同类型定义Error类型- Custom Error    - 实现Error, 它是一个trait, 并且需要同时实现Display跟Debug    - 可以通过`write!(formatter, &quot;&#123;&#125;&quot;, xxx)`宏来写输出    - Display与Debug实现相同, Error无需实现任何方法- ErrorHandling    - `Result`提供`or`方法来对error进行转换    - 使用`?`, 如果正确返回结果, 如果错误异常        - 可以使用`or`转换Error类型到Err        - 也可以给自己Error实现`From&lt;XXError&gt;`- Lifetime Parameter    - compiler会check引用的生命周期    - 因为有垃圾回收的语言会根据引用数量来判断是否release    - 所以如果有引用的使用，必须提供足够的信息(类似MetaData)让静态检查可以判断引用使用的scope    - 在`Struct`上通过范型`&lt;&apos;name&gt;`来声明一个lifetime，name通常是单个字母    - 如果函数只有一个lifetime param, 那么可以通过推断, 不需要显示的声明    - 实现trait的时候, 需要在`impl`后面声明, 再在`Struct`后面加上lifetime    - `Trait`的方法参数也需要声明, 以便实现里可以推断, 如:\nimpl &lt;’a&gt; Trait for Struct&lt;’a&gt; {  \nfn test(str: &amp;&apos;a str)   { \n    ... \n} \n}``\n\n\n\nSilent Warnings\n可以对指定文件通过#![allow(xxx)]添加编译参数\n比如dead_code, unused_variables等\n这上面的Pang(!)表示该应用于该Module以及所有子Module\n\n\nType Infer\nrust编译器的推断是整体性的\n一行范型的推断可以考下一条语句来完成\n比如HashMap::new()可以不指定类型, 但是下一句使用该Map可以帮助上一句推断\n\n\n指针赋值\n使用*Field_Name = Object\n只要地址类型匹配, 则可以安全赋值\n比如替换成其他的子类\n\n\nDebug Output\n可以使用dbg!来print debug信息\n但是对象必须实现Debug trait\n如果想直接用基础类型作为输出, 可以在对象上加#[derive(Debug)]\n需要给对象所有层的对象都加上\n比较推荐的是给所有的对象都加上以便调试\n\n\n自动提示\n如果一个rs文件没有被添加到mod.rs, VSCode不会提示\n比如自动实现某Trait所有方法, 自动completematch的所有case\n\n\nCopy &amp; Clone\nas可以将指针指向位置转基础类型, 或者转换成已经实现的Trait\n转换为基础类型时需要对指针指向位置进行copy/clone\n可以通过#[derive(Copy, Clone)]实现\n\n\nDynamic/Static Dispatch\n参数Trait前面加上dyn, 如&amp;mut dyn Trait, 为动态代理\n加impl则为编译器静态绑定, 编译器会扫描所有的调用, 然后生成不同的函数\n\n\n签名与声明\n原则: immutable borrow(x: &amp;T), mutable borrow(x: &amp;mut T), move((x: T)\n这些原则都是在冒号后面决定的, 它决定了变量的签名类型\n如果在变量前面添加mut, 这个只是在变量本身被赋予了mutable权限, 并没有改变签名\n引用的可读性是无法升级变更的, 因为它是签名, 无法从不可读变为可读\n有点像const*与*const, 一个是对内容的限制, 一个是对指针的限制\n\n\nGetter方法\n函数命名不需写get\n返回是成员的引用\nOptional则通过as_ref()转成Option&lt;&amp;T&gt;\n\n\n环境变量\n通过env::var(&quot;Name&quot;)可以读取环境变, 返回Result\n通过env!变异期直接读取环境变量返回&amp;str, 如果不存在则会直接编译错误\n通过format可以进行拼接\n\n\n\n","dateCreated":"2023-08-29T16:37:46+08:00","dateModified":"2023-08-29T16:43:41+08:00","datePublished":"2023-08-29T16:37:46+08:00","description":"学习总结了一些Rust基础知识, 不包括Thread与Asyc Program, 后面如果有涉猎, 会单独出来.","headline":"Rust Basic","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1693298600/rust_gyjkfr.webp"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2023/08/29/Rust-Basic/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2023/08/29/Rust-Basic/","keywords":"Rust","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1693298600/rust_gyjkfr.webp"}</script>
+    <meta name="description" content="Rust basic concept">
+<meta name="keywords" content="Rust">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Rust Basic">
+<meta property="og:url" content="http://talentprince.github.io/2023/08/29/Rust-Basic/index.html">
+<meta property="og:site_name" content="Weyoung&#39;s Blog">
+<meta property="og:description" content="Rust basic concept">
+<meta property="og:locale" content="zh-cn">
+<meta property="og:updated_time" content="2023-08-29T08:43:41.021Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rust Basic">
+<meta name="twitter:description" content="Rust basic concept">
+    
+    
+        
+    
+    
+    
+        <meta property="og:image" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1693298600/rust_gyjkfr.webp"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://res.cloudinary.com/dtn0pkdmg/image/upload/v1693298600/rust_gyjkfr.webp"/>
+    
+    
+    
+    <!--STYLES-->
+    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
+    <!--STYLES END-->
+    
+
+    
+    <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?26839bbbc9c89fbe9eb99aba7bceb413";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+
+<header id="header" data-behavior="5">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/ "
+            aria-label=""
+        >
+            Weyoung&#39;s Blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="打开链接: /#about"
+            >
+        
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+<nav id="sidebar" data-behavior="5">
+    <div class="sidebar-container">
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="搜索"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">搜索</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/talentprince"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/mailto"
+                            
+                            rel="noopener"
+                            title="邮箱"
+                        >
+                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">邮箱</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="5"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            Rust Basic
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2023-08-29T16:37:46+08:00">
+	
+		    8月 29, 2023
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/categories/Rust/">Rust</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>学习总结了一些Rust基础知识, 不包括Thread与Asyc Program, 后面如果有涉猎, 会单独出来.</p>
+<a id="more"></a>
+<ul>
+<li>Introduction<ul>
+<li>无运行时, 无垃圾回收</li>
+<li>No null and exception</li>
+<li>更先进的包管理 cargo</li>
+<li>没有资源竞争</li>
+<li>rust的包叫crate, 在crates.io</li>
+</ul>
+</li>
+<li><p>Memory</p>
+<ul>
+<li>stack, heap, smart pointer, pointer</li>
+<li><p>使用GDB去debug, 需要添加, <a href="https://doc.rust-lang.org/cargo/reference/profiles.html#split-debuginfo" target="_blank" rel="noopener">Ref</a></p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line">        [profile.dev] </span><br><span class="line">        split-debuginfo = &quot;packed&quot;</span><br><span class="line">        ``` </span><br><span class="line">    - mac使用gdb有限制, 无法run, 切换lldb后可行</span><br><span class="line">    - [commands map](https://lldb.llvm.org/use/map.html)</span><br><span class="line">    - 需要sudo启动</span><br><span class="line">- Variables</span><br><span class="line">    - Booleans, Characters, Integers, Floats</span><br><span class="line">    - Integer</span><br><span class="line">        - u8 i8, u16 i16, u32 i32, u64 i64, u128 i128</span><br><span class="line">        - usize isize 64bit or 32bit</span><br><span class="line">    - Float</span><br><span class="line">        - f32 f64</span><br><span class="line">    - Booleans</span><br><span class="line">        - bool (1 byte) </span><br><span class="line">    - Char</span><br><span class="line">        - 4 bytes</span><br><span class="line">        - full unicode value</span><br><span class="line">- Functions</span><br><span class="line">    - 使用snake case来命名, 即小写加下划线</span><br><span class="line">    - 函数最后一行不加`;`可以直接做返回值</span><br><span class="line">    - 如果需要fast return可继续使用`return`</span><br><span class="line">    - 函数调用加`!`是一个宏调用</span><br><span class="line">        - `println!`</span><br><span class="line">        - `dbg!`</span><br><span class="line">    - 可以使用cargo expand来查看宏</span><br><span class="line">- Mutability</span><br><span class="line">    - let与let mut</span><br><span class="line">    - 自动类型推断</span><br><span class="line">- Standard Library</span><br><span class="line">    - https://doc.rust-lang.org/std/</span><br><span class="line">- Ownership</span><br><span class="line">    - 每一个变量自己持有自己</span><br><span class="line">    - 跳出作用于就自己析构(drop function)</span><br><span class="line">        - RAII resource acquisition is initialization </span><br><span class="line">    - 同一时间只能有一个owner</span><br><span class="line">        - 指针类型如果copy, 之前的指针就无法使用, 会编译错误</span><br><span class="line">        - 作为形参传入函数也会pass ownership, 编译会报错</span><br><span class="line">        - 使用引用`&amp;`((ampersand))做参数就可以Borrow Ownership, 如果需要对这个参数进行操作, 需要`mut &amp;`</span><br><span class="line">        - 同一个指针对象的Mutable borrow只能有一个</span><br><span class="line">        - 这样就能在编译的时候消除资源竞争</span><br><span class="line">        - 编译器自动检测immutable borrow中间不能加入mutable borrow</span><br><span class="line">        - 可以有多个immutable的引用, 但是只能有一个mutable的引用</span><br><span class="line">- Result</span><br><span class="line">    - 封装了成功与失败的结果</span><br><span class="line">    - unwrap会直接获取成功, 如果失败程序会崩溃</span><br><span class="line">    - 在编译器会检测是否正确处理了异常</span><br><span class="line">    - enum Ok / Err</span><br><span class="line">- Option</span><br><span class="line">    - 包装可以为空的类型Option&lt;XXX&gt;</span><br><span class="line">    - enum Some / None</span><br><span class="line">    - 可以通过`ok_or`转换为Result</span><br><span class="line">    - 可以通过`if let Some(i) = XXX`从中获取值</span><br><span class="line">- Structs</span><br><span class="line">    - struct构造函数使用`::`来初始化</span><br><span class="line">    - 构造函数返回类型与初始化可以直接使用`Self`关键字来代替类名</span><br><span class="line">    - `impl Name &#123;&#125;`来实现function</span><br><span class="line">    - `&amp;self`作为函数参数来获取类的指针, 需要是引用, 否则就borrow了</span><br><span class="line">    - 第一个参数是`&amp;self`是类方法, 否则就是静态方法</span><br><span class="line">- Strings</span><br><span class="line">    - parse可以根据类型智能转换</span><br><span class="line">    - `&amp;str`是immutable string slice类型, 如果数据不需要改变， 可以使用slice取代String，避免Heap的拷贝，节省空间</span><br><span class="line">    - `&amp;string[x..y]`可以对borrow的string进行slice</span><br><span class="line">    - String会在堆上开辟空间, 并且可以自动伸缩</span><br><span class="line">    - 如果不想copy, 则需要使用`&amp;str`来做slice指向需要的区域</span><br><span class="line">    - 定义的静态字符串就是`&amp;str`</span><br><span class="line">    - rust使用utf8编码, slice必须包含整个字符, 但是下标只能是byte级别, 如果slice到未完整的字符, 会报`panicked character boundary`错误</span><br><span class="line">- Enums</span><br><span class="line">    - 默认枚举实际内存中是数字从0开始</span><br><span class="line">    - 如果显式指定数字, 则后面定义的累加, 前面的仍然从0开始</span><br><span class="line">    - 枚举可以承载不同的类型在内, 最终在struct里占用的空间以最大的为准</span><br><span class="line">- Module</span><br><span class="line">    - mod xxx &#123; &#125;</span><br><span class="line">    - 所有内部定义的都是private, 如果公开需要加pub</span><br><span class="line">    - mod可以嵌套</span><br><span class="line">    - 嵌套的mod可以使用`super::`引用上一级</span><br><span class="line">    - 同时使用`crate::`可以获取root level的module</span><br><span class="line">    - 每一个文件都是一个module, 文件名就是mod的名字, 所以就免去了写mod</span><br><span class="line">    - 如果是嵌套的, 则可以使用文件夹, 但是需要在文件夹里添加`mod.js`来export里面的module</span><br><span class="line">    - 使用`mod Name`来引用, 类似以import</span><br><span class="line">    - 使用`use ModName::StructName`来声明, 类似与命名空间声明, 便可直接使用</span><br><span class="line">    - `std`默认就被引用了, 所以不需要自己添加`mod std`</span><br><span class="line">- Loops</span><br><span class="line">    - loop可以加label</span><br><span class="line">    - `&apos;lable: loop &#123;&#125; condition;`</span><br><span class="line">- Match</span><br><span class="line">    - 类似于switch或者when</span><br><span class="line">    - `match variable &#123; case1 =&gt; xxx &#125;`</span><br><span class="line">    - 枚举值内的元素可以使用元组(tuple)来接多个值</span><br><span class="line">    - 如果不需要使用, 使用下划线</span><br><span class="line">    - `_ =&gt;`可以接收default值</span><br><span class="line">    - 多个case并列在一起使用`case1 | case2`</span><br><span class="line">- Array</span><br><span class="line">    - `[initial; size]`定义array的初始化值与长度</span><br><span class="line">    - initial值决定了array内数据的类型</span><br><span class="line">- Trait</span><br><span class="line">    - 类似于interface, 或者extension, 可以给已有struct扩展方法</span><br><span class="line">    - 实现方式 `impl TraitName for StructName`</span><br><span class="line">    - 还可以定义一个Associate Type `type XXX;`来当泛型用, 当你只期望有一种扩展的时候可以使用</span><br><span class="line">    - 如果使用了泛型, 则可以扩展多种次, 每次使用trait方法时候, 需要指定类型帮助推断</span><br><span class="line">    - `unimplemented!()` 或者 `todo!()`可以supress未实现异常</span><br><span class="line">- TryFrom</span><br><span class="line">    - 它是一个trait, 有一个静态方法`try_from`, 实现了从指定的泛型&lt;T&gt;转换到你扩展的struc上, `impl TryFrom&lt;Input&gt; for Struct`</span><br><span class="line">    - 它还还转自动实现`TryInto`, 不同的是, 里面是一个对象方法, `try_into`.</span><br><span class="line">    - 它们都有一个协同类型定义Error类型</span><br><span class="line">- Custom Error</span><br><span class="line">    - 实现Error, 它是一个trait, 并且需要同时实现Display跟Debug</span><br><span class="line">    - 可以通过`write!(formatter, &quot;&#123;&#125;&quot;, xxx)`宏来写输出</span><br><span class="line">    - Display与Debug实现相同, Error无需实现任何方法</span><br><span class="line">- ErrorHandling</span><br><span class="line">    - `Result`提供`or`方法来对error进行转换</span><br><span class="line">    - 使用`?`, 如果正确返回结果, 如果错误异常</span><br><span class="line">        - 可以使用`or`转换Error类型到Err</span><br><span class="line">        - 也可以给自己Error实现`From&lt;XXError&gt;`</span><br><span class="line">- Lifetime Parameter</span><br><span class="line">    - compiler会check引用的生命周期</span><br><span class="line">    - 因为有垃圾回收的语言会根据引用数量来判断是否release</span><br><span class="line">    - 所以如果有引用的使用，必须提供足够的信息(类似MetaData)让静态检查可以判断引用使用的scope</span><br><span class="line">    - 在`Struct`上通过范型`&lt;&apos;name&gt;`来声明一个lifetime，name通常是单个字母</span><br><span class="line">    - 如果函数只有一个lifetime param, 那么可以通过推断, 不需要显示的声明</span><br><span class="line">    - 实现trait的时候, 需要在`impl`后面声明, 再在`Struct`后面加上lifetime</span><br><span class="line">    - `Trait`的方法参数也需要声明, 以便实现里可以推断, 如:</span><br></pre></td></tr></table></figure>
+<p>impl &lt;’a&gt; Trait for Struct&lt;’a&gt; {  </p>
+<pre><code>fn test(str: &amp;&apos;a str)   { 
+    ... 
+} 
+</code></pre><p>}<code>``</code></p>
+</li>
+</ul>
+</li>
+<li>Silent Warnings<ul>
+<li>可以对指定文件通过<code>#![allow(xxx)]</code>添加编译参数</li>
+<li>比如<code>dead_code</code>, <code>unused_variables</code>等</li>
+<li>这上面的Pang(!)表示该应用于该Module以及所有子Module</li>
+</ul>
+</li>
+<li>Type Infer<ul>
+<li>rust编译器的推断是整体性的</li>
+<li>一行范型的推断可以考下一条语句来完成</li>
+<li>比如<code>HashMap::new()</code>可以不指定类型, 但是下一句使用该Map可以帮助上一句推断</li>
+</ul>
+</li>
+<li>指针赋值<ul>
+<li>使用*Field_Name = Object</li>
+<li>只要地址类型匹配, 则可以安全赋值</li>
+<li>比如替换成其他的子类</li>
+</ul>
+</li>
+<li>Debug Output<ul>
+<li>可以使用dbg!来print debug信息</li>
+<li>但是对象必须实现Debug trait</li>
+<li>如果想直接用基础类型作为输出, 可以在对象上加<code>#[derive(Debug)]</code></li>
+<li>需要给对象所有层的对象都加上</li>
+<li>比较推荐的是给所有的对象都加上以便调试</li>
+</ul>
+</li>
+<li>自动提示<ul>
+<li>如果一个rs文件没有被添加到<code>mod.rs</code>, VSCode不会提示</li>
+<li>比如自动实现某Trait所有方法, 自动complete<code>match</code>的所有case</li>
+</ul>
+</li>
+<li>Copy &amp; Clone<ul>
+<li><code>as</code>可以将指针指向位置转基础类型, 或者转换成已经实现的Trait</li>
+<li>转换为基础类型时需要对指针指向位置进行copy/clone</li>
+<li>可以通过<code>#[derive(Copy, Clone)]</code>实现</li>
+</ul>
+</li>
+<li>Dynamic/Static Dispatch<ul>
+<li>参数Trait前面加上<code>dyn</code>, 如<code>&amp;mut dyn Trait</code>, 为动态代理</li>
+<li>加<code>impl</code>则为编译器静态绑定, 编译器会扫描所有的调用, 然后生成不同的函数</li>
+</ul>
+</li>
+<li>签名与声明<ul>
+<li>原则: immutable borrow(<code>x: &amp;T</code>), mutable borrow(<code>x: &amp;mut T</code>), move((<code>x: T</code>)</li>
+<li>这些原则都是在冒号后面决定的, 它决定了变量的签名类型</li>
+<li>如果在变量前面添加<code>mut</code>, 这个只是在变量本身被赋予了mutable权限, 并没有改变签名</li>
+<li>引用的可读性是无法升级变更的, 因为它是签名, 无法从不可读变为可读</li>
+<li>有点像<code>const*</code>与<code>*const</code>, 一个是对内容的限制, 一个是对指针的限制</li>
+</ul>
+</li>
+<li>Getter方法<ul>
+<li>函数命名不需写get</li>
+<li>返回是成员的引用</li>
+<li>Optional则通过<code>as_ref()</code>转成Option&lt;&amp;T&gt;</li>
+</ul>
+</li>
+<li>环境变量<ul>
+<li>通过<code>env::var(&quot;Name&quot;)</code>可以读取环境变, 返回Result</li>
+<li>通过<code>env!</code>变异期直接读取环境变量返回<code>&amp;str</code>, 如果不存在则会直接编译错误</li>
+<li>通过<code>format</code>可以进行拼接</li>
+</ul>
+</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-link" href="/tags/Rust/">Rust</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/02/01/YAML-Anchors/"
+                    data-tooltip="使用Anchor来简化YAML"
+                    aria-label="下一篇: 使用Anchor来简化YAML"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2023 Prince Chen. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="5">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2023/02/01/YAML-Anchors/"
+                    data-tooltip="使用Anchor来简化YAML"
+                    aria-label="下一篇: 使用Anchor来简化YAML"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="5">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://talentprince.github.io/2023/08/29/Rust-Basic/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <h4 id="about-card-name">Prince Chen</h4>
+        
+            <div id="about-card-bio"><p>Xidian B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Worker</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an
+            </div>
+        
+    </div>
+</div>
+
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            aria-label=": First Blog"
+                        >
+                            <h3 class="media-heading">First Blog</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            aria-label=": Robolectric in Android Studio"
+                        >
+                            <h3 class="media-heading">Robolectric in Android Studio</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
+<hr></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
+                        >
+                            <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            aria-label=": Joda Time 中英格式化相关问题 for Java"
+                        >
+                            <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2014年12月23日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            aria-label=": Android 与Inject(依赖注入)的不解之缘"
+                        >
+                            <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p> 依赖注入(DI)<br> 有些人说Android使用依赖注入是因为很多J2EE的人带来的异域思想, 满天飞的<code>注解</code>让人莫不找头脑, 使简单的行为变得复杂, 表面简化, 实则复杂.</p>
+<p> 但是在使用其一段时间后, 确实还是挺不错的. 正如其思想之精髓, 让你只关注<strong>结果</strong>,而忽略<strong>制作过程</strong>, 呵呵, 跟<code>周星驰</code>他老母恰巧相反.  </p>
+<p> 那么下面就讲讲Android开发中常常的用的一些DI框架, 来简化亲们的开发流程吧.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            aria-label=": Android Activity 全屏方法总结"
+                        >
+                            <h3 class="media-heading">Android Activity 全屏方法总结</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.</p>
+<p>所有方法只涉及<strong>代码</strong>操作, 非xml修改Activity属性所致</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            aria-label=": Android 构建账号与同步服务 Part One"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="账号与同步"><a href="#账号与同步" class="headerlink" title="账号与同步"></a>账号与同步</h4><p>Android从<code>API Level5</code>就有了自己的同步服务, 但很少有程序使用到, 一来大多数程序不需要所谓的同步,二来很多程序自己实现了后台的同步更新. 随着Android程序开发的逐渐程序, 越来越的的程序使用到了系统提供的服务来完成<code>账号认证</code>与<code>同步更新</code>, 我们可以打开系统设置–&gt;账号进行查看, 就能看到很多应用都这么做了. 这样做有两个好处, 一来系统服务做更新同步(<code>SyncAdapter</code>)唤醒更加绿色环保, 二来实现了账号认证(<code>Authenticator</code>)还可以为其他应用提供第三方认证服务, 如大家常见的使用QQ或者微博账号登录, 由于你手机上安装的QQ与微博实现了该接口, 便可以通过开发者账号获得授权Token来做第三方认证.</p>
+<p>本期博客分三部分来讲, 通过一个小应用(Part Three提供源码)来概述所有相关内容, 大体章节如下</p>
+<ul>
+<li><p>数据模型建立与加载 (ContentProvider LoaderManager)</p>
+</li>
+<li><p>更新系统建立 (SyncAdapter)</p>
+</li>
+<li><p>账号系统建立 (Account Authenticator)</p>
+</li>
+</ul>
+<p>下面先来讲讲如何轻松本地数据库并完成数据到界面的加载</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            aria-label=": Android 构建账号与同步服务 Part Two"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<p>完成这些服务的布置大概有三步</p>
+<ul>
+<li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
+<li>声明Sync服务, 并制定SyncAdapter的配置文件</li>
+<li>生成账户启动Sync</li>
+</ul></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            aria-label=": Android 构建账号与同步服务 Part Three"
+                        >
+                            <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2015年2月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><h4 id="紧接上期"><a href="#紧接上期" class="headerlink" title="紧接上期"></a>紧接<a href="http://talentprince.github.io/blog/2015/02/04/android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/">上期</a></h4><h4 id="账号系统建立-Account-Authenticator"><a href="#账号系统建立-Account-Authenticator" class="headerlink" title="账号系统建立 Account Authenticator"></a>账号系统建立 Account Authenticator</h4><p>如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.</p>
+<p>本期话题将会解决</p>
+<ul>
+<li>添加账号</li>
+<li>获得授权</li>
+</ul>
+<p>这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像<code>QQ</code> <code>新浪微博</code> 一样的功能, 账号系统可以为第三方应用授权.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-left">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
+                        </a>
+                    </div>
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            aria-label=": 清楚与明白"
+                        >
+                            <h3 class="media-heading">清楚与明白</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2016年1月26日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"><p>许久未更新, 已渐渐落草, 回顾过去一年, checklist总归是完成为多, pending为少, 但这并不意味着很多事情都得到了清楚的解决, 也有很多事情可能还需要时间去琢磨才能想的明白.</p></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 51 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/new_cover.jpg');"></div>
+        <!--SCRIPTS-->
+<script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+    <script src="/assets/js/moment-with-locales.js"></script>
+    <script src="/assets/js/algoliasearch.js"></script>
+    <script>
+      var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+    </body>
+</html>
