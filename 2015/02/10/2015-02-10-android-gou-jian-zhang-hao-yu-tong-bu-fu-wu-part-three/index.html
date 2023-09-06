@@ -12,19 +12,19 @@
         <meta name="keywords" content="Android,SyncAdapter,Account,Authenticator,账号,同步,后台更新">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"紧接上期账号系统建立 Account Authenticator如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.\n本期话题将会解决\n\n添加账号\n获得授权\n\n这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像QQ 新浪微博 一样的功能, 账号系统可以为第三方应用授权.\n\n实现AccountService 以及 Authenticator先看看所提供的重写方法\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172public class AccountService extends Service &#123;    private Authenticator authenticator;    public static final String ACCOUNT_TYPE = \"org.weyoung.notebook\";    public static final String TOKEN_TYPE = \"org.weyoung.notebook.admin\";    @Override    public void onCreate() &#123;        authenticator = new Authenticator(this);    &#125;    @Override    public IBinder onBind(Intent intent) &#123;        return authenticator.getIBinder();    &#125;    class Authenticator extends AbstractAccountAuthenticator &#123;        private Context context;        private AccountManager accountManager;        public Authenticator(Context context) &#123;            super(context);            this.context = context;            accountManager = AccountManager.get(context);        &#125;        @Override        public Bundle editProperties(AccountAuthenticatorResponse accountAuthenticatorResponse,                                     String s) &#123;            throw new UnsupportedOperationException();        &#125;        @Override        public Bundle addAccount(AccountAuthenticatorResponse response, String accountType, String authTokenType, String[] requiredFeatures, Bundle options)                throws NetworkErrorException &#123;            //添加账号        &#125;        @Override        public Bundle confirmCredentials(AccountAuthenticatorResponse accountAuthenticatorResponse,                                         Account account, Bundle bundle)                throws NetworkErrorException &#123;            return null;        &#125;        @Override        public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String s, Bundle bundle)                throws NetworkErrorException &#123;            //获取认证        &#125;        @Override        public String getAuthTokenLabel(String s) &#123;            throw new UnsupportedOperationException();        &#125;        @Override        public Bundle updateCredentials(AccountAuthenticatorResponse accountAuthenticatorResponse,                                        Account account, String s, Bundle bundle)                throws NetworkErrorException &#123;            throw new UnsupportedOperationException();        &#125;        @Override        public Bundle hasFeatures(AccountAuthenticatorResponse accountAuthenticatorResponse,                                  Account account, String[] strings)                throws NetworkErrorException &#123;            throw new UnsupportedOperationException();        &#125;    &#125;&#125;\n通过Authenticator所提供的方法可以看出, 最核心的就是实现addAccount与getAuthToken方法, 这样我们的AccountService就可以获得授权与添加账号功能了\n添加账号先看代码\n123456789101112131415addAccount() &#123;    final Bundle bundle = new Bundle();    //限制绑定账号只能有一个    if(accountManager.getAccountsByType(ACCOUNT_TYPE).length &gt; 0) &#123;        final Intent intent = new Intent(context, FailActivity.class);        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);        bundle.putParcelable(AccountManager.KEY_INTENT, intent);        return bundle;    &#125;    final Intent intent = new Intent(context, AuthenticatorActivity.class);    intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);       bundle.putParcelable(AccountManager.KEY_INTENT, intent);    return bundle;&#125;\n这里返回的addAccount返回的Bundle必须带有一个Key为AccountManager.KEY_INTENT, 并且这个Intent含有一个Key为AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, Value为参数AccountAuthenticatorResponse. 这个response主要用来回调成功与否, 内部还可以传递生成账号的信息(Name,Type,Token), 将会在启动的用于注册的AuthenticatorActivity里使用.\n关于AuthenticatorActivity的实现, 其实很简单, 其继承AccountAuthenticatorActivity, 这样父类自己帮你在onCreate的时候获取到了之前传入的AccountAuthenticatorResponse, 然后在注册成功后调用setAccountAuthenticatorResult来传出一个Bundle, 内部其实调用了前面所指的response对象的onResult或者onError方法.\n这个Bundle可以含有若干重要的字段, AccountManager.KEY_ACCOUNT_NAME AccountManager.KEY_ACCOUNT_TYPE AccountManager.KEY_AUTHTOKEN\n下面看看AuthenticatorActivity的核心实现吧.\n12345678910111213141516171819submit() &#123;    final Account account = new Account(name, AccountService.ACCOUNT_TYPE);     //添加账号到系统Account中心, 这里输入的password可以做转换之类的    ......认证 生成token 的逻辑    accountManager.addAccountExplicitly(account, password, null);    //添加token    accountManager.setAuthToken(account, AccountService.TOKEN_TYPE, authToken);     //返回信息, 可以供getAuthToken使用    Bundle data = new Bundle();    data.putString(AccountManager.KEY_ACCOUNT_NAME, name);    data.putString(AccountManager.KEY_ACCOUNT_TYPE, AccountService.ACCOUNT_TYPE);    data.putString(AccountManager.KEY_AUTHTOKEN, authToken);    Intent intent = new Intent();    intent.putExtras(data);    //如果不设置, 相当于调用response的onCancel取消注册    setAccountAuthenticatorResult(data);    finish();\n获得认证先看代码\n123456789101112131415161718192021222324252627282930313233getAuthToken() &#123;    //获得一个已存在的token    String authToken = accountManager.peekAuthToken(account, TOKEN_TYPE);       //如果没有可能过期了 拿到密码 重新认证一次    if (TextUtils.isEmpty(authToken)) &#123;        final String password = accountManager.getPassword(account);        if (password != null) &#123;            try &#123;                authToken = 生成token的逻辑;            &#125; catch (Exception e) &#123;                e.printStackTrace();            &#125;        &#125;    &#125;       //如果有token了, 传递    if (!TextUtils.isEmpty(authToken)) &#123;        final Bundle result = new Bundle();        result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);        result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);        result.putString(AccountManager.KEY_AUTHTOKEN, authToken);        return result;    &#125;       //如果没有token, 也没有密码, 需要重新登录, 账户名可一并传递进认证的Activity, 如果有的话    final Intent intent = new Intent(context, AuthenticatorActivity.class);    intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);    intent.putExtra(AuthenticatorActivity.ARG_ACCOUNT_NAME, account.name);    final Bundle b = new Bundle();    b.putParcelable(AccountManager.KEY_INTENT, intent);    return b;&#125;\n由上面的代码可以看见, 对于需要获取token(getAuthToken)的操作, 我们的步骤是从简到繁, 最差情况就是需要重新的登录认证来获得token\n跟添加账号相同, 最终账号的信息(Name Type Token)都是通过神奇的Bundle来传递的\n####声明账号服务\n与同步服务一样, 账号服务同样需要声明, 以便通过系统的Accout功能操作, 或者为其他第三方程序提供支持.\n1234567891011&lt;service    android:name=\".sync.AccountService\"    android:exported=\"true\"    android:process=\":auth\" &gt;    &lt;intent-filter&gt;        &lt;action android:name=\"android.accounts.AccountAuthenticator\" /&gt;    &lt;/intent-filter&gt;    &lt;meta-data        android:name=\"android.accounts.AccountAuthenticator\"        android:resource=\"@xml/authenticator\" /&gt;&lt;/service&gt;\n这里跟上一节的SyncService类似, 必须声明为exported, process不是必须的, 并且需要添加android约定的过滤器android.accounts.AccountAuthenticator\n关于Authenticator的配置, 也类似的有一个独立的xml.\n123456&lt;account-authenticator     xmlns:android=\"http://schemas.android.com/apk/res/android\"    android:accountType=\"org.weyoung.notebook\"    android:icon=\"@drawable/ic_launcher\"     android:smallIcon=\"@drawable/ic_launcher\"     android:label=\"@string/app_name\"/&gt;\n这里声明的label与icon都会在系统设置Account里面看到, 如上一节最后面图片的上部分所示.\n\n使用账号服务构建好了自己的Service跟账号认证Adapter, 下面就剩如何使用了. 使用大致分为两种, 一种是直接申请Token, 一种是添加账号. 当然如果没申请到, 结果跟后面一种类似.\n所有的操作都来自于AccountManager,申请Token主要是通过AccountManager#getAuthToken 系列方法. 这里使用了适合第三方应用使用的AccountManager#getAuthTokenByFeatures, 通过账号类型与Token类型来申请.\n添加账号则通过AccountManager#addAccount, 添加指定类型的账号.\n当然先通过AccountManager#getAccountsByType)查看是否存在账号, 决定是否是添加, 还是获取\n当然这些操作都需要一定的权限声明, 如下所示\n12345&lt;!-- getAuthTokenByFeatures --&gt;&lt;uses-permission android:name=\"android.permission.USE_CREDENTIALS\" /&gt;&lt;uses-permission android:name=\"android.permission.GET_ACCOUNTS\" /&gt;&lt;!-- getAccountsByType --&gt;&lt;uses-permission android:name=\"android.permission.MANAGE_ACCOUNTS\" /&gt;\n\n本文通过三次的介绍, 应该可以为想构建自己的账号同步系统的同学指明了道路, 所有代码中间可能做过稍许节选, 添加了中文的注释, 并有一定的伪代码. 整个程序的代码可以通过这里来获得, 进一步了解整个功能的实现.\n\n春节将至, 祝快乐\n\nReference:\nhttp://developer.android.com/reference/android/accounts/AccountManager.html\nhttp://developer.android.com/training/sync-adapters/creating-authenticator.html\n\n","dateCreated":"2015-02-10T17:13:33+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2015-02-10T17:13:33+08:00","description":"紧接上期账号系统建立 Account Authenticator如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.\n本期话题将会解决\n\n添加账号\n获得授权\n\n这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像QQ 新浪微博 一样的功能, 账号系统可以为第三方应用授权.","headline":"Android 构建账号与同步服务 Part Three","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"紧接上期账号系统建立 Account Authenticator如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.\n本期话题将会解决\n\n添加账号\n获得授权\n\n这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像QQ 新浪微博 一样的功能, 账号系统可以为第三方应用授权.\n\n实现AccountService 以及 Authenticator先看看所提供的重写方法\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172public class AccountService extends Service &#123;    private Authenticator authenticator;    public static final String ACCOUNT_TYPE = \"org.weyoung.notebook\";    public static final String TOKEN_TYPE = \"org.weyoung.notebook.admin\";    @Override    public void onCreate() &#123;        authenticator = new Authenticator(this);    &#125;    @Override    public IBinder onBind(Intent intent) &#123;        return authenticator.getIBinder();    &#125;    class Authenticator extends AbstractAccountAuthenticator &#123;        private Context context;        private AccountManager accountManager;        public Authenticator(Context context) &#123;            super(context);            this.context = context;            accountManager = AccountManager.get(context);        &#125;        @Override        public Bundle editProperties(AccountAuthenticatorResponse accountAuthenticatorResponse,                                     String s) &#123;            throw new UnsupportedOperationException();        &#125;        @Override        public Bundle addAccount(AccountAuthenticatorResponse response, String accountType, String authTokenType, String[] requiredFeatures, Bundle options)                throws NetworkErrorException &#123;            //添加账号        &#125;        @Override        public Bundle confirmCredentials(AccountAuthenticatorResponse accountAuthenticatorResponse,                                         Account account, Bundle bundle)                throws NetworkErrorException &#123;            return null;        &#125;        @Override        public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account, String s, Bundle bundle)                throws NetworkErrorException &#123;            //获取认证        &#125;        @Override        public String getAuthTokenLabel(String s) &#123;            throw new UnsupportedOperationException();        &#125;        @Override        public Bundle updateCredentials(AccountAuthenticatorResponse accountAuthenticatorResponse,                                        Account account, String s, Bundle bundle)                throws NetworkErrorException &#123;            throw new UnsupportedOperationException();        &#125;        @Override        public Bundle hasFeatures(AccountAuthenticatorResponse accountAuthenticatorResponse,                                  Account account, String[] strings)                throws NetworkErrorException &#123;            throw new UnsupportedOperationException();        &#125;    &#125;&#125;\n通过Authenticator所提供的方法可以看出, 最核心的就是实现addAccount与getAuthToken方法, 这样我们的AccountService就可以获得授权与添加账号功能了\n添加账号先看代码\n123456789101112131415addAccount() &#123;    final Bundle bundle = new Bundle();    //限制绑定账号只能有一个    if(accountManager.getAccountsByType(ACCOUNT_TYPE).length &gt; 0) &#123;        final Intent intent = new Intent(context, FailActivity.class);        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);        bundle.putParcelable(AccountManager.KEY_INTENT, intent);        return bundle;    &#125;    final Intent intent = new Intent(context, AuthenticatorActivity.class);    intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);       bundle.putParcelable(AccountManager.KEY_INTENT, intent);    return bundle;&#125;\n这里返回的addAccount返回的Bundle必须带有一个Key为AccountManager.KEY_INTENT, 并且这个Intent含有一个Key为AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, Value为参数AccountAuthenticatorResponse. 这个response主要用来回调成功与否, 内部还可以传递生成账号的信息(Name,Type,Token), 将会在启动的用于注册的AuthenticatorActivity里使用.\n关于AuthenticatorActivity的实现, 其实很简单, 其继承AccountAuthenticatorActivity, 这样父类自己帮你在onCreate的时候获取到了之前传入的AccountAuthenticatorResponse, 然后在注册成功后调用setAccountAuthenticatorResult来传出一个Bundle, 内部其实调用了前面所指的response对象的onResult或者onError方法.\n这个Bundle可以含有若干重要的字段, AccountManager.KEY_ACCOUNT_NAME AccountManager.KEY_ACCOUNT_TYPE AccountManager.KEY_AUTHTOKEN\n下面看看AuthenticatorActivity的核心实现吧.\n12345678910111213141516171819submit() &#123;    final Account account = new Account(name, AccountService.ACCOUNT_TYPE);     //添加账号到系统Account中心, 这里输入的password可以做转换之类的    ......认证 生成token 的逻辑    accountManager.addAccountExplicitly(account, password, null);    //添加token    accountManager.setAuthToken(account, AccountService.TOKEN_TYPE, authToken);     //返回信息, 可以供getAuthToken使用    Bundle data = new Bundle();    data.putString(AccountManager.KEY_ACCOUNT_NAME, name);    data.putString(AccountManager.KEY_ACCOUNT_TYPE, AccountService.ACCOUNT_TYPE);    data.putString(AccountManager.KEY_AUTHTOKEN, authToken);    Intent intent = new Intent();    intent.putExtras(data);    //如果不设置, 相当于调用response的onCancel取消注册    setAccountAuthenticatorResult(data);    finish();\n获得认证先看代码\n123456789101112131415161718192021222324252627282930313233getAuthToken() &#123;    //获得一个已存在的token    String authToken = accountManager.peekAuthToken(account, TOKEN_TYPE);       //如果没有可能过期了 拿到密码 重新认证一次    if (TextUtils.isEmpty(authToken)) &#123;        final String password = accountManager.getPassword(account);        if (password != null) &#123;            try &#123;                authToken = 生成token的逻辑;            &#125; catch (Exception e) &#123;                e.printStackTrace();            &#125;        &#125;    &#125;       //如果有token了, 传递    if (!TextUtils.isEmpty(authToken)) &#123;        final Bundle result = new Bundle();        result.putString(AccountManager.KEY_ACCOUNT_NAME, account.name);        result.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type);        result.putString(AccountManager.KEY_AUTHTOKEN, authToken);        return result;    &#125;       //如果没有token, 也没有密码, 需要重新登录, 账户名可一并传递进认证的Activity, 如果有的话    final Intent intent = new Intent(context, AuthenticatorActivity.class);    intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);    intent.putExtra(AuthenticatorActivity.ARG_ACCOUNT_NAME, account.name);    final Bundle b = new Bundle();    b.putParcelable(AccountManager.KEY_INTENT, intent);    return b;&#125;\n由上面的代码可以看见, 对于需要获取token(getAuthToken)的操作, 我们的步骤是从简到繁, 最差情况就是需要重新的登录认证来获得token\n跟添加账号相同, 最终账号的信息(Name Type Token)都是通过神奇的Bundle来传递的\n####声明账号服务\n与同步服务一样, 账号服务同样需要声明, 以便通过系统的Accout功能操作, 或者为其他第三方程序提供支持.\n1234567891011&lt;service    android:name=\".sync.AccountService\"    android:exported=\"true\"    android:process=\":auth\" &gt;    &lt;intent-filter&gt;        &lt;action android:name=\"android.accounts.AccountAuthenticator\" /&gt;    &lt;/intent-filter&gt;    &lt;meta-data        android:name=\"android.accounts.AccountAuthenticator\"        android:resource=\"@xml/authenticator\" /&gt;&lt;/service&gt;\n这里跟上一节的SyncService类似, 必须声明为exported, process不是必须的, 并且需要添加android约定的过滤器android.accounts.AccountAuthenticator\n关于Authenticator的配置, 也类似的有一个独立的xml.\n123456&lt;account-authenticator     xmlns:android=\"http://schemas.android.com/apk/res/android\"    android:accountType=\"org.weyoung.notebook\"    android:icon=\"@drawable/ic_launcher\"     android:smallIcon=\"@drawable/ic_launcher\"     android:label=\"@string/app_name\"/&gt;\n这里声明的label与icon都会在系统设置Account里面看到, 如上一节最后面图片的上部分所示.\n\n使用账号服务构建好了自己的Service跟账号认证Adapter, 下面就剩如何使用了. 使用大致分为两种, 一种是直接申请Token, 一种是添加账号. 当然如果没申请到, 结果跟后面一种类似.\n所有的操作都来自于AccountManager,申请Token主要是通过AccountManager#getAuthToken 系列方法. 这里使用了适合第三方应用使用的AccountManager#getAuthTokenByFeatures, 通过账号类型与Token类型来申请.\n添加账号则通过AccountManager#addAccount, 添加指定类型的账号.\n当然先通过AccountManager#getAccountsByType)查看是否存在账号, 决定是否是添加, 还是获取\n当然这些操作都需要一定的权限声明, 如下所示\n12345&lt;!-- getAuthTokenByFeatures --&gt;&lt;uses-permission android:name=\"android.permission.USE_CREDENTIALS\" /&gt;&lt;uses-permission android:name=\"android.permission.GET_ACCOUNTS\" /&gt;&lt;!-- getAccountsByType --&gt;&lt;uses-permission android:name=\"android.permission.MANAGE_ACCOUNTS\" /&gt;\n\n本文通过三次的介绍, 应该可以为想构建自己的账号同步系统的同学指明了道路, 所有代码中间可能做过稍许节选, 添加了中文的注释, 并有一定的伪代码. 整个程序的代码可以通过这里来获得, 进一步了解整个功能的实现.\n\n春节将至, 祝快乐\n\nReference:\nhttp://developer.android.com/reference/android/accounts/AccountManager.html\nhttp://developer.android.com/training/sync-adapters/creating-authenticator.html\n\n","dateCreated":"2015-02-10T17:13:33+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2015-02-10T17:13:33+08:00","description":"紧接上期账号系统建立 Account Authenticator如果只需要借助系统更新服务(SyncAdapter)来做定期维护, 那么通过前两部分的介绍, 已经可以达到所预期的目标了.\n本期话题将会解决\n\n添加账号\n获得授权\n\n这些服务全部都是可以跨进程的操作, 完成了这些操作, 我们就可以完成像QQ 新浪微博 一样的功能, 账号系统可以为第三方应用授权.","headline":"Android 构建账号与同步服务 Part Three","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg"}</script>
     <meta name="description" content="Android 构建账号与同步服务 SyncAdapter Account Authenticator">
 <meta name="keywords" content="Android,SyncAdapter,Account,Authenticator,账号,同步,后台更新">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android 构建账号与同步服务 Part Three">
-<meta property="og:url" content="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Android 构建账号与同步服务 SyncAdapter Account Authenticator">
 <meta property="og:locale" content="zh-cn">
@@ -368,7 +368,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -381,7 +381,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -394,7 +394,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -483,7 +483,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -496,7 +496,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -509,7 +509,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -543,7 +543,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -556,7 +556,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -569,7 +569,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -639,7 +639,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -662,7 +662,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -672,7 +672,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -698,7 +698,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -708,7 +708,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -731,7 +731,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -741,7 +741,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -766,7 +766,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -776,7 +776,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -801,7 +801,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -811,7 +811,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -835,7 +835,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -845,7 +845,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -878,7 +878,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -888,7 +888,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -918,7 +918,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -928,7 +928,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -957,7 +957,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -967,7 +967,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

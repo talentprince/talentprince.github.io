@@ -12,19 +12,19 @@
         <meta name="keywords" content="Android Espresso UI自动化 异步处理 IdlingResource Dagger">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"UI测试在Android平台上一直都是一个令人头痛的事情, 由于大家平时用的很少, 加之很多文档的缺失, 如果很多东西从头摸索,势必踩坑无数.\n自Android24正式淘汰掉了InstrumentationTestCase(位于android.test包), 推出Espresso(位于android.support.test包), Google一直致力于降低UI测试的门槛.\n了解测试金字塔的同学可能知道,UI测试属于功能测试(Functional Test), 或者按照其他的划分也属于集成测试(Integration Test), Google推出了UIAutomator与Espresso来分别处理跨App间的测试(黑盒测试)以及App内的测试(白盒测试).\n测试步骤类似,分为:\n\n查找元素\n触发行为\n检测结果\n\n本文分为三部分, 第一部分简单介绍如何使用Espresso, 第二部分分析如何处理诸如异步, 依赖注入, 程序结构对UI测试的影响以及提供解决办法, 第三部分提供源码以及一些Reference的地址.\n\nPart I如何配置1.需要在gradle的dependencies里添加依赖\n123androidTestImplementation &apos;com.android.support.test.espresso:espresso-core:3.0.2&apos;androidTestImplementation &apos;com.android.support.test:runner:1.0.2&apos;androidTestImplementation &apos;com.android.support.test:rules:1.0.2&apos;\n2.在gradle的android.defaultConfig里指定TestRunner\n1testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;\n3.书写测试文件,通过AndroidJUnit4来跑即可,使用Activity Rule来启动你的Activity.\n123@Rule@JvmFieldvar activityTestRule: ActivityTestRule&lt;MainActivity&gt; = ActivityTestRule&lt;MainActivity&gt;()\n4.添加测试.\n1onView(withText(&quot;Hello world!&quot;)).check(matches(isDisplayed()));\n5.运行\n1./gradlew connectedAndroidTest\n或在IDE中进行运行.\n以上步骤写的比较简略, 如果第一次使用, 可参考官方文档.\nPart II貌似已经会了, 打钩[x]?对于简单的UI其实上面的5步已经完全足够,  这也是Espresso好用的地方,  将UI测试写的跟普通的Unit Test一样简单.\n但是随着你的UI变得复杂, 很多问题接踵而至.\n其根本原因在于, Espresso系统在处理内置UI渲染(包括WebView)的异步操作都没有问题, 它会等待页面的渲染与加载, 而你自己如果有异步逻辑, 可能测试进程不会等待其完成而结束, 导致测试失败.\n而采用Unit Test将无论是RxJava的Scheduler或者是Excutor替换成同一个线程的方法没法在UI Test中使用. 原因是UI操作只能在创建它的线程使用(UI 线程), 而如果你用了网络或者Room之类的数据库, 它又无法在UI线程使用, 相互矛盾, 进退两难.\n所以这个时候就需要使用Espresso提供的IdleResource, 来通知系统是否Idle或者Busy.\n什么时候该使用IdleResource其实IdleResource的官方文档里面有指出, 如果你的测试里有使用:\n\nThread.sleep()\nRetry\nCountDown …\n\n来保证你的测试工作正常, 那么意味着你应该使用IdleResource了.\n或许刚刚接触Espresso的你可能还没有意识到问题所在, 还没有使用Work Around的方法来解决问题, 换个角度来说可能更好理解.\n如果你所测试程序里有使用:\n\nDatabinding\nLiveData\n通过非AsyncTask实现的异步操作\nFragment跳转\n等等…\n\n那么就意味着你需要使用IdleResource来保证你的测试能顺利进行, 否则Test Case可能在程序异步操作未执行时就已经关闭了.\n如何使用IdleResourceIdleResource的三个关键接口都非常Straigtforward.\n1.1fun getName(): String\n每一个IdleResource都应该有唯一的Name来注册到系统里, 不能重复.\n2.1fun isIdleNow(): Boolean\nEspresso会从UI线程调用, 通过这个方法来获得是否进入Idle状态.\n3.1fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback)\n当该IdleResource被使用时, Espresso会注册该callback, 当background job执行完毕后, 需要调用callback.onTransitionToIdle()通知(如果已经是Idle状态, 调用也不影响, 所以很多简单的实现都是将这个调用放在isIdleNow中, 判断已经idle就调用, 虽然google的best practice里说不要这样), 该调用会通知UI线程, 并可以在任何线程调用.\n在使用IdleResource的时候, 通常是通过注册Rule来驱动的, 这个就需要继承TestWatcher.\n复写它的starting与finished方法, 通过IdlingRegistry.getInstance().register与IdlingRegistry.getInstance().unregister来注册/反注册IdleReource, 当然可能需要在finished的时候drain掉所有在运行的Task.\n给一个简单的例子把.\n1234567891011121314class SampleIdleResourceRule : TestWatcher() &#123;    private val idlingResource: IdlingResource = xxx        override fun starting(description: Description?) &#123;        IdlingRegistry.getInstance().register(idlingResource)        super.starting(description)    &#125;        override fun finished(description: Description?) &#123;        //drain all the pending task here if needed.        IdlingRegistry.getInstance().unregister(idlingResource)        super.finished(description)    &#125;&#125;\n举个IdleResource的例子吧.1.使用LiveData等Archtecture Component组件\n我们知道LiveData是一个订阅系统, 是必涉及后台线程, 比较方便的是它自己内部已经调用了IdleResource来增加/减少后台job, 所以直接使用系统提供的CountingTaskExecutorRule.\n由于Resource name不能重复, 所以为了绕过这个检测, 需要继承CountingTaskExecutorRule来复写getName.\n具体可以参考google的TaskExecutorWithIdlingResourceRule.\nGoogle还提供了Databinding的Rule, 可以参考.\n2.等待弹框结束\n一般情况下我们使用DialogFragment来弹框, 如果我们去check一些text被dialog遮挡, 就必须等待其消失后在进行检查.\n这时我们可以通过findFragmentByTag来检测该弹框是否dismiss.\n12345678910111213141516171819class DialogIdlingResource(        private val manager: FragmentManager,         private val tag: String) : IdlingResource &#123;    private var resourceCallback: IdlingResource.ResourceCallback? = null    override fun getName(): String = &quot;xxx&quot;    override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback?) &#123;        resourceCallback = callback    &#125;    override fun isIdleNow(): Boolean &#123;        val idle = manager.findFragmentByTag(tag) == null        if (idle) &#123;            resourceCallback?.onTransitionToIdle()        &#125;        return idle    &#125;&#125;\n3.Delegate Executors/Scheduler\n如果有异步处理逻辑, 大多都位于Repository/ViewModel层, 这部分会被Mock, 但也有一些UI逻辑可能会用到Excecutor. 如RecyclerView的DiffUtil, 需要传入一个Executor来做异步Diff, 这时我们就需要一个Excecutor的IdlingResource, 并把它里面的Delegate赋值给UI.\n这部分可以参考Google GithubBrowser Sample的CountingAppExecutorsRule.\n应该怎么测试, 需要测试什么?虽然Espresso测试是集成测试,  但是由于涉及到异步逻辑导致Test Case无法按照预期进行的问题时而存在, 且有时候无法通过IdlingResource来解决.\n比如涉及到多个Fragment的跳转, 就会发生在Fragment未打开时Test Case就挂掉的情况.\n再比如使用RxJava, 在Espresso3.x + RxJava2.x的情况下, 即便将Scheduler代理给IdlingResource也无法保证整个业务流程完整走下来, 异步操作仍无法完整运行, 具体问题可参考Jake大神RxIdler的Issue.\n所以测试起来就有一些原则需要遵守, 才能保证整个流程的可测性.\n\n最好对每一个Fragment进行单独测试, Mock所依赖的部分, 如网络, 数据模块, 如果涉及Fragment跳转逻辑, 通过继承来复写进行测试.\n如果使用了RxJava, 需要将其封装在Repository或者Presenter/ViewModel中进行整体的Mock.\n如果使用了Dagger2.android进行自动注入, 最好对测试部分自定义TestRunner提供一个空的Application来Disable注入, 对所测试Fragment注入对象进行手动赋值.\n如果Activity有注入逻辑, 最好将其解耦到Fragment, 因为Espresso的Activity是通过ActivityRule来启动, 无法进行直接手动注入.\n如果无法Move到Fragment, 或者不想… 那就需要在测试里构建自己的Dagger Component, 对于使用Dagger2.android自动注入的, 还需要手动创建Fake的DispatchingAndroidInjector完成手动注入.\n如果未使用Dagger2.android, 通过AndroidInjector来注入的, 可以忽略与注入相关的item.\n\n能再讲的仔细一些吗?1.单独测试Fragment的好处是可以解耦Fragment之间的跳转, 往往Fragment都是UI流程中的一个环节, 当逻辑完成时会跳向下一Fragment. 可以创建一个空Activity来专门用于显示该Fragment, 并且在测试的setUp里commit该Fragment.\n12345678910111213141516171819202122class TestActivity &#123;    fun showFragment()&#125;@RunWith(AndroidJUnit4::class)class XXXFragmentTest &#123;    @Rule    @JvmField    val activityRule = ActivityTestRule(XXXFragment::class.java)        @Before    fun init() &#123;        //1. init fragment        //2. assign mock data        activityRule.showFragment(xxx)      &#125;        @Test    fun testXXX() &#123;        xxx    &#125;&#125;\n2.由于常常会需要继承需要测试的Fragment来复写一些类, 对于使用Dagger.android自动注入的, 该子Fragment又未通过@ContributesAndroidInjector进行注册, 往往需要自定义TestRunner, 然后手动注入Fragment.\n12345678910111213141516171819202122232425262728293031323334353637383940class CustomTestRunner : AndroidJUnitRunner() &#123;    override fun newApplication(...) &#123;        return ...TestApp:class...    &#125;&#125;android &#123;    defaultConfig &#123;        testInstrumentationRunner &quot;xxx.CustomTestRunner&quot;    &#125;&#125;class TestApp : Application() &#123;&#125;@RunWith(AndroidJUnit4::class)class XXXFragmentTest &#123;    //activity rule    ...    val testFragment = TestFragment()        @Before    fun init() &#123;        testFragment.xxx = mockXXX        ...        activityRule.activity.showFragment(testFragment)    &#125;        @Test    fun testXXX() &#123;        onView...check(...)        assertTrue(testFragment.isXXXShow)    &#125;        class TestFragment : XXXFragment() &#123;        var isXXXShow = false        override fun showXXX() &#123;            isXXXShow = true        &#125;    &#125;&#125;\n3.如果Activity有注入逻辑与业务逻辑, 并且不想抽到Fragment中去, 则需要创建Fake的Injector保证可以完成注入, \n1234567891011121314151617fun createFakeInjector(block: T.() -&gt; Unit): DispatchingAndroidInjector&lt;Activity&gt; &#123;    ...&#125;@RunWith(AndroidJUnit4::class)class XXXActivityTest &#123;    @Rule    @JvmField    var activityRule = object : ActivityTestRule&lt;XXX&gt;(XXX::class.java) &#123;       val app = ...get application       app.dispatchingAndroidInjector = createFakeInjector&lt;XXX&gt;() &#123;           //手动注入           xxx =  mockXXX           `when`(xxx).thenReturn(xxx)       &#125;    &#125;&#125;\n4.为了支持需要通过继承Fragment来完成测试的Case, 还需要对测试模块创建自己的Component来注册从而进行Fake Injector的创建 (类似3, 只是Application/Activity可能为Test版本).\n12345678910111213141516171819202122232425262728293031Graledependencies &#123;    kaptAndroidTest &apos;com.google.dagger:dagger-android-processor:2.X&apos;&#125;@Component(modules = [    AndroidInjectionModule::class,    AndroidSupportInjectionModule::class,    ...主App所注册的所有Module,    TestActivityModule::class])interface TestCompnent &#123;    fun inject(xxx: XXX)    ...&#125;@Moduleabstract class TestActivityModule &#123;  //通过`ContributesAndroidInjector`注册你的TestActivity, 以及TestFragment  &#125;class TestApp : Application(), HasActivityInjector &#123;    @Inject    lateinit var injector: DispatchingAndroidInjector&lt;Activity&gt;&#125;class TestActivity : Activity(), HasSupportFragmentInjector &#123;    @Inject    lateinit var injector: DispatchingAndroidInjector&lt;Fragment&gt;&#125;\nPart III如果还不是很明白可以查看代码Disable注入的在这里:Google的Demo GithubBrowser\n跟注入相关的在这里:自己的Demo\nReference\nhttps://proandroiddev.com/activity-espresso-test-with-daggers-android-injector-82f3ee564aa4\nhttps://github.com/SabagRonen/dagger-activity-test-sample\nhttps://github.com/googlesamples/android-architecture-components/tree/master/GithubBrowserSample\nhttps://developer.android.com/training/testing/espresso/idling-resource\nhttp://blog.sqisland.com/2015/07/espresso-wait-for-dialog-to-dismiss.html\n\n","dateCreated":"2018-09-30T10:12:48+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-09-30T10:12:48+08:00","description":"UI测试在Android平台上一直都是一个令人头痛的事情, 由于大家平时用的很少, 加之很多文档的缺失, 如果很多东西从头摸索,势必踩坑无数.\n自Android24正式淘汰掉了InstrumentationTestCase(位于android.test包), 推出Espresso(位于android.support.test包), Google一直致力于降低UI测试的门槛.\n了解测试金字塔的同学可能知道,UI测试属于功能测试(Functional Test), 或者按照其他的划分也属于集成测试(Integration Test), Google推出了UIAutomator与Espresso来分别处理跨App间的测试(黑盒测试)以及App内的测试(白盒测试).\n测试步骤类似,分为:\n\n查找元素\n触发行为\n检测结果\n\n本文分为三部分, 第一部分简单介绍如何使用Espresso, 第二部分分析如何处理诸如异步, 依赖注入, 程序结构对UI测试的影响以及提供解决办法, 第三部分提供源码以及一些Reference的地址.","headline":"如何正确使用Espresso来测试你的Android程序","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1538273751/espresso_wsc7bk.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/","keywords":"Android, Espresso, UI Automation Test","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1538273751/espresso_wsc7bk.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"UI测试在Android平台上一直都是一个令人头痛的事情, 由于大家平时用的很少, 加之很多文档的缺失, 如果很多东西从头摸索,势必踩坑无数.\n自Android24正式淘汰掉了InstrumentationTestCase(位于android.test包), 推出Espresso(位于android.support.test包), Google一直致力于降低UI测试的门槛.\n了解测试金字塔的同学可能知道,UI测试属于功能测试(Functional Test), 或者按照其他的划分也属于集成测试(Integration Test), Google推出了UIAutomator与Espresso来分别处理跨App间的测试(黑盒测试)以及App内的测试(白盒测试).\n测试步骤类似,分为:\n\n查找元素\n触发行为\n检测结果\n\n本文分为三部分, 第一部分简单介绍如何使用Espresso, 第二部分分析如何处理诸如异步, 依赖注入, 程序结构对UI测试的影响以及提供解决办法, 第三部分提供源码以及一些Reference的地址.\n\nPart I如何配置1.需要在gradle的dependencies里添加依赖\n123androidTestImplementation &apos;com.android.support.test.espresso:espresso-core:3.0.2&apos;androidTestImplementation &apos;com.android.support.test:runner:1.0.2&apos;androidTestImplementation &apos;com.android.support.test:rules:1.0.2&apos;\n2.在gradle的android.defaultConfig里指定TestRunner\n1testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;\n3.书写测试文件,通过AndroidJUnit4来跑即可,使用Activity Rule来启动你的Activity.\n123@Rule@JvmFieldvar activityTestRule: ActivityTestRule&lt;MainActivity&gt; = ActivityTestRule&lt;MainActivity&gt;()\n4.添加测试.\n1onView(withText(&quot;Hello world!&quot;)).check(matches(isDisplayed()));\n5.运行\n1./gradlew connectedAndroidTest\n或在IDE中进行运行.\n以上步骤写的比较简略, 如果第一次使用, 可参考官方文档.\nPart II貌似已经会了, 打钩[x]?对于简单的UI其实上面的5步已经完全足够,  这也是Espresso好用的地方,  将UI测试写的跟普通的Unit Test一样简单.\n但是随着你的UI变得复杂, 很多问题接踵而至.\n其根本原因在于, Espresso系统在处理内置UI渲染(包括WebView)的异步操作都没有问题, 它会等待页面的渲染与加载, 而你自己如果有异步逻辑, 可能测试进程不会等待其完成而结束, 导致测试失败.\n而采用Unit Test将无论是RxJava的Scheduler或者是Excutor替换成同一个线程的方法没法在UI Test中使用. 原因是UI操作只能在创建它的线程使用(UI 线程), 而如果你用了网络或者Room之类的数据库, 它又无法在UI线程使用, 相互矛盾, 进退两难.\n所以这个时候就需要使用Espresso提供的IdleResource, 来通知系统是否Idle或者Busy.\n什么时候该使用IdleResource其实IdleResource的官方文档里面有指出, 如果你的测试里有使用:\n\nThread.sleep()\nRetry\nCountDown …\n\n来保证你的测试工作正常, 那么意味着你应该使用IdleResource了.\n或许刚刚接触Espresso的你可能还没有意识到问题所在, 还没有使用Work Around的方法来解决问题, 换个角度来说可能更好理解.\n如果你所测试程序里有使用:\n\nDatabinding\nLiveData\n通过非AsyncTask实现的异步操作\nFragment跳转\n等等…\n\n那么就意味着你需要使用IdleResource来保证你的测试能顺利进行, 否则Test Case可能在程序异步操作未执行时就已经关闭了.\n如何使用IdleResourceIdleResource的三个关键接口都非常Straigtforward.\n1.1fun getName(): String\n每一个IdleResource都应该有唯一的Name来注册到系统里, 不能重复.\n2.1fun isIdleNow(): Boolean\nEspresso会从UI线程调用, 通过这个方法来获得是否进入Idle状态.\n3.1fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback)\n当该IdleResource被使用时, Espresso会注册该callback, 当background job执行完毕后, 需要调用callback.onTransitionToIdle()通知(如果已经是Idle状态, 调用也不影响, 所以很多简单的实现都是将这个调用放在isIdleNow中, 判断已经idle就调用, 虽然google的best practice里说不要这样), 该调用会通知UI线程, 并可以在任何线程调用.\n在使用IdleResource的时候, 通常是通过注册Rule来驱动的, 这个就需要继承TestWatcher.\n复写它的starting与finished方法, 通过IdlingRegistry.getInstance().register与IdlingRegistry.getInstance().unregister来注册/反注册IdleReource, 当然可能需要在finished的时候drain掉所有在运行的Task.\n给一个简单的例子把.\n1234567891011121314class SampleIdleResourceRule : TestWatcher() &#123;    private val idlingResource: IdlingResource = xxx        override fun starting(description: Description?) &#123;        IdlingRegistry.getInstance().register(idlingResource)        super.starting(description)    &#125;        override fun finished(description: Description?) &#123;        //drain all the pending task here if needed.        IdlingRegistry.getInstance().unregister(idlingResource)        super.finished(description)    &#125;&#125;\n举个IdleResource的例子吧.1.使用LiveData等Archtecture Component组件\n我们知道LiveData是一个订阅系统, 是必涉及后台线程, 比较方便的是它自己内部已经调用了IdleResource来增加/减少后台job, 所以直接使用系统提供的CountingTaskExecutorRule.\n由于Resource name不能重复, 所以为了绕过这个检测, 需要继承CountingTaskExecutorRule来复写getName.\n具体可以参考google的TaskExecutorWithIdlingResourceRule.\nGoogle还提供了Databinding的Rule, 可以参考.\n2.等待弹框结束\n一般情况下我们使用DialogFragment来弹框, 如果我们去check一些text被dialog遮挡, 就必须等待其消失后在进行检查.\n这时我们可以通过findFragmentByTag来检测该弹框是否dismiss.\n12345678910111213141516171819class DialogIdlingResource(        private val manager: FragmentManager,         private val tag: String) : IdlingResource &#123;    private var resourceCallback: IdlingResource.ResourceCallback? = null    override fun getName(): String = &quot;xxx&quot;    override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback?) &#123;        resourceCallback = callback    &#125;    override fun isIdleNow(): Boolean &#123;        val idle = manager.findFragmentByTag(tag) == null        if (idle) &#123;            resourceCallback?.onTransitionToIdle()        &#125;        return idle    &#125;&#125;\n3.Delegate Executors/Scheduler\n如果有异步处理逻辑, 大多都位于Repository/ViewModel层, 这部分会被Mock, 但也有一些UI逻辑可能会用到Excecutor. 如RecyclerView的DiffUtil, 需要传入一个Executor来做异步Diff, 这时我们就需要一个Excecutor的IdlingResource, 并把它里面的Delegate赋值给UI.\n这部分可以参考Google GithubBrowser Sample的CountingAppExecutorsRule.\n应该怎么测试, 需要测试什么?虽然Espresso测试是集成测试,  但是由于涉及到异步逻辑导致Test Case无法按照预期进行的问题时而存在, 且有时候无法通过IdlingResource来解决.\n比如涉及到多个Fragment的跳转, 就会发生在Fragment未打开时Test Case就挂掉的情况.\n再比如使用RxJava, 在Espresso3.x + RxJava2.x的情况下, 即便将Scheduler代理给IdlingResource也无法保证整个业务流程完整走下来, 异步操作仍无法完整运行, 具体问题可参考Jake大神RxIdler的Issue.\n所以测试起来就有一些原则需要遵守, 才能保证整个流程的可测性.\n\n最好对每一个Fragment进行单独测试, Mock所依赖的部分, 如网络, 数据模块, 如果涉及Fragment跳转逻辑, 通过继承来复写进行测试.\n如果使用了RxJava, 需要将其封装在Repository或者Presenter/ViewModel中进行整体的Mock.\n如果使用了Dagger2.android进行自动注入, 最好对测试部分自定义TestRunner提供一个空的Application来Disable注入, 对所测试Fragment注入对象进行手动赋值.\n如果Activity有注入逻辑, 最好将其解耦到Fragment, 因为Espresso的Activity是通过ActivityRule来启动, 无法进行直接手动注入.\n如果无法Move到Fragment, 或者不想… 那就需要在测试里构建自己的Dagger Component, 对于使用Dagger2.android自动注入的, 还需要手动创建Fake的DispatchingAndroidInjector完成手动注入.\n如果未使用Dagger2.android, 通过AndroidInjector来注入的, 可以忽略与注入相关的item.\n\n能再讲的仔细一些吗?1.单独测试Fragment的好处是可以解耦Fragment之间的跳转, 往往Fragment都是UI流程中的一个环节, 当逻辑完成时会跳向下一Fragment. 可以创建一个空Activity来专门用于显示该Fragment, 并且在测试的setUp里commit该Fragment.\n12345678910111213141516171819202122class TestActivity &#123;    fun showFragment()&#125;@RunWith(AndroidJUnit4::class)class XXXFragmentTest &#123;    @Rule    @JvmField    val activityRule = ActivityTestRule(XXXFragment::class.java)        @Before    fun init() &#123;        //1. init fragment        //2. assign mock data        activityRule.showFragment(xxx)      &#125;        @Test    fun testXXX() &#123;        xxx    &#125;&#125;\n2.由于常常会需要继承需要测试的Fragment来复写一些类, 对于使用Dagger.android自动注入的, 该子Fragment又未通过@ContributesAndroidInjector进行注册, 往往需要自定义TestRunner, 然后手动注入Fragment.\n12345678910111213141516171819202122232425262728293031323334353637383940class CustomTestRunner : AndroidJUnitRunner() &#123;    override fun newApplication(...) &#123;        return ...TestApp:class...    &#125;&#125;android &#123;    defaultConfig &#123;        testInstrumentationRunner &quot;xxx.CustomTestRunner&quot;    &#125;&#125;class TestApp : Application() &#123;&#125;@RunWith(AndroidJUnit4::class)class XXXFragmentTest &#123;    //activity rule    ...    val testFragment = TestFragment()        @Before    fun init() &#123;        testFragment.xxx = mockXXX        ...        activityRule.activity.showFragment(testFragment)    &#125;        @Test    fun testXXX() &#123;        onView...check(...)        assertTrue(testFragment.isXXXShow)    &#125;        class TestFragment : XXXFragment() &#123;        var isXXXShow = false        override fun showXXX() &#123;            isXXXShow = true        &#125;    &#125;&#125;\n3.如果Activity有注入逻辑与业务逻辑, 并且不想抽到Fragment中去, 则需要创建Fake的Injector保证可以完成注入, \n1234567891011121314151617fun createFakeInjector(block: T.() -&gt; Unit): DispatchingAndroidInjector&lt;Activity&gt; &#123;    ...&#125;@RunWith(AndroidJUnit4::class)class XXXActivityTest &#123;    @Rule    @JvmField    var activityRule = object : ActivityTestRule&lt;XXX&gt;(XXX::class.java) &#123;       val app = ...get application       app.dispatchingAndroidInjector = createFakeInjector&lt;XXX&gt;() &#123;           //手动注入           xxx =  mockXXX           `when`(xxx).thenReturn(xxx)       &#125;    &#125;&#125;\n4.为了支持需要通过继承Fragment来完成测试的Case, 还需要对测试模块创建自己的Component来注册从而进行Fake Injector的创建 (类似3, 只是Application/Activity可能为Test版本).\n12345678910111213141516171819202122232425262728293031Graledependencies &#123;    kaptAndroidTest &apos;com.google.dagger:dagger-android-processor:2.X&apos;&#125;@Component(modules = [    AndroidInjectionModule::class,    AndroidSupportInjectionModule::class,    ...主App所注册的所有Module,    TestActivityModule::class])interface TestCompnent &#123;    fun inject(xxx: XXX)    ...&#125;@Moduleabstract class TestActivityModule &#123;  //通过`ContributesAndroidInjector`注册你的TestActivity, 以及TestFragment  &#125;class TestApp : Application(), HasActivityInjector &#123;    @Inject    lateinit var injector: DispatchingAndroidInjector&lt;Activity&gt;&#125;class TestActivity : Activity(), HasSupportFragmentInjector &#123;    @Inject    lateinit var injector: DispatchingAndroidInjector&lt;Fragment&gt;&#125;\nPart III如果还不是很明白可以查看代码Disable注入的在这里:Google的Demo GithubBrowser\n跟注入相关的在这里:自己的Demo\nReference\nhttps://proandroiddev.com/activity-espresso-test-with-daggers-android-injector-82f3ee564aa4\nhttps://github.com/SabagRonen/dagger-activity-test-sample\nhttps://github.com/googlesamples/android-architecture-components/tree/master/GithubBrowserSample\nhttps://developer.android.com/training/testing/espresso/idling-resource\nhttp://blog.sqisland.com/2015/07/espresso-wait-for-dialog-to-dismiss.html\n\n","dateCreated":"2018-09-30T10:12:48+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-09-30T10:12:48+08:00","description":"UI测试在Android平台上一直都是一个令人头痛的事情, 由于大家平时用的很少, 加之很多文档的缺失, 如果很多东西从头摸索,势必踩坑无数.\n自Android24正式淘汰掉了InstrumentationTestCase(位于android.test包), 推出Espresso(位于android.support.test包), Google一直致力于降低UI测试的门槛.\n了解测试金字塔的同学可能知道,UI测试属于功能测试(Functional Test), 或者按照其他的划分也属于集成测试(Integration Test), Google推出了UIAutomator与Espresso来分别处理跨App间的测试(黑盒测试)以及App内的测试(白盒测试).\n测试步骤类似,分为:\n\n查找元素\n触发行为\n检测结果\n\n本文分为三部分, 第一部分简单介绍如何使用Espresso, 第二部分分析如何处理诸如异步, 依赖注入, 程序结构对UI测试的影响以及提供解决办法, 第三部分提供源码以及一些Reference的地址.","headline":"如何正确使用Espresso来测试你的Android程序","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1538273751/espresso_wsc7bk.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/","keywords":"Android, Espresso, UI Automation Test","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1538273751/espresso_wsc7bk.jpg"}</script>
     <meta name="description" content="如何使用Android Espresso测试UI">
 <meta name="keywords" content="Android Espresso UI自动化 异步处理 IdlingResource Dagger">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="如何正确使用Espresso来测试你的Android程序">
-<meta property="og:url" content="http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="如何使用Android Espresso测试UI">
 <meta property="og:locale" content="zh-cn">
@@ -427,7 +427,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -440,7 +440,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -453,7 +453,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -542,7 +542,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -555,7 +555,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -568,7 +568,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -602,7 +602,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -615,7 +615,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -628,7 +628,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -698,7 +698,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -721,7 +721,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -731,7 +731,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -757,7 +757,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -767,7 +767,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -790,7 +790,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -800,7 +800,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -825,7 +825,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -835,7 +835,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -860,7 +860,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -870,7 +870,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -894,7 +894,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -904,7 +904,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -937,7 +937,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -947,7 +947,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -977,7 +977,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -987,7 +987,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -1016,7 +1016,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -1026,7 +1026,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

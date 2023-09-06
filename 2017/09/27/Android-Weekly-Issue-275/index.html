@@ -10,28 +10,28 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"September 17, 2017\nAndroid Weekly Issue #275本期内容包括给Google Map实现一个Marker Adapter, 如何更好的让Kotlin类可测试, MVI的优势 Google的Room与Paging Library相关文章, 以及Realm如何实现React, 还有比较冷门的AsyncListUtil如何使用的介绍哦.\n\nARTICLES &amp; TUTORIALSMapMe — the Android maps adapter 作者基于Google Map写了一个类似RecyclerAdapter的东西, 叫做GoogleMapMeAdapter, 可以通过继承实现其onCreateAnnotation与onBindAnnotation接口, 来控制Map Marker的显示, 在地图初始化成功后通过attach(mapView: MapView, googleMap: GoogleMap)来绑定即可.\nCloudRail - Connect to APIs 10x Faster 请注意, 这是一个广告, 一个Android课程的广告.\nKotlin Testability – Part 1 作者论述了如何创建一个可测的类, 相较我们平时常用的将内部其他模块最为参数注入的方法, 作者指出会暴露我们的具体实现, 转而抽象出一个接口, 并给与内部实现, 在测试的时候只需另行实现接口进行mock即可.\n大概是这个样子\n123456789101112131415161718class DateStringProvider internal constructor(private val factory: Factory) &#123;     constructor() : this(DefaultFactory)     fun buildDateString() =            factory.getLocalisedDateTimeFormatter().format(factory.getLocalDateTime()) as String     internal interface Factory &#123;        fun getLocalDateTime(): LocalDateTime        fun getLocalisedDateTimeFormatter(): DateTimeFormatter    &#125;     private object DefaultFactory : Factory &#123;        override fun getLocalisedDateTimeFormatter(): DateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)         override fun getLocalDateTime(): LocalDateTime = LocalDateTime.now()    &#125;&#125;\nViewModels and LiveData: Patterns + AntiPatterns作者介绍了Android新推出的Archietecture Component相关的架构实现, 其实大部分与Android官方的Document, 讲述了如何正确使用ViewModel去实现数据加载, 防止内存泄露, 并且阐述了一些关键的要素.\n\nViewModel不要与Android Framework耦合\nActivity与Fragment的逻辑应该最简化\nViewModel不能持有View的对象\nUI应该通过Observe的方式从ViewModel得到数据更新, 而不应该是Push进去\n通过DataRepository与数据进行交互\nLiveData最好与Repository也是订阅关系,防止ViewModel泄露\n\nTaming state and side effects on Android 讲述了一个很复杂的React方式进行状态管理的东西.\nReactive Apps With MVI - PART 7 文章继续MVI的推介, 间接抨击了Google的Architecture Component, LiveData通过SingleLiveEvent来规避如何保存View#State的问题, 通过SnackBar Show/Hide的例子介绍了MVI很好的解决了这种问题.\nMake your Android Project pop with Remixer 介绍了Google的一个NB lib Remixer, 不需要重新编译就可以适配你的UI, 支持输出Number,String,Boolean,Color.\n效果如下\n\nCreating a Reactive Data Layer with Realm and RxJava2 文章介绍了Realm React的演进, 从Rx1升级到Rx2, 让创建一个react的DataLayer变得很简单.\n1234567891011121314151617181920// not singleton!public class TaskRepository  &#123;    private final Realm realm;    public TaskRepository(Realm realm) &#123;        this.realm = realm;    &#125;    // this implementation works on any thread.    public Flowable&lt;Task&gt; getTasks() &#123;        if(realm.isAutoRefresh()) &#123; // for looper threads. Use `switchMap()`!            return realm.where(Task.class)                    .findAllSortedAsync(TaskFields.ID)                    .asFlowable()                    .filter(RealmResults::isLoaded);        &#125; else &#123; // for background threads            return Flowable.just(realm.where(Task.class).findAllSorted(TaskFields.ID));        &#125;                        &#125;&#125;\nHow to use AsyncListUtil 介绍了如何使用隐藏很深缺缺乏文档的AsyncListUtil去优化RecyclerView的加载, 减少内存占用, 当你有很多数据的却不想全部存在内存, 核心是去实现AsyncListUtil.DataCallback与AsyncListUtil.ViewCallback两个接口, 第一个提供fillData与getCount两个方法, 第二提供onDataRefresh,getItemRangeInto,onItemLoaded 三个方法, 然后需要添加ScrollListener在滚动的时候触发AsyncListUtil#onRangeChanged.\n但其核心思想还是通过Cursor来读取数据, 在fillData里面来填充, 所以根本在于数据库提供的优势, 其实还不如用CursorRecyclerAdapter来的直接.\nAndroid Development Syllabus 又是一个课程.\nLarge Database Queries on Android 介绍了SQLiteCursor实现大数据查阅的弊端.\n\nSQLiteCursor不持有任何打开的数据库会话, 每次都是新开窗口\nSQLiteCursor.getCount会扫描所有query的数据然后进行count\nSQLiteCursor.getCount每次都会load第一个Window, 如果你使用到第三个Window的数据,它会强制load然后丢掉不用的\nSQLiteCursor会加载你不需要的数据,因为当你读到超过窗口1/3的时候,它会触发并填充整个窗口\nSQLiteCursor加载位置不确定, 因为它需要提前加载1/3个窗口,需要猜测一个窗口需要多少列\n需要Close\nSQLiteCursor不知道数据发生了变化\n\n规避办法,就是尽量的分页读取,推荐使用Room&amp;Paging Library\nBuilding a Guitar Chord Tutor for Actions on Google: Part One 介绍了自己使用Google Actions做一个教吉他和弦的Demo.\nDESIGNOn the Bottom Navigation Bar 文章介绍了使用BottomNavigationView后由BackButton带来的交互问题, Back了该跳到哪里去.\nLibrarymaterial-remixer-android 上面介绍过, 不需要重新编译就可以通过代码来控制UI.\nAdaptiveIconPlayground 一个测试Adaptive Icon的东西.\nMapMe 给GoogleMap的Marker做了一个Adapter.\nPaging Library 让LiveData支持Paging.\n","dateCreated":"2017-09-27T09:00:14+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-09-27T09:00:14+08:00","description":"September 17, 2017\nAndroid Weekly Issue #275本期内容包括给Google Map实现一个Marker Adapter, 如何更好的让Kotlin类可测试, MVI的优势 Google的Room与Paging Library相关文章, 以及Realm如何实现React, 还有比较冷门的AsyncListUtil如何使用的介绍哦.","headline":"Android Weekly Issue #275","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506482907/275_zyahvm.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/","keywords":"Android, Google Map, Kotlin, Architecture Component","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506482907/275_zyahvm.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"September 17, 2017\nAndroid Weekly Issue #275本期内容包括给Google Map实现一个Marker Adapter, 如何更好的让Kotlin类可测试, MVI的优势 Google的Room与Paging Library相关文章, 以及Realm如何实现React, 还有比较冷门的AsyncListUtil如何使用的介绍哦.\n\nARTICLES &amp; TUTORIALSMapMe — the Android maps adapter 作者基于Google Map写了一个类似RecyclerAdapter的东西, 叫做GoogleMapMeAdapter, 可以通过继承实现其onCreateAnnotation与onBindAnnotation接口, 来控制Map Marker的显示, 在地图初始化成功后通过attach(mapView: MapView, googleMap: GoogleMap)来绑定即可.\nCloudRail - Connect to APIs 10x Faster 请注意, 这是一个广告, 一个Android课程的广告.\nKotlin Testability – Part 1 作者论述了如何创建一个可测的类, 相较我们平时常用的将内部其他模块最为参数注入的方法, 作者指出会暴露我们的具体实现, 转而抽象出一个接口, 并给与内部实现, 在测试的时候只需另行实现接口进行mock即可.\n大概是这个样子\n123456789101112131415161718class DateStringProvider internal constructor(private val factory: Factory) &#123;     constructor() : this(DefaultFactory)     fun buildDateString() =            factory.getLocalisedDateTimeFormatter().format(factory.getLocalDateTime()) as String     internal interface Factory &#123;        fun getLocalDateTime(): LocalDateTime        fun getLocalisedDateTimeFormatter(): DateTimeFormatter    &#125;     private object DefaultFactory : Factory &#123;        override fun getLocalisedDateTimeFormatter(): DateTimeFormatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)         override fun getLocalDateTime(): LocalDateTime = LocalDateTime.now()    &#125;&#125;\nViewModels and LiveData: Patterns + AntiPatterns作者介绍了Android新推出的Archietecture Component相关的架构实现, 其实大部分与Android官方的Document, 讲述了如何正确使用ViewModel去实现数据加载, 防止内存泄露, 并且阐述了一些关键的要素.\n\nViewModel不要与Android Framework耦合\nActivity与Fragment的逻辑应该最简化\nViewModel不能持有View的对象\nUI应该通过Observe的方式从ViewModel得到数据更新, 而不应该是Push进去\n通过DataRepository与数据进行交互\nLiveData最好与Repository也是订阅关系,防止ViewModel泄露\n\nTaming state and side effects on Android 讲述了一个很复杂的React方式进行状态管理的东西.\nReactive Apps With MVI - PART 7 文章继续MVI的推介, 间接抨击了Google的Architecture Component, LiveData通过SingleLiveEvent来规避如何保存View#State的问题, 通过SnackBar Show/Hide的例子介绍了MVI很好的解决了这种问题.\nMake your Android Project pop with Remixer 介绍了Google的一个NB lib Remixer, 不需要重新编译就可以适配你的UI, 支持输出Number,String,Boolean,Color.\n效果如下\n\nCreating a Reactive Data Layer with Realm and RxJava2 文章介绍了Realm React的演进, 从Rx1升级到Rx2, 让创建一个react的DataLayer变得很简单.\n1234567891011121314151617181920// not singleton!public class TaskRepository  &#123;    private final Realm realm;    public TaskRepository(Realm realm) &#123;        this.realm = realm;    &#125;    // this implementation works on any thread.    public Flowable&lt;Task&gt; getTasks() &#123;        if(realm.isAutoRefresh()) &#123; // for looper threads. Use `switchMap()`!            return realm.where(Task.class)                    .findAllSortedAsync(TaskFields.ID)                    .asFlowable()                    .filter(RealmResults::isLoaded);        &#125; else &#123; // for background threads            return Flowable.just(realm.where(Task.class).findAllSorted(TaskFields.ID));        &#125;                        &#125;&#125;\nHow to use AsyncListUtil 介绍了如何使用隐藏很深缺缺乏文档的AsyncListUtil去优化RecyclerView的加载, 减少内存占用, 当你有很多数据的却不想全部存在内存, 核心是去实现AsyncListUtil.DataCallback与AsyncListUtil.ViewCallback两个接口, 第一个提供fillData与getCount两个方法, 第二提供onDataRefresh,getItemRangeInto,onItemLoaded 三个方法, 然后需要添加ScrollListener在滚动的时候触发AsyncListUtil#onRangeChanged.\n但其核心思想还是通过Cursor来读取数据, 在fillData里面来填充, 所以根本在于数据库提供的优势, 其实还不如用CursorRecyclerAdapter来的直接.\nAndroid Development Syllabus 又是一个课程.\nLarge Database Queries on Android 介绍了SQLiteCursor实现大数据查阅的弊端.\n\nSQLiteCursor不持有任何打开的数据库会话, 每次都是新开窗口\nSQLiteCursor.getCount会扫描所有query的数据然后进行count\nSQLiteCursor.getCount每次都会load第一个Window, 如果你使用到第三个Window的数据,它会强制load然后丢掉不用的\nSQLiteCursor会加载你不需要的数据,因为当你读到超过窗口1/3的时候,它会触发并填充整个窗口\nSQLiteCursor加载位置不确定, 因为它需要提前加载1/3个窗口,需要猜测一个窗口需要多少列\n需要Close\nSQLiteCursor不知道数据发生了变化\n\n规避办法,就是尽量的分页读取,推荐使用Room&amp;Paging Library\nBuilding a Guitar Chord Tutor for Actions on Google: Part One 介绍了自己使用Google Actions做一个教吉他和弦的Demo.\nDESIGNOn the Bottom Navigation Bar 文章介绍了使用BottomNavigationView后由BackButton带来的交互问题, Back了该跳到哪里去.\nLibrarymaterial-remixer-android 上面介绍过, 不需要重新编译就可以通过代码来控制UI.\nAdaptiveIconPlayground 一个测试Adaptive Icon的东西.\nMapMe 给GoogleMap的Marker做了一个Adapter.\nPaging Library 让LiveData支持Paging.\n","dateCreated":"2017-09-27T09:00:14+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-09-27T09:00:14+08:00","description":"September 17, 2017\nAndroid Weekly Issue #275本期内容包括给Google Map实现一个Marker Adapter, 如何更好的让Kotlin类可测试, MVI的优势 Google的Room与Paging Library相关文章, 以及Realm如何实现React, 还有比较冷门的AsyncListUtil如何使用的介绍哦.","headline":"Android Weekly Issue #275","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506482907/275_zyahvm.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/","keywords":"Android, Google Map, Kotlin, Architecture Component","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506482907/275_zyahvm.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Android,Google Map,Kotlin,Architecture Component">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Weekly Issue #275">
-<meta property="og:url" content="http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Android Weekly 中文概要">
 <meta property="og:locale" content="zh-cn">
-<meta property="og:image" content="http://talentprince.github.io/source/images/remixer.gif">
+<meta property="og:image" content="https://talentprince.github.io/source/images/remixer.gif">
 <meta property="og:updated_time" content="2020-06-22T09:44:59.470Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android Weekly Issue #275">
 <meta name="twitter:description" content="Android Weekly 中文概要">
-<meta name="twitter:image" content="http://talentprince.github.io/source/images/remixer.gif">
+<meta name="twitter:image" content="https://talentprince.github.io/source/images/remixer.gif">
     
     
         
@@ -374,7 +374,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -387,7 +387,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -400,7 +400,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -489,7 +489,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -502,7 +502,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -515,7 +515,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -549,7 +549,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -562,7 +562,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -575,7 +575,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2017/09/27/Android-Weekly-Issue-275/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -645,7 +645,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -668,7 +668,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -678,7 +678,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -704,7 +704,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -714,7 +714,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -737,7 +737,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -747,7 +747,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -772,7 +772,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -782,7 +782,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -807,7 +807,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -817,7 +817,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -841,7 +841,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -851,7 +851,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -884,7 +884,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -894,7 +894,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -924,7 +924,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -934,7 +934,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -963,7 +963,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -973,7 +973,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

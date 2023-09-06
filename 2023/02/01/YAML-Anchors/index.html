@@ -10,19 +10,19 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.\n\n首先我们可以使用Anchor来标记我们期望复用的配置, 我们知道YAML的结构其实也是一种树的结构, 那么Anchor标记的就可以是树里面任意树枝下的整个叶子结点.\n比如:\n12345678definitions:  steps:    - step: &amp;build-test        name: Build and Test        script:           - ./gradlew build        artifacts:          - build/**\n我们将step这个树枝标记为一个Anchor &amp;build-test, 那么它就代表了整个step下的所有叶子节点, 包括script与artifects.\nAnchor与Alias如果在其他的定义过程中, 想复用这个step的配置, 那么就变得简单了, 我们只需要使用Alias来引用即可.\n123456pipelines:  branches:    dev:    - step: *build-test    main:    - step: *build-test\n这样就很容易实现同样配置的复用, 你的Anchor跟Alias可以定义到一个文件, 也可分开定义, 通过一些小trick再讲他们整合, 比如:\n1cat anchors.yaml pipeline.yaml | buildkite-agent pipeline upload\n1cat anchors.yaml config.yaml | &gt; full_config.yaml\n复用与复写在编程语言中, 我们经常会提到这两个词, 当然YAML已经可以复用了, 那当然也可以复写喽.\n如果我们在复用的过程中需要改变一些叶子节点的配置, 对其进行重新定义, 那么可以使用&lt;&lt;来进行.\n比如:\n123- step:   &lt;&lt; *build-test  name: Buid &amp; Test on main\n如果想要通过复写来完全清除掉某个复用的配置, 我们可以使用~.\n比如:\n123- step:   &lt;&lt; *build-test  artifacts: ~\n虽然配置文件复制起来更容易, 但是何不尝试一下复用与复写来简化之呢 …\n","dateCreated":"2023-02-01T13:20:57+08:00","dateModified":"2023-02-01T17:31:03+08:00","datePublished":"2023-02-01T13:20:57+08:00","description":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.","headline":"使用Anchor来简化YAML","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2023/02/01/YAML-Anchors/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2023/02/01/YAML-Anchors/","keywords":"ops, yaml","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.\n\n首先我们可以使用Anchor来标记我们期望复用的配置, 我们知道YAML的结构其实也是一种树的结构, 那么Anchor标记的就可以是树里面任意树枝下的整个叶子结点.\n比如:\n12345678definitions:  steps:    - step: &amp;build-test        name: Build and Test        script:           - ./gradlew build        artifacts:          - build/**\n我们将step这个树枝标记为一个Anchor &amp;build-test, 那么它就代表了整个step下的所有叶子节点, 包括script与artifects.\nAnchor与Alias如果在其他的定义过程中, 想复用这个step的配置, 那么就变得简单了, 我们只需要使用Alias来引用即可.\n123456pipelines:  branches:    dev:    - step: *build-test    main:    - step: *build-test\n这样就很容易实现同样配置的复用, 你的Anchor跟Alias可以定义到一个文件, 也可分开定义, 通过一些小trick再讲他们整合, 比如:\n1cat anchors.yaml pipeline.yaml | buildkite-agent pipeline upload\n1cat anchors.yaml config.yaml | &gt; full_config.yaml\n复用与复写在编程语言中, 我们经常会提到这两个词, 当然YAML已经可以复用了, 那当然也可以复写喽.\n如果我们在复用的过程中需要改变一些叶子节点的配置, 对其进行重新定义, 那么可以使用&lt;&lt;来进行.\n比如:\n123- step:   &lt;&lt; *build-test  name: Buid &amp; Test on main\n如果想要通过复写来完全清除掉某个复用的配置, 我们可以使用~.\n比如:\n123- step:   &lt;&lt; *build-test  artifacts: ~\n虽然配置文件复制起来更容易, 但是何不尝试一下复用与复写来简化之呢 …\n","dateCreated":"2023-02-01T13:20:57+08:00","dateModified":"2023-02-01T17:31:03+08:00","datePublished":"2023-02-01T13:20:57+08:00","description":"通过配置文件来对我们的系统进行配置在任何系统里都是一个常见的操作, 我们平时最普遍使用的文件格式便是YAML. 很多时候, 我们发现一些通用的配置在不同场景中得来回重复的使用, 或者只有个别字段发生了变化. 在这种情况下, 我们其实可以使用YAML的Anchor(&amp;)跟Alias(*)来复用我们的配置.","headline":"使用Anchor来简化YAML","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2023/02/01/YAML-Anchors/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2023/02/01/YAML-Anchors/","keywords":"ops, yaml","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1675229367/yaml_vqy0ae.webp"}</script>
     <meta name="description" content="YAML Achors">
 <meta name="keywords" content="ops,yaml">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="使用Anchor来简化YAML">
-<meta property="og:url" content="http://talentprince.github.io/2023/02/01/YAML-Anchors/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2023/02/01/YAML-Anchors/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="YAML Achors">
 <meta property="og:locale" content="zh-cn">
@@ -347,7 +347,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -360,7 +360,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -373,7 +373,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -462,7 +462,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -475,7 +475,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -488,7 +488,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -522,7 +522,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -535,7 +535,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -548,7 +548,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2023/02/01/YAML-Anchors/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2023/02/01/YAML-Anchors/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -618,7 +618,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -641,7 +641,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -651,7 +651,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -677,7 +677,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -687,7 +687,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -710,7 +710,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -720,7 +720,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -745,7 +745,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -755,7 +755,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -780,7 +780,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -790,7 +790,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -814,7 +814,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -824,7 +824,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -857,7 +857,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -867,7 +867,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -897,7 +897,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -907,7 +907,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -936,7 +936,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -946,7 +946,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

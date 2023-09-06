@@ -10,19 +10,19 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.\n\n\n思想方面\n如果发现加特性很难, 就需要重构\n重构前需要想想有没有可靠的测试机制\n重构要微小步伐, 容易发现错误\nExtract method是最简单的重构\n写出机器认识的代码容易, 写出人类容易理解的才是应该的, 最大的影响就是命名\n做移动重构时, 最好先复制粘贴, 测后再删除旧的代码\n对于另外对象的switch往往可以通过继承, 多态来取代\n三次遇到不合理的, 可能就是重构的时候了\n重构往往通过加隔离层进行\n不要过早发布接口\n性能优化应该基于良好的代码结构, 性能瓶颈往往只会在很小的代码片段里\n每次遇到一个bug, 尽量写个单元测试覆盖\n测试集中覆盖边缘case  \n\n\n代码坏味道与手段\n重复代码\n抽方法\n\n\n大函数\n抽方法, 抽类\n\n\n大类\n抽类, 抽子类\n\n\n太多参数\n参数变方法, 抽参数对象\n\n\n加新功能修改多个函数\n抽子类\n\n\n加新功能需要改很多类\n挪方法, 挪成员\n\n\n函数过度依赖其他类\n挪方法, 抽方法\n\n\n同样的几个参数到处出现\n抽参数对象\n\n\n大量同样的基本类型做参数\n抽类, 不同表达式可抽进子类\n\n\n很多switch\n考虑用多态取代\n\n\n子类需平行同时添加\n先持有对方, 再挪方法, 再挪变量, 再合并\n\n\n没人用的类\n做内部类\n\n\n没太大用处的抽象, 参数, 命名\n删除, 重命名, 内联\n\n\n临时变量命名模糊\n抽方法, 抽类\n\n\n消息链过长, 对象转换过多\n对同一对象的使用抽方法, 推入消息链消除对象\n\n\n过度代理\n内联代理\n\n\n注释太多\n可能代码写的太难懂, 需要重构\n\n\n\n\n数据\n临时变量被赋值多次, 则可以抽成方法\n有时候需要提取多个临时变量对逻辑进行解释, 当然更好的可以再抽成方法\nJava按值传递, 本质上是对象的引用按值传递\n移除中间人与隐藏委托是相辅相成的\n如果类无法更改, 就写个函数包装他, 类似于工厂方法?\n如果不能修改, Adapter模式常常用于扩展方法功能\n子类修改某些变量的获取可以通过自封装, 把变量抽象成函数\n成员如果不用改变, 就由引用变为值对象, 即immutable对象\n当业务复杂度变高需要将类之间单向关系改为双向绑定关系, 甚至一对多与多对一的关系\n双向绑定可能会造成很多僵尸对象, 增加复杂度与空间占用, 所以只有真正需要的时候用, 删除可以通过将内部绑定查询转移为传参, 再在调用的位置进行判断是否为僵尸对象\n不要使用Magic Number, 常量即可以优化储存, 又可读性高\n封装字段可以控制字段的读写, 称之为数据隐藏\n对于返回集合的函数需要返回只读副本, 如果需要修改, 则可另行提供修改方法\n原始类型替换成类, 有类型字段的类转换为多个子类, 或者抽象成策略模式, 从而合理改变数据结构\n如果子类只有常量, 可以抽成变量放父类, 再添加工厂方法创建, 降低复杂度\n\n\n条件表达式\n条件表达式很复杂的时候, 可以将条件, 执行代码进行封装, 更表意\n嵌套很深的条件表达式的每个结果都作为返回值的话, 可以简化为多个if+return, 类似于swift里面的guard, 或者kotlin里面的?:return, 书里叫卫语句(Guard Clauses)\n嵌套很深的条件表达式可以将范围大的if反向, 实现提前return\nswitch表达式有时候可以通过多态来取代\n\n\n函数调用\n函数最好读写分离\n抽象重复性的函数用以复用\nswitch构造可以替换成工厂方法\n从对象内拿出参数再传递给某函数不如直接将对象传入函数\n当函数的参数来自另外一个函数时, 也可以删掉参数, 把函数调用挪进去\n函数参数过多可以同对象替代\n如果不需要设置就不要提供set方法, 变量都需要为final\n有时候用抛异常替代返回错误码, 如果程序无法继续进行的话\n如果可以条件逻辑避免Runtime异常, 应不要无脑try/catch\n\n\n继承关系\n子类同样的方法应该向上提, 并将不同的地方抽象为抽象方法分别继承\n子类构造复制父类字段应该通过父类构造, super\n超类与子类差不多, 就合并\n逻辑相同, 类型不同可以通过模板函数, 模板类解决\n不能滥用继承, 组合代理好过继承, 但也有特殊, 如果需要使用委托函数所有函数或者大量, 则就需要继承, 不过这一点在kotlin里面也可以通过by来代理\n\n\n复杂的重构\n整理复杂的继承关系, 该抽接口抽接口, 摘出更多深层子类\n领域与表述分离, 就是UI与逻辑分离\n过程抽象为对象\n提炼继承体系\n\n\n\n","dateCreated":"2020-09-01T16:39:21+08:00","dateModified":"2020-09-08T12:28:43+08:00","datePublished":"2020-09-01T16:39:21+08:00","description":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.","headline":"Refresh Refactor","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2020/09/01/Refresh-Refactor/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2020/09/01/Refresh-Refactor/","keywords":"Note, Refactor","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.\n\n\n思想方面\n如果发现加特性很难, 就需要重构\n重构前需要想想有没有可靠的测试机制\n重构要微小步伐, 容易发现错误\nExtract method是最简单的重构\n写出机器认识的代码容易, 写出人类容易理解的才是应该的, 最大的影响就是命名\n做移动重构时, 最好先复制粘贴, 测后再删除旧的代码\n对于另外对象的switch往往可以通过继承, 多态来取代\n三次遇到不合理的, 可能就是重构的时候了\n重构往往通过加隔离层进行\n不要过早发布接口\n性能优化应该基于良好的代码结构, 性能瓶颈往往只会在很小的代码片段里\n每次遇到一个bug, 尽量写个单元测试覆盖\n测试集中覆盖边缘case  \n\n\n代码坏味道与手段\n重复代码\n抽方法\n\n\n大函数\n抽方法, 抽类\n\n\n大类\n抽类, 抽子类\n\n\n太多参数\n参数变方法, 抽参数对象\n\n\n加新功能修改多个函数\n抽子类\n\n\n加新功能需要改很多类\n挪方法, 挪成员\n\n\n函数过度依赖其他类\n挪方法, 抽方法\n\n\n同样的几个参数到处出现\n抽参数对象\n\n\n大量同样的基本类型做参数\n抽类, 不同表达式可抽进子类\n\n\n很多switch\n考虑用多态取代\n\n\n子类需平行同时添加\n先持有对方, 再挪方法, 再挪变量, 再合并\n\n\n没人用的类\n做内部类\n\n\n没太大用处的抽象, 参数, 命名\n删除, 重命名, 内联\n\n\n临时变量命名模糊\n抽方法, 抽类\n\n\n消息链过长, 对象转换过多\n对同一对象的使用抽方法, 推入消息链消除对象\n\n\n过度代理\n内联代理\n\n\n注释太多\n可能代码写的太难懂, 需要重构\n\n\n\n\n数据\n临时变量被赋值多次, 则可以抽成方法\n有时候需要提取多个临时变量对逻辑进行解释, 当然更好的可以再抽成方法\nJava按值传递, 本质上是对象的引用按值传递\n移除中间人与隐藏委托是相辅相成的\n如果类无法更改, 就写个函数包装他, 类似于工厂方法?\n如果不能修改, Adapter模式常常用于扩展方法功能\n子类修改某些变量的获取可以通过自封装, 把变量抽象成函数\n成员如果不用改变, 就由引用变为值对象, 即immutable对象\n当业务复杂度变高需要将类之间单向关系改为双向绑定关系, 甚至一对多与多对一的关系\n双向绑定可能会造成很多僵尸对象, 增加复杂度与空间占用, 所以只有真正需要的时候用, 删除可以通过将内部绑定查询转移为传参, 再在调用的位置进行判断是否为僵尸对象\n不要使用Magic Number, 常量即可以优化储存, 又可读性高\n封装字段可以控制字段的读写, 称之为数据隐藏\n对于返回集合的函数需要返回只读副本, 如果需要修改, 则可另行提供修改方法\n原始类型替换成类, 有类型字段的类转换为多个子类, 或者抽象成策略模式, 从而合理改变数据结构\n如果子类只有常量, 可以抽成变量放父类, 再添加工厂方法创建, 降低复杂度\n\n\n条件表达式\n条件表达式很复杂的时候, 可以将条件, 执行代码进行封装, 更表意\n嵌套很深的条件表达式的每个结果都作为返回值的话, 可以简化为多个if+return, 类似于swift里面的guard, 或者kotlin里面的?:return, 书里叫卫语句(Guard Clauses)\n嵌套很深的条件表达式可以将范围大的if反向, 实现提前return\nswitch表达式有时候可以通过多态来取代\n\n\n函数调用\n函数最好读写分离\n抽象重复性的函数用以复用\nswitch构造可以替换成工厂方法\n从对象内拿出参数再传递给某函数不如直接将对象传入函数\n当函数的参数来自另外一个函数时, 也可以删掉参数, 把函数调用挪进去\n函数参数过多可以同对象替代\n如果不需要设置就不要提供set方法, 变量都需要为final\n有时候用抛异常替代返回错误码, 如果程序无法继续进行的话\n如果可以条件逻辑避免Runtime异常, 应不要无脑try/catch\n\n\n继承关系\n子类同样的方法应该向上提, 并将不同的地方抽象为抽象方法分别继承\n子类构造复制父类字段应该通过父类构造, super\n超类与子类差不多, 就合并\n逻辑相同, 类型不同可以通过模板函数, 模板类解决\n不能滥用继承, 组合代理好过继承, 但也有特殊, 如果需要使用委托函数所有函数或者大量, 则就需要继承, 不过这一点在kotlin里面也可以通过by来代理\n\n\n复杂的重构\n整理复杂的继承关系, 该抽接口抽接口, 摘出更多深层子类\n领域与表述分离, 就是UI与逻辑分离\n过程抽象为对象\n提炼继承体系\n\n\n\n","dateCreated":"2020-09-01T16:39:21+08:00","dateModified":"2020-09-08T12:28:43+08:00","datePublished":"2020-09-01T16:39:21+08:00","description":"最近在闲暇之余重(第)温(一..次)此书, 首先能感受到的, 无论你是新程序员还是老程序员, 这本书都已经不具备太多的可读性了.\n由于本书成书年代久远, 那个时候软件行业还不够发达, 面向对象还没有被大数人理解, 加之编译器也非常落后, 设计模式也不深入人心, 所以文中提供的所谓重构的心法, 在当时或许有一些意义. 而今看来, 整书400多页的文字, 主要的思想就是「抽」, 无论是类, 接口, 方法, 逻辑, 还是参数. 但是为什么会有这么大的篇幅, 其中一半的内容是教你如何在一个IDE功能匮乏的年代, 以一个出错率更低的顺序, 来进行上面所说的多种抽象操作.\n当然我去除了大量书中已经没有任何价值的点后, 总结了如下的一些内容, 应该大多数大家已经在工作实践中已有体会, 主要还是总结一下, 温故知新吧.","headline":"Refresh Refactor","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2020/09/01/Refresh-Refactor/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2020/09/01/Refresh-Refactor/","keywords":"Note, Refactor","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1598949856/refactoring_n38hrl.png"}</script>
     <meta name="description" content="Refactor 重构 Martin Fowler 马丁福勒">
 <meta name="keywords" content="Note,Refactor">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Refresh Refactor">
-<meta property="og:url" content="http://talentprince.github.io/2020/09/01/Refresh-Refactor/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2020/09/01/Refresh-Refactor/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Refactor 重构 Martin Fowler 马丁福勒">
 <meta property="og:locale" content="zh-cn">
@@ -473,7 +473,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -486,7 +486,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -499,7 +499,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -588,7 +588,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -601,7 +601,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -614,7 +614,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -648,7 +648,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -661,7 +661,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -674,7 +674,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2020/09/01/Refresh-Refactor/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2020/09/01/Refresh-Refactor/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -744,7 +744,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -767,7 +767,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -777,7 +777,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -803,7 +803,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -813,7 +813,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -836,7 +836,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -846,7 +846,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -871,7 +871,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -881,7 +881,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -906,7 +906,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -916,7 +916,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -940,7 +940,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -950,7 +950,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -983,7 +983,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -993,7 +993,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -1023,7 +1023,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -1033,7 +1033,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -1062,7 +1062,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -1072,7 +1072,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

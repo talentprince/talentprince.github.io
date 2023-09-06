@@ -5,9 +5,9 @@
   <subtitle>Nothing can prevent is going to be</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://talentprince.github.io/"/>
+  <link href="https://talentprince.github.io/"/>
   <updated>2023-08-29T09:24:11.185Z</updated>
-  <id>http://talentprince.github.io/</id>
+  <id>https://talentprince.github.io/</id>
   
   <author>
     <name>Prince Chen</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>Rust Basic</title>
-    <link href="http://talentprince.github.io/2023/08/29/Rust-Basic/"/>
-    <id>http://talentprince.github.io/2023/08/29/Rust-Basic/</id>
+    <link href="https://talentprince.github.io/2023/08/29/Rust-Basic/"/>
+    <id>https://talentprince.github.io/2023/08/29/Rust-Basic/</id>
     <published>2023-08-29T08:37:46.000Z</published>
     <updated>2023-08-29T09:24:11.185Z</updated>
     
@@ -31,17 +31,17 @@
     
     </summary>
     
-      <category term="Rust" scheme="http://talentprince.github.io/categories/Rust/"/>
+      <category term="Rust" scheme="https://talentprince.github.io/categories/Rust/"/>
     
     
-      <category term="Rust" scheme="http://talentprince.github.io/tags/Rust/"/>
+      <category term="Rust" scheme="https://talentprince.github.io/tags/Rust/"/>
     
   </entry>
   
   <entry>
     <title>使用Anchor来简化YAML</title>
-    <link href="http://talentprince.github.io/2023/02/01/YAML-Anchors/"/>
-    <id>http://talentprince.github.io/2023/02/01/YAML-Anchors/</id>
+    <link href="https://talentprince.github.io/2023/02/01/YAML-Anchors/"/>
+    <id>https://talentprince.github.io/2023/02/01/YAML-Anchors/</id>
     <published>2023-02-01T05:20:57.000Z</published>
     <updated>2023-02-01T09:31:03.560Z</updated>
     
@@ -53,19 +53,19 @@
     
     </summary>
     
-      <category term="Operation" scheme="http://talentprince.github.io/categories/Operation/"/>
+      <category term="Operation" scheme="https://talentprince.github.io/categories/Operation/"/>
     
     
-      <category term="ops" scheme="http://talentprince.github.io/tags/ops/"/>
+      <category term="ops" scheme="https://talentprince.github.io/tags/ops/"/>
     
-      <category term="yaml" scheme="http://talentprince.github.io/tags/yaml/"/>
+      <category term="yaml" scheme="https://talentprince.github.io/tags/yaml/"/>
     
   </entry>
   
   <entry>
     <title>非Go程序员的Golang知识点总结</title>
-    <link href="http://talentprince.github.io/2022/06/07/Go-learning/"/>
-    <id>http://talentprince.github.io/2022/06/07/Go-learning/</id>
+    <link href="https://talentprince.github.io/2022/06/07/Go-learning/"/>
+    <id>https://talentprince.github.io/2022/06/07/Go-learning/</id>
     <published>2022-06-07T09:49:04.000Z</published>
     <updated>2022-06-07T15:32:15.177Z</updated>
     
@@ -77,17 +77,17 @@
     
     </summary>
     
-      <category term="Go" scheme="http://talentprince.github.io/categories/Go/"/>
+      <category term="Go" scheme="https://talentprince.github.io/categories/Go/"/>
     
     
-      <category term="golang" scheme="http://talentprince.github.io/tags/golang/"/>
+      <category term="golang" scheme="https://talentprince.github.io/tags/golang/"/>
     
   </entry>
   
   <entry>
     <title>DNS的各种记录类型的应用解析</title>
-    <link href="http://talentprince.github.io/2022/02/09/DNS-Types/"/>
-    <id>http://talentprince.github.io/2022/02/09/DNS-Types/</id>
+    <link href="https://talentprince.github.io/2022/02/09/DNS-Types/"/>
+    <id>https://talentprince.github.io/2022/02/09/DNS-Types/</id>
     <published>2022-02-09T08:55:30.000Z</published>
     <updated>2022-02-15T01:32:31.961Z</updated>
     
@@ -99,17 +99,17 @@
     
     </summary>
     
-      <category term="Operation" scheme="http://talentprince.github.io/categories/Operation/"/>
+      <category term="Operation" scheme="https://talentprince.github.io/categories/Operation/"/>
     
     
-      <category term="ops" scheme="http://talentprince.github.io/tags/ops/"/>
+      <category term="ops" scheme="https://talentprince.github.io/tags/ops/"/>
     
   </entry>
   
   <entry>
     <title>Android Framework知识总结</title>
-    <link href="http://talentprince.github.io/2021/06/28/Android-Framework-Points/"/>
-    <id>http://talentprince.github.io/2021/06/28/Android-Framework-Points/</id>
+    <link href="https://talentprince.github.io/2021/06/28/Android-Framework-Points/"/>
+    <id>https://talentprince.github.io/2021/06/28/Android-Framework-Points/</id>
     <published>2021-06-28T01:09:50.000Z</published>
     <updated>2021-06-28T01:20:12.300Z</updated>
     
@@ -121,17 +121,17 @@
     
     </summary>
     
-      <category term="Android Framework" scheme="http://talentprince.github.io/categories/Android-Framework/"/>
+      <category term="Android Framework" scheme="https://talentprince.github.io/categories/Android-Framework/"/>
     
     
-      <category term="Android，Android Framework" scheme="http://talentprince.github.io/tags/Android%EF%BC%8CAndroid-Framework/"/>
+      <category term="Android，Android Framework" scheme="https://talentprince.github.io/tags/Android%EF%BC%8CAndroid-Framework/"/>
     
   </entry>
   
   <entry>
     <title>如何自定义Kubernetes资源</title>
-    <link href="http://talentprince.github.io/2020/12/14/Custom-your-own-k8s-resource/"/>
-    <id>http://talentprince.github.io/2020/12/14/Custom-your-own-k8s-resource/</id>
+    <link href="https://talentprince.github.io/2020/12/14/Custom-your-own-k8s-resource/"/>
+    <id>https://talentprince.github.io/2020/12/14/Custom-your-own-k8s-resource/</id>
     <published>2020-12-14T03:20:20.000Z</published>
     <updated>2020-12-16T00:48:14.272Z</updated>
     
@@ -143,19 +143,19 @@
     
     </summary>
     
-      <category term="DevOps" scheme="http://talentprince.github.io/categories/DevOps/"/>
+      <category term="DevOps" scheme="https://talentprince.github.io/categories/DevOps/"/>
     
     
-      <category term="Kubernetes" scheme="http://talentprince.github.io/tags/Kubernetes/"/>
+      <category term="Kubernetes" scheme="https://talentprince.github.io/tags/Kubernetes/"/>
     
-      <category term="Istio" scheme="http://talentprince.github.io/tags/Istio/"/>
+      <category term="Istio" scheme="https://talentprince.github.io/tags/Istio/"/>
     
   </entry>
   
   <entry>
     <title>Refresh Clean Code</title>
-    <link href="http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"/>
-    <id>http://talentprince.github.io/2020/10/27/Refresh-Clean-Code/</id>
+    <link href="https://talentprince.github.io/2020/10/27/Refresh-Clean-Code/"/>
+    <id>https://talentprince.github.io/2020/10/27/Refresh-Clean-Code/</id>
     <published>2020-10-27T04:26:45.000Z</published>
     <updated>2020-10-27T04:30:36.661Z</updated>
     
@@ -167,19 +167,19 @@
     
     </summary>
     
-      <category term="Clean Code" scheme="http://talentprince.github.io/categories/Clean-Code/"/>
+      <category term="Clean Code" scheme="https://talentprince.github.io/categories/Clean-Code/"/>
     
     
-      <category term="Note" scheme="http://talentprince.github.io/tags/Note/"/>
+      <category term="Note" scheme="https://talentprince.github.io/tags/Note/"/>
     
-      <category term="Clean Code" scheme="http://talentprince.github.io/tags/Clean-Code/"/>
+      <category term="Clean Code" scheme="https://talentprince.github.io/tags/Clean-Code/"/>
     
   </entry>
   
   <entry>
     <title>Java与Android知识点总结</title>
-    <link href="http://talentprince.github.io/2020/09/08/Android-Points/"/>
-    <id>http://talentprince.github.io/2020/09/08/Android-Points/</id>
+    <link href="https://talentprince.github.io/2020/09/08/Android-Points/"/>
+    <id>https://talentprince.github.io/2020/09/08/Android-Points/</id>
     <published>2020-09-08T04:25:31.000Z</published>
     <updated>2020-09-08T04:41:19.807Z</updated>
     
@@ -191,19 +191,19 @@
     
     </summary>
     
-      <category term="Android Note" scheme="http://talentprince.github.io/categories/Android-Note/"/>
+      <category term="Android Note" scheme="https://talentprince.github.io/categories/Android-Note/"/>
     
     
-      <category term="Android" scheme="http://talentprince.github.io/tags/Android/"/>
+      <category term="Android" scheme="https://talentprince.github.io/tags/Android/"/>
     
-      <category term="Note" scheme="http://talentprince.github.io/tags/Note/"/>
+      <category term="Note" scheme="https://talentprince.github.io/tags/Note/"/>
     
   </entry>
   
   <entry>
     <title>Refresh Refactor</title>
-    <link href="http://talentprince.github.io/2020/09/01/Refresh-Refactor/"/>
-    <id>http://talentprince.github.io/2020/09/01/Refresh-Refactor/</id>
+    <link href="https://talentprince.github.io/2020/09/01/Refresh-Refactor/"/>
+    <id>https://talentprince.github.io/2020/09/01/Refresh-Refactor/</id>
     <published>2020-09-01T08:39:21.000Z</published>
     <updated>2020-09-08T04:28:43.337Z</updated>
     
@@ -215,19 +215,19 @@
     
     </summary>
     
-      <category term="Refactor" scheme="http://talentprince.github.io/categories/Refactor/"/>
+      <category term="Refactor" scheme="https://talentprince.github.io/categories/Refactor/"/>
     
     
-      <category term="Note" scheme="http://talentprince.github.io/tags/Note/"/>
+      <category term="Note" scheme="https://talentprince.github.io/tags/Note/"/>
     
-      <category term="Refactor" scheme="http://talentprince.github.io/tags/Refactor/"/>
+      <category term="Refactor" scheme="https://talentprince.github.io/tags/Refactor/"/>
     
   </entry>
   
   <entry>
     <title>Android性能优化总结</title>
-    <link href="http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"/>
-    <id>http://talentprince.github.io/2020/07/30/Android-Performance-Enhance/</id>
+    <link href="https://talentprince.github.io/2020/07/30/Android-Performance-Enhance/"/>
+    <id>https://talentprince.github.io/2020/07/30/Android-Performance-Enhance/</id>
     <published>2020-07-30T10:28:53.000Z</published>
     <updated>2020-09-08T04:29:51.760Z</updated>
     
@@ -239,19 +239,19 @@
     
     </summary>
     
-      <category term="Android Note" scheme="http://talentprince.github.io/categories/Android-Note/"/>
+      <category term="Android Note" scheme="https://talentprince.github.io/categories/Android-Note/"/>
     
     
-      <category term="Android" scheme="http://talentprince.github.io/tags/Android/"/>
+      <category term="Android" scheme="https://talentprince.github.io/tags/Android/"/>
     
-      <category term="Note" scheme="http://talentprince.github.io/tags/Note/"/>
+      <category term="Note" scheme="https://talentprince.github.io/tags/Note/"/>
     
   </entry>
   
   <entry>
     <title>Refresh Java</title>
-    <link href="http://talentprince.github.io/2020/06/02/Refresh-Java/"/>
-    <id>http://talentprince.github.io/2020/06/02/Refresh-Java/</id>
+    <link href="https://talentprince.github.io/2020/06/02/Refresh-Java/"/>
+    <id>https://talentprince.github.io/2020/06/02/Refresh-Java/</id>
     <published>2020-06-02T09:54:52.000Z</published>
     <updated>2020-09-08T04:28:35.760Z</updated>
     
@@ -263,19 +263,19 @@
     
     </summary>
     
-      <category term="Java" scheme="http://talentprince.github.io/categories/Java/"/>
+      <category term="Java" scheme="https://talentprince.github.io/categories/Java/"/>
     
     
-      <category term="Note" scheme="http://talentprince.github.io/tags/Note/"/>
+      <category term="Note" scheme="https://talentprince.github.io/tags/Note/"/>
     
-      <category term="Java" scheme="http://talentprince.github.io/tags/Java/"/>
+      <category term="Java" scheme="https://talentprince.github.io/tags/Java/"/>
     
   </entry>
   
   <entry>
     <title>Refresh design pattern</title>
-    <link href="http://talentprince.github.io/2019/09/30/Refresh-design-pattern/"/>
-    <id>http://talentprince.github.io/2019/09/30/Refresh-design-pattern/</id>
+    <link href="https://talentprince.github.io/2019/09/30/Refresh-design-pattern/"/>
+    <id>https://talentprince.github.io/2019/09/30/Refresh-design-pattern/</id>
     <published>2019-09-30T08:06:52.000Z</published>
     <updated>2020-09-08T04:28:35.768Z</updated>
     
@@ -287,19 +287,19 @@
     
     </summary>
     
-      <category term="Design Pattern" scheme="http://talentprince.github.io/categories/Design-Pattern/"/>
+      <category term="Design Pattern" scheme="https://talentprince.github.io/categories/Design-Pattern/"/>
     
     
-      <category term="Note" scheme="http://talentprince.github.io/tags/Note/"/>
+      <category term="Note" scheme="https://talentprince.github.io/tags/Note/"/>
     
-      <category term="Design Pattern" scheme="http://talentprince.github.io/tags/Design-Pattern/"/>
+      <category term="Design Pattern" scheme="https://talentprince.github.io/tags/Design-Pattern/"/>
     
   </entry>
   
   <entry>
     <title>Chernobyl, 切尔诺贝利, 車諾比</title>
-    <link href="http://talentprince.github.io/2019/07/09/Chernobyl/"/>
-    <id>http://talentprince.github.io/2019/07/09/Chernobyl/</id>
+    <link href="https://talentprince.github.io/2019/07/09/Chernobyl/"/>
+    <id>https://talentprince.github.io/2019/07/09/Chernobyl/</id>
     <published>2019-07-09T08:06:52.000Z</published>
     <updated>2020-06-22T09:44:59.476Z</updated>
     
@@ -311,17 +311,17 @@
     
     </summary>
     
-      <category term="nonsense" scheme="http://talentprince.github.io/categories/nonsense/"/>
+      <category term="nonsense" scheme="https://talentprince.github.io/categories/nonsense/"/>
     
     
-      <category term="nonsense" scheme="http://talentprince.github.io/tags/nonsense/"/>
+      <category term="nonsense" scheme="https://talentprince.github.io/tags/nonsense/"/>
     
   </entry>
   
   <entry>
     <title>探究高级的Kotlin Coroutines知识</title>
-    <link href="http://talentprince.github.io/2019/02/12/Deep-explore-kotlin-coroutines/"/>
-    <id>http://talentprince.github.io/2019/02/12/Deep-explore-kotlin-coroutines/</id>
+    <link href="https://talentprince.github.io/2019/02/12/Deep-explore-kotlin-coroutines/"/>
+    <id>https://talentprince.github.io/2019/02/12/Deep-explore-kotlin-coroutines/</id>
     <published>2019-02-12T01:14:52.000Z</published>
     <updated>2020-06-22T09:44:59.477Z</updated>
     
@@ -333,21 +333,21 @@
     
     </summary>
     
-      <category term="Kotlin" scheme="http://talentprince.github.io/categories/Kotlin/"/>
+      <category term="Kotlin" scheme="https://talentprince.github.io/categories/Kotlin/"/>
     
     
-      <category term="Android" scheme="http://talentprince.github.io/tags/Android/"/>
+      <category term="Android" scheme="https://talentprince.github.io/tags/Android/"/>
     
-      <category term="Kotlin" scheme="http://talentprince.github.io/tags/Kotlin/"/>
+      <category term="Kotlin" scheme="https://talentprince.github.io/tags/Kotlin/"/>
     
-      <category term="Kotlin Coroutines" scheme="http://talentprince.github.io/tags/Kotlin-Coroutines/"/>
+      <category term="Kotlin Coroutines" scheme="https://talentprince.github.io/tags/Kotlin-Coroutines/"/>
     
   </entry>
   
   <entry>
     <title>The year that was 2018</title>
-    <link href="http://talentprince.github.io/2018/12/28/The-year-that-was-2018/"/>
-    <id>http://talentprince.github.io/2018/12/28/The-year-that-was-2018/</id>
+    <link href="https://talentprince.github.io/2018/12/28/The-year-that-was-2018/"/>
+    <id>https://talentprince.github.io/2018/12/28/The-year-that-was-2018/</id>
     <published>2018-12-28T02:13:42.000Z</published>
     <updated>2020-06-22T09:44:59.478Z</updated>
     
@@ -362,15 +362,15 @@
     
     </summary>
     
-      <category term="nonsense" scheme="http://talentprince.github.io/categories/nonsense/"/>
+      <category term="nonsense" scheme="https://talentprince.github.io/categories/nonsense/"/>
     
     
   </entry>
   
   <entry>
     <title>Android程序员的Flutter学习笔记</title>
-    <link href="http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/"/>
-    <id>http://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/</id>
+    <link href="https://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/"/>
+    <id>https://talentprince.github.io/2018/11/08/Flutter-self-learning-notes-as-an-android-developer/</id>
     <published>2018-11-08T03:17:10.000Z</published>
     <updated>2020-06-22T09:44:59.477Z</updated>
     
@@ -382,19 +382,19 @@
     
     </summary>
     
-      <category term="Flutter" scheme="http://talentprince.github.io/categories/Flutter/"/>
+      <category term="Flutter" scheme="https://talentprince.github.io/categories/Flutter/"/>
     
     
-      <category term="Android" scheme="http://talentprince.github.io/tags/Android/"/>
+      <category term="Android" scheme="https://talentprince.github.io/tags/Android/"/>
     
-      <category term="Flutter" scheme="http://talentprince.github.io/tags/Flutter/"/>
+      <category term="Flutter" scheme="https://talentprince.github.io/tags/Flutter/"/>
     
   </entry>
   
   <entry>
     <title>如何正确使用Espresso来测试你的Android程序</title>
-    <link href="http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"/>
-    <id>http://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/</id>
+    <link href="https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/"/>
+    <id>https://talentprince.github.io/2018/09/30/How-to-correctly-use-android-espresso-to-test-your-UI/</id>
     <published>2018-09-30T02:12:48.000Z</published>
     <updated>2020-06-22T09:44:59.477Z</updated>
     
@@ -406,21 +406,21 @@
     
     </summary>
     
-      <category term="Android" scheme="http://talentprince.github.io/categories/Android/"/>
+      <category term="Android" scheme="https://talentprince.github.io/categories/Android/"/>
     
     
-      <category term="Android" scheme="http://talentprince.github.io/tags/Android/"/>
+      <category term="Android" scheme="https://talentprince.github.io/tags/Android/"/>
     
-      <category term="Espresso" scheme="http://talentprince.github.io/tags/Espresso/"/>
+      <category term="Espresso" scheme="https://talentprince.github.io/tags/Espresso/"/>
     
-      <category term="UI Automation Test" scheme="http://talentprince.github.io/tags/UI-Automation-Test/"/>
+      <category term="UI Automation Test" scheme="https://talentprince.github.io/tags/UI-Automation-Test/"/>
     
   </entry>
   
   <entry>
     <title>Android Weekly Issue #319</title>
-    <link href="http://talentprince.github.io/2018/07/27/Android-Weekly-Issue-319/"/>
-    <id>http://talentprince.github.io/2018/07/27/Android-Weekly-Issue-319/</id>
+    <link href="https://talentprince.github.io/2018/07/27/Android-Weekly-Issue-319/"/>
+    <id>https://talentprince.github.io/2018/07/27/Android-Weekly-Issue-319/</id>
     <published>2018-07-27T01:00:01.000Z</published>
     <updated>2020-06-22T09:44:59.475Z</updated>
     
@@ -432,33 +432,33 @@
     
     </summary>
     
-      <category term="Android Weekly" scheme="http://talentprince.github.io/categories/Android-Weekly/"/>
+      <category term="Android Weekly" scheme="https://talentprince.github.io/categories/Android-Weekly/"/>
     
     
-      <category term="Kotlin" scheme="http://talentprince.github.io/tags/Kotlin/"/>
+      <category term="Kotlin" scheme="https://talentprince.github.io/tags/Kotlin/"/>
     
-      <category term="Android Weekly" scheme="http://talentprince.github.io/tags/Android-Weekly/"/>
+      <category term="Android Weekly" scheme="https://talentprince.github.io/tags/Android-Weekly/"/>
     
-      <category term="Kotlin Delegate" scheme="http://talentprince.github.io/tags/Kotlin-Delegate/"/>
+      <category term="Kotlin Delegate" scheme="https://talentprince.github.io/tags/Kotlin-Delegate/"/>
     
-      <category term="Kotlin Test" scheme="http://talentprince.github.io/tags/Kotlin-Test/"/>
+      <category term="Kotlin Test" scheme="https://talentprince.github.io/tags/Kotlin-Test/"/>
     
-      <category term="Gradle" scheme="http://talentprince.github.io/tags/Gradle/"/>
+      <category term="Gradle" scheme="https://talentprince.github.io/tags/Gradle/"/>
     
-      <category term="LiveData" scheme="http://talentprince.github.io/tags/LiveData/"/>
+      <category term="LiveData" scheme="https://talentprince.github.io/tags/LiveData/"/>
     
-      <category term="MotionLayout" scheme="http://talentprince.github.io/tags/MotionLayout/"/>
+      <category term="MotionLayout" scheme="https://talentprince.github.io/tags/MotionLayout/"/>
     
-      <category term="Shortcut" scheme="http://talentprince.github.io/tags/Shortcut/"/>
+      <category term="Shortcut" scheme="https://talentprince.github.io/tags/Shortcut/"/>
     
-      <category term="Kotlin Eventbus" scheme="http://talentprince.github.io/tags/Kotlin-Eventbus/"/>
+      <category term="Kotlin Eventbus" scheme="https://talentprince.github.io/tags/Kotlin-Eventbus/"/>
     
   </entry>
   
   <entry>
     <title>Android Weekly Issue #318</title>
-    <link href="http://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/"/>
-    <id>http://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/</id>
+    <link href="https://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/"/>
+    <id>https://talentprince.github.io/2018/07/15/Android-Weekly-Issue-318/</id>
     <published>2018-07-15T01:00:01.000Z</published>
     <updated>2020-06-22T09:44:59.474Z</updated>
     
@@ -470,33 +470,33 @@
     
     </summary>
     
-      <category term="Android Weekly" scheme="http://talentprince.github.io/categories/Android-Weekly/"/>
+      <category term="Android Weekly" scheme="https://talentprince.github.io/categories/Android-Weekly/"/>
     
     
-      <category term="Android Weekly" scheme="http://talentprince.github.io/tags/Android-Weekly/"/>
+      <category term="Android Weekly" scheme="https://talentprince.github.io/tags/Android-Weekly/"/>
     
-      <category term="Realm" scheme="http://talentprince.github.io/tags/Realm/"/>
+      <category term="Realm" scheme="https://talentprince.github.io/tags/Realm/"/>
     
-      <category term="Kotlin DSL" scheme="http://talentprince.github.io/tags/Kotlin-DSL/"/>
+      <category term="Kotlin DSL" scheme="https://talentprince.github.io/tags/Kotlin-DSL/"/>
     
-      <category term="MVI" scheme="http://talentprince.github.io/tags/MVI/"/>
+      <category term="MVI" scheme="https://talentprince.github.io/tags/MVI/"/>
     
-      <category term="DataBinding" scheme="http://talentprince.github.io/tags/DataBinding/"/>
+      <category term="DataBinding" scheme="https://talentprince.github.io/tags/DataBinding/"/>
     
-      <category term="Jetpack" scheme="http://talentprince.github.io/tags/Jetpack/"/>
+      <category term="Jetpack" scheme="https://talentprince.github.io/tags/Jetpack/"/>
     
-      <category term="Navigation" scheme="http://talentprince.github.io/tags/Navigation/"/>
+      <category term="Navigation" scheme="https://talentprince.github.io/tags/Navigation/"/>
     
-      <category term="AAR" scheme="http://talentprince.github.io/tags/AAR/"/>
+      <category term="AAR" scheme="https://talentprince.github.io/tags/AAR/"/>
     
-      <category term="Scope Functions" scheme="http://talentprince.github.io/tags/Scope-Functions/"/>
+      <category term="Scope Functions" scheme="https://talentprince.github.io/tags/Scope-Functions/"/>
     
   </entry>
   
   <entry>
     <title>Android Weekly Issue #317</title>
-    <link href="http://talentprince.github.io/2018/07/08/Android-Weekly-Issue-317/"/>
-    <id>http://talentprince.github.io/2018/07/08/Android-Weekly-Issue-317/</id>
+    <link href="https://talentprince.github.io/2018/07/08/Android-Weekly-Issue-317/"/>
+    <id>https://talentprince.github.io/2018/07/08/Android-Weekly-Issue-317/</id>
     <published>2018-07-08T11:00:01.000Z</published>
     <updated>2020-06-22T09:44:59.474Z</updated>
     
@@ -508,22 +508,22 @@
     
     </summary>
     
-      <category term="Android Weekly" scheme="http://talentprince.github.io/categories/Android-Weekly/"/>
+      <category term="Android Weekly" scheme="https://talentprince.github.io/categories/Android-Weekly/"/>
     
     
-      <category term="Android Weekly" scheme="http://talentprince.github.io/tags/Android-Weekly/"/>
+      <category term="Android Weekly" scheme="https://talentprince.github.io/tags/Android-Weekly/"/>
     
-      <category term="Jetpack" scheme="http://talentprince.github.io/tags/Jetpack/"/>
+      <category term="Jetpack" scheme="https://talentprince.github.io/tags/Jetpack/"/>
     
-      <category term="Page" scheme="http://talentprince.github.io/tags/Page/"/>
+      <category term="Page" scheme="https://talentprince.github.io/tags/Page/"/>
     
-      <category term="React Native" scheme="http://talentprince.github.io/tags/React-Native/"/>
+      <category term="React Native" scheme="https://talentprince.github.io/tags/React-Native/"/>
     
-      <category term="Kotlin Extension" scheme="http://talentprince.github.io/tags/Kotlin-Extension/"/>
+      <category term="Kotlin Extension" scheme="https://talentprince.github.io/tags/Kotlin-Extension/"/>
     
-      <category term="Android P" scheme="http://talentprince.github.io/tags/Android-P/"/>
+      <category term="Android P" scheme="https://talentprince.github.io/tags/Android-P/"/>
     
-      <category term="Universal Music Player" scheme="http://talentprince.github.io/tags/Universal-Music-Player/"/>
+      <category term="Universal Music Player" scheme="https://talentprince.github.io/tags/Universal-Music-Player/"/>
     
   </entry>
   

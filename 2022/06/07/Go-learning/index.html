@@ -10,19 +10,19 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"由于项目上有Golang需求， 虽然照猫画虎的构建一个简单RESTFUL Service不算难，不过熟悉一下Golang的基本知识还是很有必要。这里记录下在学习过程中认为有价值的points， 以供日后查看。\n\nVariables\n变量首字母小写只有包可见(unexported), 大写则可被包外引用(exported)\n声明变量未赋值会使用默认值\n可以使用var()声明代码块来声明多个变量, 增加可读性\n\nConstants\nconst变量申明是即需赋值\nconst()代码块可声明多个变量\n一般const变量使用全大写\n\nData types\n可以使用:=省去写var\n\nConvert Types\nstrconv提供了从string到其他类型的转换, ParseXXX\n同样也提供了从其他类型转string的方法, FormatXXX\n\nSwitch\n没有break, 默认break, 可以加fallthrough跳到下一级\ncase支持条件表达式\n\nFor loops\nfor k,v := range &lt;map&gt;用来循环map\nfor k := range &lt;map&gt;用来循环map的key\n- for _,v := range &lt;map&gt;用来循环map的value\n\nPanic &amp; Recovery\nGo不能抛异常\n如果发生Panic, 当前函数退出, defer继续执行, 调用该函数所在的协程会执行完其他方法直到程序崩溃\n虽然go不能抛异常, 但可以返回结果+错误, 让调用者进行处理\n\nArray\n[5]int, [...]string 可以指定size或者不指定, 但是[...]赋值后确定size\n[5]int{1: 10, 3: 20} 可以给固定的位置赋值\nloop办法除了直接for还可以用跟map一样的range, 只是key是index\narray[2:5]可以filter index, 左闭右开\n\nSlice\nslice是的动态数组\nmake([]int, 1, 5)可以生成一个初始size是1, capacity是5的slice\n如果指定capacity, 则跟size一样\n也可以直接使用[]int{1, 2, 3}来生成一个slice\n还可以使用new([50]int)[0:10], 创建一个size是10, capacity是50的slice, 这里的0:10可以是9:10, 则size为1\n添加使用append并赋值给自己, slice = append(slice, &quot;1&quot;)\nslice可以使用slice1 := slice[start:end:cap]进行切割, length = end - start, cap = cap - start\n\nMap\n可以通过make来创建一个map, 也可以清空一个map, make(map[string]int)\n也可以for range通过delete(&lt;map&gt;, key)来删除\n对map的key或者value进行排序, 需要把值拿出到slice里, 通过sorts\nmerge map需要循环添加\n\nStruct\n初始化可以通过new(StructName), 或者直接构造\nnew返回指针, 直接构造(struct literal, 即花括号)返回对象, 加&amp;则也返回指针\nstruct可以嵌套, 通过构造嵌套生成\n如果struct成员做json字段, 可以通过Tag来重命名, json:&quot;name&quot;, 放在类型后面就行, 这里的在go里表示raw文本\n可以类似扩展的方法给struct加方法, func (x XX) Info() string {}\n如果receiver的类型是指针, 则可赋值给struct对象, func (x *XX) Info { x.name = &quot;Jack&quot; }\nstruct可以使用等号判断是否一样, 但是都是值比较\n\nInterface\n可以定义struct或者简单类型, 如type X int, 来实现接口\n如果接口方法全部实现, 则可以说该类型实现了该接口\n一个定义的类型可以同时实现多个接口\ngolang里分为具体类型(concrete type)与接口类型(interface type)\n具体类型包括ints, strings, arrays, slices, maps, pointers\n接口类型interface{}是一个指向空接口的指针\n*interface{}是指向空接口的指针的指针, 是一个实体类型\n\n\n\nAd hoc polymorphism\n类似于接口的继承, interface里包含了其他的interface, 形成embedded\n\ngoroutine\ngoroutine的调度使用了GPM模式, 即协程, 处理器, 线程\nProcessor包含了Goroutine的队列, 获取G必须先获取P\nG有一个全局的队列, 还有很多承载G队列的本地P列表, 最大个数通过GOMAXPROCS配置\nM默认个数为10000, 但实际上内核不一定支持这么大\nP的数量在启动的时候就创建好了\n新建G时先放入本地P队列, 如果满了, 则分一半放入全局队列\nM如果自己有任务, 需获取P, 再从P中获取M, 如果没有空闲M, 则从全局或者其他P队列中偷\n当线程无G可用, 会去其他线程绑定的P中偷G (working stealing)\n当线程因为G阻塞, 则会把P转移给其他空闲M, 来执行其他的G, 如果没空闲的M, 则创建新的M (hand off)\n\nChannel\nchannel只能通过make(chan &lt;Type&gt;, &lt;buffer size&gt;)创建\n通过&lt;-读写数据, 如 xx &lt;- &quot;Hello&quot;, yy := &lt;-xx\nunbuffered的channel, 发送跟接收都ready才会开始, 否则send或者receive就会等待\nbuffered的channel如果没buffer则send会block, 如果没数据了receive会block\nyy, result := &lt;-xx, result为false表示channel空了且empty, 通过close(xx)来在发送完关闭channel\n通过select + case可以从channel读或者写东西, 如果没读到, 或这channel buffer已满无法写入, 则可以在default处理\n\nConst\nconst {}可以定义一系列常量, 第一个标注itoa则剩下的自增\n这样的const可以用来做Key来初始化map\n\nConcurrency\n使用sync.WaitGroup#Add()加信号等待, sync.WaitGroup#Done()消信号\n互斥锁sync.Mutex\n\nPointer or not\n对于channel, map, function, 因为他们的类型本身的size跟pointer一样, 切实际保存的就是指向数据的地址 所以没必要使用指针\ninterface的大小一个是2 *pointer, 第一个pinter指向真实类型, 第二个pointer指向数据\nslice是3*pointer大小, 需要指向切片的首, 尾, 以及最后可以位 (reserved区域存放capacity之类的数据)\n使用interface{}来吃所有类型\n当值实现接口, 即func (x X) xxx { }, 则可以通过值赋值接口, 也可以通过指针赋值接口, 只是值赋值时有个拷贝, 再取指针\n当指针实现接口, 即func (x *X) xxx {}, 则只能通过指针赋值\n如果实现interface的是指针, 则参数不必定义为接口的指针, 因为拷贝的也是指针, 如果实现接口的是值, 则可定义指针, 避免值拷贝再取地址\n\nLog\ninit函数会在main之前被调用\nlog的初始化可以放在init里, 如SetPrefix, SetFlags\n常用的flag有, log.Ldate, log.Lmicroseconds, log.Lshortfile等\n\nSome libs\nstruct validator: validator\ndynamic json parser\nstatistics tool package: stats\nslice helper functions:  go-funk\nhtml parser: goquery\ncommon regex\nimage processing: imaging\nchart generate: go-chart\ndynamic xml parser: xmlquery\ndatetime tools: now\n\nFamous web framework\ngin, 6.6k\nbeego, 5.5k\niris, 2.4k\necho, 2k\nFiber/fasthttp, 1.5k\n\n","dateCreated":"2022-06-07T17:49:04+08:00","dateModified":"2022-06-07T23:32:15+08:00","datePublished":"2022-06-07T17:49:04+08:00","description":"由于项目上有Golang需求， 虽然照猫画虎的构建一个简单RESTFUL Service不算难，不过熟悉一下Golang的基本知识还是很有必要。这里记录下在学习过程中认为有价值的points， 以供日后查看。","headline":"非Go程序员的Golang知识点总结","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1654595986/golang_cwzyke.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2022/06/07/Go-learning/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2022/06/07/Go-learning/","keywords":"golang","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1654595986/golang_cwzyke.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"由于项目上有Golang需求， 虽然照猫画虎的构建一个简单RESTFUL Service不算难，不过熟悉一下Golang的基本知识还是很有必要。这里记录下在学习过程中认为有价值的points， 以供日后查看。\n\nVariables\n变量首字母小写只有包可见(unexported), 大写则可被包外引用(exported)\n声明变量未赋值会使用默认值\n可以使用var()声明代码块来声明多个变量, 增加可读性\n\nConstants\nconst变量申明是即需赋值\nconst()代码块可声明多个变量\n一般const变量使用全大写\n\nData types\n可以使用:=省去写var\n\nConvert Types\nstrconv提供了从string到其他类型的转换, ParseXXX\n同样也提供了从其他类型转string的方法, FormatXXX\n\nSwitch\n没有break, 默认break, 可以加fallthrough跳到下一级\ncase支持条件表达式\n\nFor loops\nfor k,v := range &lt;map&gt;用来循环map\nfor k := range &lt;map&gt;用来循环map的key\n- for _,v := range &lt;map&gt;用来循环map的value\n\nPanic &amp; Recovery\nGo不能抛异常\n如果发生Panic, 当前函数退出, defer继续执行, 调用该函数所在的协程会执行完其他方法直到程序崩溃\n虽然go不能抛异常, 但可以返回结果+错误, 让调用者进行处理\n\nArray\n[5]int, [...]string 可以指定size或者不指定, 但是[...]赋值后确定size\n[5]int{1: 10, 3: 20} 可以给固定的位置赋值\nloop办法除了直接for还可以用跟map一样的range, 只是key是index\narray[2:5]可以filter index, 左闭右开\n\nSlice\nslice是的动态数组\nmake([]int, 1, 5)可以生成一个初始size是1, capacity是5的slice\n如果指定capacity, 则跟size一样\n也可以直接使用[]int{1, 2, 3}来生成一个slice\n还可以使用new([50]int)[0:10], 创建一个size是10, capacity是50的slice, 这里的0:10可以是9:10, 则size为1\n添加使用append并赋值给自己, slice = append(slice, &quot;1&quot;)\nslice可以使用slice1 := slice[start:end:cap]进行切割, length = end - start, cap = cap - start\n\nMap\n可以通过make来创建一个map, 也可以清空一个map, make(map[string]int)\n也可以for range通过delete(&lt;map&gt;, key)来删除\n对map的key或者value进行排序, 需要把值拿出到slice里, 通过sorts\nmerge map需要循环添加\n\nStruct\n初始化可以通过new(StructName), 或者直接构造\nnew返回指针, 直接构造(struct literal, 即花括号)返回对象, 加&amp;则也返回指针\nstruct可以嵌套, 通过构造嵌套生成\n如果struct成员做json字段, 可以通过Tag来重命名, json:&quot;name&quot;, 放在类型后面就行, 这里的在go里表示raw文本\n可以类似扩展的方法给struct加方法, func (x XX) Info() string {}\n如果receiver的类型是指针, 则可赋值给struct对象, func (x *XX) Info { x.name = &quot;Jack&quot; }\nstruct可以使用等号判断是否一样, 但是都是值比较\n\nInterface\n可以定义struct或者简单类型, 如type X int, 来实现接口\n如果接口方法全部实现, 则可以说该类型实现了该接口\n一个定义的类型可以同时实现多个接口\ngolang里分为具体类型(concrete type)与接口类型(interface type)\n具体类型包括ints, strings, arrays, slices, maps, pointers\n接口类型interface{}是一个指向空接口的指针\n*interface{}是指向空接口的指针的指针, 是一个实体类型\n\n\n\nAd hoc polymorphism\n类似于接口的继承, interface里包含了其他的interface, 形成embedded\n\ngoroutine\ngoroutine的调度使用了GPM模式, 即协程, 处理器, 线程\nProcessor包含了Goroutine的队列, 获取G必须先获取P\nG有一个全局的队列, 还有很多承载G队列的本地P列表, 最大个数通过GOMAXPROCS配置\nM默认个数为10000, 但实际上内核不一定支持这么大\nP的数量在启动的时候就创建好了\n新建G时先放入本地P队列, 如果满了, 则分一半放入全局队列\nM如果自己有任务, 需获取P, 再从P中获取M, 如果没有空闲M, 则从全局或者其他P队列中偷\n当线程无G可用, 会去其他线程绑定的P中偷G (working stealing)\n当线程因为G阻塞, 则会把P转移给其他空闲M, 来执行其他的G, 如果没空闲的M, 则创建新的M (hand off)\n\nChannel\nchannel只能通过make(chan &lt;Type&gt;, &lt;buffer size&gt;)创建\n通过&lt;-读写数据, 如 xx &lt;- &quot;Hello&quot;, yy := &lt;-xx\nunbuffered的channel, 发送跟接收都ready才会开始, 否则send或者receive就会等待\nbuffered的channel如果没buffer则send会block, 如果没数据了receive会block\nyy, result := &lt;-xx, result为false表示channel空了且empty, 通过close(xx)来在发送完关闭channel\n通过select + case可以从channel读或者写东西, 如果没读到, 或这channel buffer已满无法写入, 则可以在default处理\n\nConst\nconst {}可以定义一系列常量, 第一个标注itoa则剩下的自增\n这样的const可以用来做Key来初始化map\n\nConcurrency\n使用sync.WaitGroup#Add()加信号等待, sync.WaitGroup#Done()消信号\n互斥锁sync.Mutex\n\nPointer or not\n对于channel, map, function, 因为他们的类型本身的size跟pointer一样, 切实际保存的就是指向数据的地址 所以没必要使用指针\ninterface的大小一个是2 *pointer, 第一个pinter指向真实类型, 第二个pointer指向数据\nslice是3*pointer大小, 需要指向切片的首, 尾, 以及最后可以位 (reserved区域存放capacity之类的数据)\n使用interface{}来吃所有类型\n当值实现接口, 即func (x X) xxx { }, 则可以通过值赋值接口, 也可以通过指针赋值接口, 只是值赋值时有个拷贝, 再取指针\n当指针实现接口, 即func (x *X) xxx {}, 则只能通过指针赋值\n如果实现interface的是指针, 则参数不必定义为接口的指针, 因为拷贝的也是指针, 如果实现接口的是值, 则可定义指针, 避免值拷贝再取地址\n\nLog\ninit函数会在main之前被调用\nlog的初始化可以放在init里, 如SetPrefix, SetFlags\n常用的flag有, log.Ldate, log.Lmicroseconds, log.Lshortfile等\n\nSome libs\nstruct validator: validator\ndynamic json parser\nstatistics tool package: stats\nslice helper functions:  go-funk\nhtml parser: goquery\ncommon regex\nimage processing: imaging\nchart generate: go-chart\ndynamic xml parser: xmlquery\ndatetime tools: now\n\nFamous web framework\ngin, 6.6k\nbeego, 5.5k\niris, 2.4k\necho, 2k\nFiber/fasthttp, 1.5k\n\n","dateCreated":"2022-06-07T17:49:04+08:00","dateModified":"2022-06-07T23:32:15+08:00","datePublished":"2022-06-07T17:49:04+08:00","description":"由于项目上有Golang需求， 虽然照猫画虎的构建一个简单RESTFUL Service不算难，不过熟悉一下Golang的基本知识还是很有必要。这里记录下在学习过程中认为有价值的points， 以供日后查看。","headline":"非Go程序员的Golang知识点总结","image":["https://res.cloudinary.com/dtn0pkdmg/image/upload/v1654595986/golang_cwzyke.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2022/06/07/Go-learning/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2022/06/07/Go-learning/","keywords":"golang","thumbnailUrl":"https://res.cloudinary.com/dtn0pkdmg/image/upload/v1654595986/golang_cwzyke.jpg"}</script>
     <meta name="description" content="Golang learning">
 <meta name="keywords" content="golang">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="非Go程序员的Golang知识点总结">
-<meta property="og:url" content="http://talentprince.github.io/2022/06/07/Go-learning/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2022/06/07/Go-learning/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Golang learning">
 <meta property="og:locale" content="zh-cn">
@@ -465,7 +465,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2022/06/07/Go-learning/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2022/06/07/Go-learning/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -478,7 +478,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2022/06/07/Go-learning/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2022/06/07/Go-learning/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -491,7 +491,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2022/06/07/Go-learning/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2022/06/07/Go-learning/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -580,7 +580,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2022/06/07/Go-learning/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2022/06/07/Go-learning/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -593,7 +593,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2022/06/07/Go-learning/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2022/06/07/Go-learning/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -606,7 +606,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2022/06/07/Go-learning/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2022/06/07/Go-learning/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -640,7 +640,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2022/06/07/Go-learning/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2022/06/07/Go-learning/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -653,7 +653,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2022/06/07/Go-learning/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2022/06/07/Go-learning/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -666,7 +666,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2022/06/07/Go-learning/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2022/06/07/Go-learning/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -736,7 +736,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -759,7 +759,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -769,7 +769,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -795,7 +795,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -805,7 +805,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -828,7 +828,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -838,7 +838,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -863,7 +863,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -873,7 +873,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -898,7 +898,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -908,7 +908,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -932,7 +932,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -942,7 +942,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -975,7 +975,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -985,7 +985,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -1015,7 +1015,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -1025,7 +1025,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -1054,7 +1054,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -1064,7 +1064,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

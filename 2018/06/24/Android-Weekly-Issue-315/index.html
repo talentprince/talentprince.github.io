@@ -10,19 +10,19 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.\n\nARTICLES &amp; TUTORIALSExploring Android P: Priority Buckets 这次Google IO Android P推出了Priority Buckets来提供更好的电池管理.\n通过使用频率,将App分为Active,Working Set,Frequent,Rare,Never几个级别, 不同级别会对Jobs还有Alarms有不同的最大延时.\n分组是动态改变的.\nMy checklist for fixing build issues 作者的AndroidTest里面Import都无法识别了,提示Cannot find symbol,解决办法是清掉一些缓存.\n包括本地Gradle,Project idea与gradle,以及AS的Cache…而后解决了.\nUnderstanding the emotions of users through NLP 作者讲解了通过Firebase functions platform + Google Cloud Natural搭建一个App的客服系统.\nIntroducing Billingx Google唯一渠道实现App内购买的API就是Billing Library,但是对于测试者来说使用起来很麻烦,而且直到2018 Google I/O也没有新的动作.\n之前也分享过一个叫做Register,通过Mock,实现了本地的测试,但是会在Production Apk中引入没必要的代码.\n作者自己封装了一个叫BillingX的库,提供了空实现给Production版,通过releaseImplementation引入.\nText Recognition with ML Kit 介绍了这次ML Kit中的云端文字识别API,通过Firebase服务Enable,可以实现图片中文字的in-cloud text recognition,不想掏钱可以试用哦,选择Blaze Plan按需缴费,头1000次请求免费的.\nPublishing your Android, Kotlin or Java library to mavenCentral 大家平时常用的Chris Banes的脚本要迁移到Kotlin上还要做一些改动,作者自己弄了一份,并且把它做成了plugin,只需要加到自己的plugin dependencies里面就行了.\nPerformance Improvements for Search on The Yelp Android App - Part 3 本篇为系列文章的最后一部分,主要介绍了CI上面的Performance如何检测系统帧率变化.\nYelp通过FrameMetrics API来获取帧率信息,低于16ms就是快帧,高于就是慢帧,他们会对装有信息的JSON进行分析,其中dopped frame会列出各个部分所消耗的时间.\n最后又总结了整个性能提升过程中所采取的措施,除去这节的Performance Monitoring来防止Regression导致的问题,还包括之前的减少主线程工作,异步inflating layout,对搜索结果view model的caching等.\nAndroid Things client library for Google Cloud IoT Core 为广大IoT爱好者带来福音,client library提供了硬件设备轻松连接google Cloud IoT Core,通过几行代码,便可以轻松的上传传感器信息到云端进行控制.\n1implementation &apos;com.google.android.things:cloud-iot-core:1.0.0&apos;\n由于硬件设备所在的环境多变,library还提供了很多错误处理机制,数据信息缓存等.\nHow to Migrate from Android-Job to WorkManager 作者以前用的是Evernote搞的AndroidJob,本篇介绍了他如何迁移到google最新的WorkManager上面.\n基本使用方法跟AndroidJob类似,Woker通过OneTimeWorkRequestBuilder去build单发事件,通过PeriodicWorkRequestBuilder去build周期性事件,通过setInputData可以添加一些数据,通过setConstraints添加约束,如网络要求等,通过WorkManager.getInstance().enqueue讲Work加入队列.\nWork触发时会执行doWork方法, 返回值Worker.Result.SUCCESS表示成功,类对象inputData可以获取传进来的数据.\nWhat’s Next for Mobile at Airbnb 作者介绍了在Airbnb放弃RN之后下一步要走的路线.\n\n通过DSL定义跨平台统一的设计语言,实现Server-Driven Rendering,通过自己开发的基于Sketch的设计软件Lona做到一套设计生成不同平台的代码.当然这一切都是在Build的时候做的.\n基于之前的Epoxy,推出新的MvRx,并且支持Android与iOS,Android上是对RecyclerView的封装,可以更方便的实现复杂List的渲染.\n通过gradle product flavors来实现编译速度的提升,只去下载自己关心的Module.\n\nSQLite on Kotlin/Native Knarch, Kotlin跨平台数据库的一个非常早起的版本.很多地方还不成熟,尤其是对Android的支持,如何架构还在讨论总,在使用过程中,多线程也是个问题.\nLIBRARIES &amp; CODESaveState 保存状态的一个库,相较于Icepick支持Kotlin.\nmorph-bottom-navigation 基于Bottom Navigation的一个库,有比较好看的动画效果.\ngradle-maven-publish-plugin 支持kotlin的maven发布插件.\n","dateCreated":"2018-06-24T15:00:01+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-06-24T15:00:01+08:00","description":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.","headline":"Android Weekly Issue #315","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/","keywords":"Android Weekly, Priority Bucket, Cloud IoT Core, ML Kit, WorkManager","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.\n\nARTICLES &amp; TUTORIALSExploring Android P: Priority Buckets 这次Google IO Android P推出了Priority Buckets来提供更好的电池管理.\n通过使用频率,将App分为Active,Working Set,Frequent,Rare,Never几个级别, 不同级别会对Jobs还有Alarms有不同的最大延时.\n分组是动态改变的.\nMy checklist for fixing build issues 作者的AndroidTest里面Import都无法识别了,提示Cannot find symbol,解决办法是清掉一些缓存.\n包括本地Gradle,Project idea与gradle,以及AS的Cache…而后解决了.\nUnderstanding the emotions of users through NLP 作者讲解了通过Firebase functions platform + Google Cloud Natural搭建一个App的客服系统.\nIntroducing Billingx Google唯一渠道实现App内购买的API就是Billing Library,但是对于测试者来说使用起来很麻烦,而且直到2018 Google I/O也没有新的动作.\n之前也分享过一个叫做Register,通过Mock,实现了本地的测试,但是会在Production Apk中引入没必要的代码.\n作者自己封装了一个叫BillingX的库,提供了空实现给Production版,通过releaseImplementation引入.\nText Recognition with ML Kit 介绍了这次ML Kit中的云端文字识别API,通过Firebase服务Enable,可以实现图片中文字的in-cloud text recognition,不想掏钱可以试用哦,选择Blaze Plan按需缴费,头1000次请求免费的.\nPublishing your Android, Kotlin or Java library to mavenCentral 大家平时常用的Chris Banes的脚本要迁移到Kotlin上还要做一些改动,作者自己弄了一份,并且把它做成了plugin,只需要加到自己的plugin dependencies里面就行了.\nPerformance Improvements for Search on The Yelp Android App - Part 3 本篇为系列文章的最后一部分,主要介绍了CI上面的Performance如何检测系统帧率变化.\nYelp通过FrameMetrics API来获取帧率信息,低于16ms就是快帧,高于就是慢帧,他们会对装有信息的JSON进行分析,其中dopped frame会列出各个部分所消耗的时间.\n最后又总结了整个性能提升过程中所采取的措施,除去这节的Performance Monitoring来防止Regression导致的问题,还包括之前的减少主线程工作,异步inflating layout,对搜索结果view model的caching等.\nAndroid Things client library for Google Cloud IoT Core 为广大IoT爱好者带来福音,client library提供了硬件设备轻松连接google Cloud IoT Core,通过几行代码,便可以轻松的上传传感器信息到云端进行控制.\n1implementation &apos;com.google.android.things:cloud-iot-core:1.0.0&apos;\n由于硬件设备所在的环境多变,library还提供了很多错误处理机制,数据信息缓存等.\nHow to Migrate from Android-Job to WorkManager 作者以前用的是Evernote搞的AndroidJob,本篇介绍了他如何迁移到google最新的WorkManager上面.\n基本使用方法跟AndroidJob类似,Woker通过OneTimeWorkRequestBuilder去build单发事件,通过PeriodicWorkRequestBuilder去build周期性事件,通过setInputData可以添加一些数据,通过setConstraints添加约束,如网络要求等,通过WorkManager.getInstance().enqueue讲Work加入队列.\nWork触发时会执行doWork方法, 返回值Worker.Result.SUCCESS表示成功,类对象inputData可以获取传进来的数据.\nWhat’s Next for Mobile at Airbnb 作者介绍了在Airbnb放弃RN之后下一步要走的路线.\n\n通过DSL定义跨平台统一的设计语言,实现Server-Driven Rendering,通过自己开发的基于Sketch的设计软件Lona做到一套设计生成不同平台的代码.当然这一切都是在Build的时候做的.\n基于之前的Epoxy,推出新的MvRx,并且支持Android与iOS,Android上是对RecyclerView的封装,可以更方便的实现复杂List的渲染.\n通过gradle product flavors来实现编译速度的提升,只去下载自己关心的Module.\n\nSQLite on Kotlin/Native Knarch, Kotlin跨平台数据库的一个非常早起的版本.很多地方还不成熟,尤其是对Android的支持,如何架构还在讨论总,在使用过程中,多线程也是个问题.\nLIBRARIES &amp; CODESaveState 保存状态的一个库,相较于Icepick支持Kotlin.\nmorph-bottom-navigation 基于Bottom Navigation的一个库,有比较好看的动画效果.\ngradle-maven-publish-plugin 支持kotlin的maven发布插件.\n","dateCreated":"2018-06-24T15:00:01+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-06-24T15:00:01+08:00","description":"June 24th, 2018\nAndroid Weekly Issue #315本篇内容包括,Android P的优先级队列管理,Yelp性能测试系列最后一篇帧率监控,以及近期比较火的Airbnb下一步移动战略,还包含连接Clould IoT Core的Library介绍,ML Kit文字识别,与如何从AndroidJob迁移到WorkManager.还有一篇如何搭建面试机器人的介绍,以及尚在早期的Kotlin Native跨平台数据库的概况等.","headline":"Android Weekly Issue #315","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/","keywords":"Android Weekly, Priority Bucket, Cloud IoT Core, ML Kit, WorkManager","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1531988402/315_bdstoc.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Android Weekly,Priority Bucket,Cloud IoT Core,ML Kit,WorkManager">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Weekly Issue #315">
-<meta property="og:url" content="http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Android Weekly 中文概要">
 <meta property="og:locale" content="zh-cn">
@@ -361,7 +361,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -374,7 +374,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -387,7 +387,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -476,7 +476,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -489,7 +489,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -502,7 +502,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -536,7 +536,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -549,7 +549,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -562,7 +562,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2018/06/24/Android-Weekly-Issue-315/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -632,7 +632,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -655,7 +655,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -665,7 +665,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -691,7 +691,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -701,7 +701,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -724,7 +724,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -734,7 +734,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -759,7 +759,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -769,7 +769,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -794,7 +794,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -804,7 +804,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -828,7 +828,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -838,7 +838,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -871,7 +871,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -881,7 +881,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -911,7 +911,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -921,7 +921,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -950,7 +950,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -960,7 +960,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

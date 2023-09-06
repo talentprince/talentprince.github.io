@@ -12,19 +12,19 @@
         <meta name="keywords" content="Android,Activity,全屏,fullscreen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.\n所有方法只涉及代码操作, 非xml修改Activity属性所致\n\n通用办法如大家所知, 更改Window的属性, 并不一定在setContentView之前调用\n123456// FullScreengetWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,                        WindowManager.LayoutParams.FLAG_FULLSCREEN);// CancelgetWindow().setFlags(~WindowManager.LayoutParams.FLAG_FULLSCREEN,                     WindowManager.LayoutParams.FLAG_FULLSCREEN);\n此种办法可以应用于几乎所有版本(2.3, 4.x, 5.x), 但是在4.x上无法有隐藏动画效果\n\n从3.x版本开始, 系统DecorView提供了setSystemUiVisibility方法, 可以通过Flag改更改所谓SystemUI的属性\n下面介绍一下各种参数的意义\nView.SYSTEM_UI_FLAG_VISIBLE Level 14  \n默认标记\n\nView.SYSTEM_UI_FLAG_LOW_PROFILE Level 14  \n低功耗模式, 会隐藏状态栏图标, 在4.0上可以实现全屏\n\nView.SYSTEM_UI_FLAG_LAYOUT_STABLE Level 16  \n保持整个View稳定, 常跟bar 悬浮, 隐藏共用, 使View不会因为SystemUI的变化而做layout\n\nView.SYSTEM_UI_FLAG_FULLSCREEN Level 16  \n状态栏隐藏\n\nView.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN Level 16  \n状态栏上浮于Activity\n\nView.SYSTEM_UI_FLAG_HIDE_NAVIGATION Level 14  \n隐藏导航栏, \n=========================================================================\n4.0 - 4.3如果使用这个属性,将会导致在下一次touch时候自动show出status跟navigation bar,源于系统clear掉其所有的状态\n=========================================================================\n\nView.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION Level 16  \n导航栏上浮于Activity\n\nView.SYSTEM_UI_FLAG_IMMERSIVE Level 19  \nKitkat新加入的Flag, 沉浸模式, 可以隐藏掉status跟navigation bar, 并且在第一次会弹泡提醒, 它会覆盖掉之前两个隐藏bar的标记, 并且在bar出现的位置滑动可以呼出bar\n\nView.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19  \n与上面唯一的区别是, 呼出隐藏的bar后会自动再隐藏掉\n\n新方法综合上述属性, 总结4.x以上版本全屏模式使用的最佳Flag组合(不希望悬浮可去除相关Flag, 并且用默认标记重新还原状态)\n4.01getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);\n4.1–4.3  \n隐藏导航会产生上面所说的问题,而FULLSCREEN已经可以将导航变成透明的小点点,达到一定的效果了\n1234567891011//HidegetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN                        | View.SYSTEM_UI_FLAG_FULLSCREEN);//ShowgetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);\n4.4 above12345678910111213//HidegetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar                        | View.SYSTEM_UI_FLAG_IMMERSIVE);//ShowgetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);\n4.x综合办法  \n如果不希望4.4以上有IMMERSIVE特性,可删掉  \n12345678910111213//HidegetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LOW_PROFILE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN                        | View.SYSTEM_UI_FLAG_FULLSCREEN                        | View.SYSTEM_UI_FLAG_IMMERSIVE);//ShowgetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);\n\n  参考:    http://developer.android.com/reference/android/view/View.html#setSystemUiVisibility(int)    https://developer.android.com/training/system-ui/immersive.html\n","dateCreated":"2015-01-07T15:30:21+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2015-01-07T15:30:21+08:00","description":"Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.\n所有方法只涉及代码操作, 非xml修改Activity属性所致","headline":"Android Activity 全屏方法总结","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/","keywords":"android","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.\n所有方法只涉及代码操作, 非xml修改Activity属性所致\n\n通用办法如大家所知, 更改Window的属性, 并不一定在setContentView之前调用\n123456// FullScreengetWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,                        WindowManager.LayoutParams.FLAG_FULLSCREEN);// CancelgetWindow().setFlags(~WindowManager.LayoutParams.FLAG_FULLSCREEN,                     WindowManager.LayoutParams.FLAG_FULLSCREEN);\n此种办法可以应用于几乎所有版本(2.3, 4.x, 5.x), 但是在4.x上无法有隐藏动画效果\n\n从3.x版本开始, 系统DecorView提供了setSystemUiVisibility方法, 可以通过Flag改更改所谓SystemUI的属性\n下面介绍一下各种参数的意义\nView.SYSTEM_UI_FLAG_VISIBLE Level 14  \n默认标记\n\nView.SYSTEM_UI_FLAG_LOW_PROFILE Level 14  \n低功耗模式, 会隐藏状态栏图标, 在4.0上可以实现全屏\n\nView.SYSTEM_UI_FLAG_LAYOUT_STABLE Level 16  \n保持整个View稳定, 常跟bar 悬浮, 隐藏共用, 使View不会因为SystemUI的变化而做layout\n\nView.SYSTEM_UI_FLAG_FULLSCREEN Level 16  \n状态栏隐藏\n\nView.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN Level 16  \n状态栏上浮于Activity\n\nView.SYSTEM_UI_FLAG_HIDE_NAVIGATION Level 14  \n隐藏导航栏, \n=========================================================================\n4.0 - 4.3如果使用这个属性,将会导致在下一次touch时候自动show出status跟navigation bar,源于系统clear掉其所有的状态\n=========================================================================\n\nView.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION Level 16  \n导航栏上浮于Activity\n\nView.SYSTEM_UI_FLAG_IMMERSIVE Level 19  \nKitkat新加入的Flag, 沉浸模式, 可以隐藏掉status跟navigation bar, 并且在第一次会弹泡提醒, 它会覆盖掉之前两个隐藏bar的标记, 并且在bar出现的位置滑动可以呼出bar\n\nView.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19  \n与上面唯一的区别是, 呼出隐藏的bar后会自动再隐藏掉\n\n新方法综合上述属性, 总结4.x以上版本全屏模式使用的最佳Flag组合(不希望悬浮可去除相关Flag, 并且用默认标记重新还原状态)\n4.01getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);\n4.1–4.3  \n隐藏导航会产生上面所说的问题,而FULLSCREEN已经可以将导航变成透明的小点点,达到一定的效果了\n1234567891011//HidegetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN                        | View.SYSTEM_UI_FLAG_FULLSCREEN);//ShowgetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);\n4.4 above12345678910111213//HidegetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar                        | View.SYSTEM_UI_FLAG_IMMERSIVE);//ShowgetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);\n4.x综合办法  \n如果不希望4.4以上有IMMERSIVE特性,可删掉  \n12345678910111213//HidegetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LOW_PROFILE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN                        | View.SYSTEM_UI_FLAG_FULLSCREEN                        | View.SYSTEM_UI_FLAG_IMMERSIVE);//ShowgetWindow().getDecorView().setSystemUiVisibility(                View.SYSTEM_UI_FLAG_LAYOUT_STABLE                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);\n\n  参考:    http://developer.android.com/reference/android/view/View.html#setSystemUiVisibility(int)    https://developer.android.com/training/system-ui/immersive.html\n","dateCreated":"2015-01-07T15:30:21+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2015-01-07T15:30:21+08:00","description":"Android版本繁多, 新API, 新Flag层出不穷, 针对于如何完美全屏, 下面做以总结.\n所有方法只涉及代码操作, 非xml修改Activity属性所致","headline":"Android Activity 全屏方法总结","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/","keywords":"android","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg"}</script>
     <meta name="description" content="Android Activity 全屏方法总结">
 <meta name="keywords" content="Android,Activity,全屏,fullscreen">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Activity 全屏方法总结">
-<meta property="og:url" content="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Android Activity 全屏方法总结">
 <meta property="og:locale" content="zh-cn">
@@ -380,7 +380,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -393,7 +393,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -406,7 +406,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -495,7 +495,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -508,7 +508,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -521,7 +521,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -555,7 +555,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -568,7 +568,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -581,7 +581,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -651,7 +651,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -674,7 +674,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -684,7 +684,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -710,7 +710,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -720,7 +720,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -743,7 +743,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -753,7 +753,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -778,7 +778,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -788,7 +788,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -813,7 +813,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -823,7 +823,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -847,7 +847,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -857,7 +857,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -890,7 +890,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -900,7 +900,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -930,7 +930,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -940,7 +940,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -969,7 +969,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -979,7 +979,7 @@ View.SYSTEM_UI_FLAG_IMMERSIVE_STIKY Level 19
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

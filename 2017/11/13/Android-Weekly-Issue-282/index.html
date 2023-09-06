@@ -10,19 +10,19 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"November 5th, 2017\nAndroid Weekly Issue #282本期内容相较上期丰富许多, 技术干货当然也有不少, 如Koin来替代Dagger应用在Kotlin项目,Grox做一个面向状态的程序,以及Room实现Relation的介绍,如何解决Architecture Component在Fragment上的漏洞,还有Kotlin Coroutines里面的一些新概念(Actor,Channel等).当然也包含一些方法论,如将项目转Kotlin的好处及其方法,Java数据结构的基础介绍,伦敦Droidcon大会概况等等.\n代码亮点主要在Koin的使用,可以特别关注一下.\n\nARTICLES &amp; TUTORIALSMoving from Dagger to Koin文章介绍了如何用Koin做到一个更Kotlin的依赖注入,与Dagger相比,使用Koin,无论是你的gradle配置会从很多行缩减到1行,而且你的初始化也将只需要调用startAndroidContext即刻.\n最方便的是可以使用高阶Lambda定义你的Module,并且在注入的时候不需要写任何的Annotation,可以通过by inject()的lazy注入方法,或者直接通过primary constructor.\n作者还提供了他将google的achitecture里面的Todo Sample用Koin改造后的效果,可以进行学习.\nExploring Firebase Predictions 文章介绍了Firbase的一个alpha阶段的新功能,Prediction,可以对RemotConfig,A/B Testing,以及Notification Composer进行一些基于机器学习的预测,帮助我们更快的改进产品,提升用户体验.\nArchitecture Components pitfalls — Part 1 文章介绍了Google的Architecture Components的一个陷阱,虽然ViewModel会在Activity/Fragment销毁时候自动释放,但是在在Fragment使用的时候,很多时候这个Fragment不会销毁而是detach了,而重新attach后又会创建新的Observer,会有内存泄露的风险.\n文章指出了好几个Approach来解决这个问题,包括最后一个用了还在试验的Data Binding直接bind我们定义的ViewModel.具体的方法可以查看详情.\nPlaying with elevation in Android 文章介绍了一些有趣的事情,我们可以通过给View添加OutlineProvider(Layout#setOutlineProvider)来控制Shadow,但是实际上可以利用elevation来做到一些效果,Android Material Design系统有两个光源来呈现投影,一个在屏幕最上面向下照射,另外一个在屏幕正中间垂直照射,作者展示了了他的一个项目.\n其使用了自定义的CardView,给其添加一个将Outline的大小设置为比Card本身小4dp的Provider,并有4dp的elevation,这样滚动的时候,越往屏幕的下放,影子就越深.\nGrox: The Art of the State 文章介绍了一个状态管理的库Grox,其提供了Command,Action,Store的概念,Command会通过actions()发射该命令下的不同状态下的Action,并交给store来进行dispatch,而store会被Grox的静态方法states封装后将dispatch的Action接收到UI线程来处理UI.\n实际上的代码大致是这个样子\n1234567states(store).observeOn(mainThread()).subscribe(this::updateUI);clicks(button)    .map(click -&gt; new XXXCommand())    .flatMap(Command::actions)    .subscribe(store::dispatch);\nCanvas : The Real Play Ground! 文章介绍了如何通过通Canvas画一个钟表,挺有意思,可以作为学习draw canvas的一个教程\nRadialGradient – Layers 文章通过一个RadialGradient的view在不同layer上的不同表现来介绍图层以及软硬渲染的概念.\nUsing the ADS1015 analog to digital converter driver library 开发ADS1015 AD转换器的一个IoT相关的文章,对物联网感兴趣的可以看看.\nAdopting Kotlin 文章不是一篇技术偏向的文章,更多的是从各个方面介绍了kotlin的优势,以及作者在将他的项目转到kotlin过程中的一些经验.\nAndroid Architecture Components: Room—-Relationships 文章介绍了Room如何实现外键关联,进行数据库JOIN查找. 除了我们经常用的@ForeignKey之外,还可以通过@Embedded与@Relation来定义外键关系.\nClean App with Kotlin &amp; Architecture Components - Part 2 文章接上次通过Kotlin的Coroutines来做的一个天气应用,这次引入Actor与Channel的概念,实际上Actor类似于一个信箱管家,而Channel则是信箱(包括信道),而且具有不同种类型的信道模式,有0缓存的,有无限缓存的,也有固定缓存的,Actor会将定义的数据类型通过Channel发送给接收方,通过Channel不同的类型,可以实现不同的消息循环效果.\nImproving performance with background data prefetching 介绍了Instgram如何实现后台预取的,为了让用户的到更好的体验,特别是网络不好地区,他们实现了一套后台Wifi预取的逻辑.间接地,他们也实现了网络与应用使用的解耦,还节省了后台带宽,因为如果没有预取,每次开启程序都要请求主服务器抓取大量数据.\nMy take from Droidcon London 2017 介绍了作者有幸参加在伦敦举行的Droidcon大会,分享了在会上听到的诸多Presentation的概况,很多Topic,包括Kotlin Coroutines,Room,Test,Android Security等等.\nPractical Data Structures Guide for Android developers 作者在上大学之前就接触了Android开发,但当时没有进行数据结构与算法的系统学习,致使一些基础概念不清晰而有一些不好的习惯.作者在这里分析了List,Map,Set,Stack等等的数据结构,包含ArrayList与LinkedList的区别,HashMap与LinkedHashMap等等的原理.\n不过作者没有讲Android新的SparseArray与ArrayMap的特性.\nHow “Effective Java” may have influenced the design of Kotlin -  Part 3 接着上期介绍的Kotlin的优势,本期介绍了, 总共有5点,包括用by来做代理实现类的组合,还有Kotlin没有装箱类型带来的好处,等等.\nLIBRARIES &amp; CODERings 打不开了…\nads1015 IoT那个AD转换器的代码.\nkotlinconf-app 官方的Kolin会议应用,包含很多个版本,当然android版本使用kotlin编写\ngrox Android State保持的一个框架,可以将你的程序改成Command/Action驱动的哦.\n","dateCreated":"2017-11-13T08:24:12+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-11-13T08:24:12+08:00","description":"November 5th, 2017\nAndroid Weekly Issue #282本期内容相较上期丰富许多, 技术干货当然也有不少, 如Koin来替代Dagger应用在Kotlin项目,Grox做一个面向状态的程序,以及Room实现Relation的介绍,如何解决Architecture Component在Fragment上的漏洞,还有Kotlin Coroutines里面的一些新概念(Actor,Channel等).当然也包含一些方法论,如将项目转Kotlin的好处及其方法,Java数据结构的基础介绍,伦敦Droidcon大会概况等等.\n代码亮点主要在Koin的使用,可以特别关注一下.","headline":"Android Weekly Issue #282","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510532777/282_rtsvp0.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/","keywords":"Architecture Component, Android Weekly, Room, Kotlin Coroutines, Koin, Grox, Android Prefetching","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510532777/282_rtsvp0.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"November 5th, 2017\nAndroid Weekly Issue #282本期内容相较上期丰富许多, 技术干货当然也有不少, 如Koin来替代Dagger应用在Kotlin项目,Grox做一个面向状态的程序,以及Room实现Relation的介绍,如何解决Architecture Component在Fragment上的漏洞,还有Kotlin Coroutines里面的一些新概念(Actor,Channel等).当然也包含一些方法论,如将项目转Kotlin的好处及其方法,Java数据结构的基础介绍,伦敦Droidcon大会概况等等.\n代码亮点主要在Koin的使用,可以特别关注一下.\n\nARTICLES &amp; TUTORIALSMoving from Dagger to Koin文章介绍了如何用Koin做到一个更Kotlin的依赖注入,与Dagger相比,使用Koin,无论是你的gradle配置会从很多行缩减到1行,而且你的初始化也将只需要调用startAndroidContext即刻.\n最方便的是可以使用高阶Lambda定义你的Module,并且在注入的时候不需要写任何的Annotation,可以通过by inject()的lazy注入方法,或者直接通过primary constructor.\n作者还提供了他将google的achitecture里面的Todo Sample用Koin改造后的效果,可以进行学习.\nExploring Firebase Predictions 文章介绍了Firbase的一个alpha阶段的新功能,Prediction,可以对RemotConfig,A/B Testing,以及Notification Composer进行一些基于机器学习的预测,帮助我们更快的改进产品,提升用户体验.\nArchitecture Components pitfalls — Part 1 文章介绍了Google的Architecture Components的一个陷阱,虽然ViewModel会在Activity/Fragment销毁时候自动释放,但是在在Fragment使用的时候,很多时候这个Fragment不会销毁而是detach了,而重新attach后又会创建新的Observer,会有内存泄露的风险.\n文章指出了好几个Approach来解决这个问题,包括最后一个用了还在试验的Data Binding直接bind我们定义的ViewModel.具体的方法可以查看详情.\nPlaying with elevation in Android 文章介绍了一些有趣的事情,我们可以通过给View添加OutlineProvider(Layout#setOutlineProvider)来控制Shadow,但是实际上可以利用elevation来做到一些效果,Android Material Design系统有两个光源来呈现投影,一个在屏幕最上面向下照射,另外一个在屏幕正中间垂直照射,作者展示了了他的一个项目.\n其使用了自定义的CardView,给其添加一个将Outline的大小设置为比Card本身小4dp的Provider,并有4dp的elevation,这样滚动的时候,越往屏幕的下放,影子就越深.\nGrox: The Art of the State 文章介绍了一个状态管理的库Grox,其提供了Command,Action,Store的概念,Command会通过actions()发射该命令下的不同状态下的Action,并交给store来进行dispatch,而store会被Grox的静态方法states封装后将dispatch的Action接收到UI线程来处理UI.\n实际上的代码大致是这个样子\n1234567states(store).observeOn(mainThread()).subscribe(this::updateUI);clicks(button)    .map(click -&gt; new XXXCommand())    .flatMap(Command::actions)    .subscribe(store::dispatch);\nCanvas : The Real Play Ground! 文章介绍了如何通过通Canvas画一个钟表,挺有意思,可以作为学习draw canvas的一个教程\nRadialGradient – Layers 文章通过一个RadialGradient的view在不同layer上的不同表现来介绍图层以及软硬渲染的概念.\nUsing the ADS1015 analog to digital converter driver library 开发ADS1015 AD转换器的一个IoT相关的文章,对物联网感兴趣的可以看看.\nAdopting Kotlin 文章不是一篇技术偏向的文章,更多的是从各个方面介绍了kotlin的优势,以及作者在将他的项目转到kotlin过程中的一些经验.\nAndroid Architecture Components: Room—-Relationships 文章介绍了Room如何实现外键关联,进行数据库JOIN查找. 除了我们经常用的@ForeignKey之外,还可以通过@Embedded与@Relation来定义外键关系.\nClean App with Kotlin &amp; Architecture Components - Part 2 文章接上次通过Kotlin的Coroutines来做的一个天气应用,这次引入Actor与Channel的概念,实际上Actor类似于一个信箱管家,而Channel则是信箱(包括信道),而且具有不同种类型的信道模式,有0缓存的,有无限缓存的,也有固定缓存的,Actor会将定义的数据类型通过Channel发送给接收方,通过Channel不同的类型,可以实现不同的消息循环效果.\nImproving performance with background data prefetching 介绍了Instgram如何实现后台预取的,为了让用户的到更好的体验,特别是网络不好地区,他们实现了一套后台Wifi预取的逻辑.间接地,他们也实现了网络与应用使用的解耦,还节省了后台带宽,因为如果没有预取,每次开启程序都要请求主服务器抓取大量数据.\nMy take from Droidcon London 2017 介绍了作者有幸参加在伦敦举行的Droidcon大会,分享了在会上听到的诸多Presentation的概况,很多Topic,包括Kotlin Coroutines,Room,Test,Android Security等等.\nPractical Data Structures Guide for Android developers 作者在上大学之前就接触了Android开发,但当时没有进行数据结构与算法的系统学习,致使一些基础概念不清晰而有一些不好的习惯.作者在这里分析了List,Map,Set,Stack等等的数据结构,包含ArrayList与LinkedList的区别,HashMap与LinkedHashMap等等的原理.\n不过作者没有讲Android新的SparseArray与ArrayMap的特性.\nHow “Effective Java” may have influenced the design of Kotlin -  Part 3 接着上期介绍的Kotlin的优势,本期介绍了, 总共有5点,包括用by来做代理实现类的组合,还有Kotlin没有装箱类型带来的好处,等等.\nLIBRARIES &amp; CODERings 打不开了…\nads1015 IoT那个AD转换器的代码.\nkotlinconf-app 官方的Kolin会议应用,包含很多个版本,当然android版本使用kotlin编写\ngrox Android State保持的一个框架,可以将你的程序改成Command/Action驱动的哦.\n","dateCreated":"2017-11-13T08:24:12+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2017-11-13T08:24:12+08:00","description":"November 5th, 2017\nAndroid Weekly Issue #282本期内容相较上期丰富许多, 技术干货当然也有不少, 如Koin来替代Dagger应用在Kotlin项目,Grox做一个面向状态的程序,以及Room实现Relation的介绍,如何解决Architecture Component在Fragment上的漏洞,还有Kotlin Coroutines里面的一些新概念(Actor,Channel等).当然也包含一些方法论,如将项目转Kotlin的好处及其方法,Java数据结构的基础介绍,伦敦Droidcon大会概况等等.\n代码亮点主要在Koin的使用,可以特别关注一下.","headline":"Android Weekly Issue #282","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510532777/282_rtsvp0.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/","keywords":"Architecture Component, Android Weekly, Room, Kotlin Coroutines, Koin, Grox, Android Prefetching","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1510532777/282_rtsvp0.jpg"}</script>
     <meta name="description" content="Android Weekly 中文概要">
 <meta name="keywords" content="Architecture Component,Android Weekly,Room,Kotlin Coroutines,Koin,Grox,Android Prefetching">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Android Weekly Issue #282">
-<meta property="og:url" content="http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Android Weekly 中文概要">
 <meta property="og:locale" content="zh-cn">
@@ -358,7 +358,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -371,7 +371,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -384,7 +384,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -473,7 +473,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -486,7 +486,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -499,7 +499,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -533,7 +533,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -546,7 +546,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -559,7 +559,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2017/11/13/Android-Weekly-Issue-282/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -629,7 +629,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -652,7 +652,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -662,7 +662,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -688,7 +688,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -698,7 +698,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -721,7 +721,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -731,7 +731,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -756,7 +756,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -766,7 +766,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -791,7 +791,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -801,7 +801,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -825,7 +825,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -835,7 +835,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -868,7 +868,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -878,7 +878,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -908,7 +908,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -918,7 +918,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -947,7 +947,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -957,7 +957,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

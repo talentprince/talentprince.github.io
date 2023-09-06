@@ -10,19 +10,19 @@
     <meta name="author" content="Prince Chen">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"RxJava2已经推出有一年半的时间,由于之前RxJava已经在现有项目中广泛使用,而RxJava2在除了很多命名外并没有太多革新,所以相信有很多人跟我一样都还没有升级.\n随着老版本渐渐的失去维护,更重要的是有一定时间允许我来做这个迁移,其实弃老从新一直都是程序员的喜好.\n虽然官方提供了文档详尽的介绍了区别,但是文章之长,可能很多人读不下去,却有想快速的迁移过来,我将除了命名改变之外有用的地方总结成了几点,供大家参考.\n\n不能再发射Null了RxJava2的最大改变就是不能再流里发射Null了,有人会问发射了就怎么了,答案是你的流会因为NPE断开.\n比如以前我们会写出这样的代码(详见RxPermission):\n1Observable.just(null).compose....\n在RxJava二中我们需要将它改为(详见RxPermission2):\n12TRIGGER = new Object()Observer.just(TRIGGER).compose(xxx)\n还有我们常常完成某个工作而不需要返回值,或者根本不关心返回值,将返回的Observable定义为Observable, 如:\n1234xxx.flatMap &#123;   ....   return null;&#125;;\n现在不能这么写了,对于不需要返回值的,我们应该使用Completable,当然这个在RxJava的时候也已经存在了.\n1xxx.flatMapCompletable &#123; Completable.fromAction&#123; &#125; &#125;\n还有我们在实现Local Cache与Remote Cache的时候常用的办法:\n123localObservable = just(localReference);concat(localObservable, remoteObservable).filter&#123; i != null &#125;.first()...\n会因为在没有Local Cache的时候出错,所以应该改成:\n123localObservable = just(Optional.fromNullable(localReference));concat(localObservable, remoteObservable).filter&#123; i.isPresent() &#125;.firstElement()/.first(defaultValue)...\nflatMap方法多了在上面的介绍中可能已经发现了,老版本只有同类型的flatMap,即Observable  Observable, Single  Single, 而RxJava2除了同类型的flatMap,还增添了flatMapCompletable,flatMapSingle,flatMapObservable帮助你任意切换.\n订阅与反订阅我们有时候需要在必要的时刻手动的将订阅取消,而防止产生我们不想要的问题,如在跳出定位页面时取消订阅,防止位置信息后面回来造成程序崩溃.\n而在RxJava中,我们一般是这么做的:\n123Subscription subscription = xxxx.subscribe(xxxSubscriber);subscription.unsubscribe();\n在RxJava2中,这个发生了变化,因为你会发现subscribe方法基本上都返回void的,如果你需要手动取消的话,需要使用T subscribeWith(T extends Disposal)方法.\n其实我们可以看到,新版的Subscriber或者Observer都多了一个方法void onSubscribe(Subscription s)或者void onSubscribe(Disposable d), 也就是说以前的Subscription是通过订阅后通过回调返回了.\n这里RxJava2统一接口到Disposable,提供dispose方法进行反订阅,并且还提供了DisposableObservable,DisposableSingle,DisposableCompletable已经帮我们处理了回调返回的Disposable对象.\n所以需要做的改动不大:\n123Disposable disposable = xxx.subscribeWith(xxxDisposableObserver);disposable.dispose();\n错误处理错误处理最棒的一点是之前必须实现onError来handle错误,如果不实现,就会抛出OnErrorNotImplement,导致程序崩溃,根据最新的Doc,在RxJava2中,可以轻松Handle未处理的错误.\n1RxJavaPlugins.setErrorHandler(xxx);\n还有一点变化需要注意是的是,当你有并行任务的时候,如果一个线程出错,将会导致整个流中断,其他线程可能会抛出IOInterupedException并且onError无法Handle,这时候必须有上面讲到的ErrorHandler来处理这一类UnDeliveriedException,否则程序会Crash.\nFlowableRxJava2将处理背压(BackPressure)的部分抽出来弄了一个新的对象,叫做Flowable.\n以前我们处理背压可能直接通过\n1xxx.onBackpressureXXXStrategy()...\n就可以了.\n现在我们得通过Flowable来处理.\n1xxx.toFlowable(XXXStrategy)...\n当然Flowable还提供比较强大的新方法,来处理并发.\n比如之前我们需要实现并发,得通过flatMap来实现.\n123Observable.from(urls).flatMap &#123;        v -&gt; Observable.just(v).subscribeOn(io()).....&#125;.subscribe(...)\n使用Flowable,可以简化为:\n1234Flowable.fromIterable(listingIds)    .parallel().runOn(io())    .map &#123; v -&gt; xxx &#125;    .sequential()\n看起来是不是有点炫酷…\n测试对于RxJava2,任何一个Observable都可以转化为一个TestObservable, 通过...test()来进行转换.\n而TestObservable提供很多与测试相关的方法,就不用我们亲自去判断.\n如assertResult,assertError,assertSubscribed.\n其他改动关于名字的变化,这里都不一一论述,包含Func1 -&gt; Function, Action -&gt; Consumer, Observable.Transformer -&gt; ObservableTransformer等等. \n","dateCreated":"2018-04-02T10:29:31+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-04-02T10:29:31+08:00","description":"RxJava2已经推出有一年半的时间,由于之前RxJava已经在现有项目中广泛使用,而RxJava2在除了很多命名外并没有太多革新,所以相信有很多人跟我一样都还没有升级.\n随着老版本渐渐的失去维护,更重要的是有一定时间允许我来做这个迁移,其实弃老从新一直都是程序员的喜好.\n虽然官方提供了文档详尽的介绍了区别,但是文章之长,可能很多人读不下去,却有想快速的迁移过来,我将除了命名改变之外有用的地方总结成了几点,供大家参考.","headline":"如何从RxJava升级到RxJava2","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1522636507/rxjava2_dgnvie.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/","keywords":"Android, RxJava","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1522636507/rxjava2_dgnvie.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"RxJava2已经推出有一年半的时间,由于之前RxJava已经在现有项目中广泛使用,而RxJava2在除了很多命名外并没有太多革新,所以相信有很多人跟我一样都还没有升级.\n随着老版本渐渐的失去维护,更重要的是有一定时间允许我来做这个迁移,其实弃老从新一直都是程序员的喜好.\n虽然官方提供了文档详尽的介绍了区别,但是文章之长,可能很多人读不下去,却有想快速的迁移过来,我将除了命名改变之外有用的地方总结成了几点,供大家参考.\n\n不能再发射Null了RxJava2的最大改变就是不能再流里发射Null了,有人会问发射了就怎么了,答案是你的流会因为NPE断开.\n比如以前我们会写出这样的代码(详见RxPermission):\n1Observable.just(null).compose....\n在RxJava二中我们需要将它改为(详见RxPermission2):\n12TRIGGER = new Object()Observer.just(TRIGGER).compose(xxx)\n还有我们常常完成某个工作而不需要返回值,或者根本不关心返回值,将返回的Observable定义为Observable, 如:\n1234xxx.flatMap &#123;   ....   return null;&#125;;\n现在不能这么写了,对于不需要返回值的,我们应该使用Completable,当然这个在RxJava的时候也已经存在了.\n1xxx.flatMapCompletable &#123; Completable.fromAction&#123; &#125; &#125;\n还有我们在实现Local Cache与Remote Cache的时候常用的办法:\n123localObservable = just(localReference);concat(localObservable, remoteObservable).filter&#123; i != null &#125;.first()...\n会因为在没有Local Cache的时候出错,所以应该改成:\n123localObservable = just(Optional.fromNullable(localReference));concat(localObservable, remoteObservable).filter&#123; i.isPresent() &#125;.firstElement()/.first(defaultValue)...\nflatMap方法多了在上面的介绍中可能已经发现了,老版本只有同类型的flatMap,即Observable  Observable, Single  Single, 而RxJava2除了同类型的flatMap,还增添了flatMapCompletable,flatMapSingle,flatMapObservable帮助你任意切换.\n订阅与反订阅我们有时候需要在必要的时刻手动的将订阅取消,而防止产生我们不想要的问题,如在跳出定位页面时取消订阅,防止位置信息后面回来造成程序崩溃.\n而在RxJava中,我们一般是这么做的:\n123Subscription subscription = xxxx.subscribe(xxxSubscriber);subscription.unsubscribe();\n在RxJava2中,这个发生了变化,因为你会发现subscribe方法基本上都返回void的,如果你需要手动取消的话,需要使用T subscribeWith(T extends Disposal)方法.\n其实我们可以看到,新版的Subscriber或者Observer都多了一个方法void onSubscribe(Subscription s)或者void onSubscribe(Disposable d), 也就是说以前的Subscription是通过订阅后通过回调返回了.\n这里RxJava2统一接口到Disposable,提供dispose方法进行反订阅,并且还提供了DisposableObservable,DisposableSingle,DisposableCompletable已经帮我们处理了回调返回的Disposable对象.\n所以需要做的改动不大:\n123Disposable disposable = xxx.subscribeWith(xxxDisposableObserver);disposable.dispose();\n错误处理错误处理最棒的一点是之前必须实现onError来handle错误,如果不实现,就会抛出OnErrorNotImplement,导致程序崩溃,根据最新的Doc,在RxJava2中,可以轻松Handle未处理的错误.\n1RxJavaPlugins.setErrorHandler(xxx);\n还有一点变化需要注意是的是,当你有并行任务的时候,如果一个线程出错,将会导致整个流中断,其他线程可能会抛出IOInterupedException并且onError无法Handle,这时候必须有上面讲到的ErrorHandler来处理这一类UnDeliveriedException,否则程序会Crash.\nFlowableRxJava2将处理背压(BackPressure)的部分抽出来弄了一个新的对象,叫做Flowable.\n以前我们处理背压可能直接通过\n1xxx.onBackpressureXXXStrategy()...\n就可以了.\n现在我们得通过Flowable来处理.\n1xxx.toFlowable(XXXStrategy)...\n当然Flowable还提供比较强大的新方法,来处理并发.\n比如之前我们需要实现并发,得通过flatMap来实现.\n123Observable.from(urls).flatMap &#123;        v -&gt; Observable.just(v).subscribeOn(io()).....&#125;.subscribe(...)\n使用Flowable,可以简化为:\n1234Flowable.fromIterable(listingIds)    .parallel().runOn(io())    .map &#123; v -&gt; xxx &#125;    .sequential()\n看起来是不是有点炫酷…\n测试对于RxJava2,任何一个Observable都可以转化为一个TestObservable, 通过...test()来进行转换.\n而TestObservable提供很多与测试相关的方法,就不用我们亲自去判断.\n如assertResult,assertError,assertSubscribed.\n其他改动关于名字的变化,这里都不一一论述,包含Func1 -&gt; Function, Action -&gt; Consumer, Observable.Transformer -&gt; ObservableTransformer等等. \n","dateCreated":"2018-04-02T10:29:31+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2018-04-02T10:29:31+08:00","description":"RxJava2已经推出有一年半的时间,由于之前RxJava已经在现有项目中广泛使用,而RxJava2在除了很多命名外并没有太多革新,所以相信有很多人跟我一样都还没有升级.\n随着老版本渐渐的失去维护,更重要的是有一定时间允许我来做这个迁移,其实弃老从新一直都是程序员的喜好.\n虽然官方提供了文档详尽的介绍了区别,但是文章之长,可能很多人读不下去,却有想快速的迁移过来,我将除了命名改变之外有用的地方总结成了几点,供大家参考.","headline":"如何从RxJava升级到RxJava2","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1522636507/rxjava2_dgnvie.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/","keywords":"Android, RxJava","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1522636507/rxjava2_dgnvie.jpg"}</script>
     <meta name="description" content="RxJava 升级 RxJava2">
 <meta name="keywords" content="Android,RxJava">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="如何从RxJava升级到RxJava2">
-<meta property="og:url" content="http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="RxJava 升级 RxJava2">
 <meta property="og:locale" content="zh-cn">
@@ -373,7 +373,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -386,7 +386,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -399,7 +399,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -488,7 +488,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -501,7 +501,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -514,7 +514,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -548,7 +548,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -561,7 +561,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -574,7 +574,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2018/04/02/From-RxJava-to-RxJava2/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -644,7 +644,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -667,7 +667,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -677,7 +677,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -703,7 +703,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -713,7 +713,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -736,7 +736,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -746,7 +746,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -771,7 +771,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -781,7 +781,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -806,7 +806,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -816,7 +816,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -840,7 +840,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -850,7 +850,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -883,7 +883,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -893,7 +893,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -923,7 +923,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -933,7 +933,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -962,7 +962,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -972,7 +972,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>

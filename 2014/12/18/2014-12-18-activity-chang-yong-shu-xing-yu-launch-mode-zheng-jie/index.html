@@ -12,19 +12,19 @@
         <meta name="keywords" content="Android,Activity,TaskState,Launchmode,taskAffinity,Intent,Flags">
     
     
-        <link rel="icon" href="http://talentprince.github.io/assets/images/favicon.ico">
+        <link rel="icon" href="https://talentprince.github.io/assets/images/favicon.ico">
     
     
         
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。\nTask概念\n\n\nTask相当于一个栈，用来管理Activity，默认情况下每一个程序都会拥有一个自己的Task，有自己独立的id，所以一个手机同时可能会拥有很多Task，标识就是id，默认情况下跟包名有关系。\n\nMode\n\n\nstandard\n\n默认模式，启动的所有Activity都会入栈，无论是之前启动过的还是没有启动过的，最终会形成的特色栈况为：ABCDEF…….或者ABCDDCEFAB……..\n\n\nsingleTop\n\n跟标准模式唯一的区别就是，当栈顶为要启动的Activity时，复用该Activity，只会调用onNewIntent，而不会onCreate。所以不会出现ABCDD,而只会有ABCD\n\n\nsingleTask\n\n官方文档解读，启动的Activity为栈底，并且会重新建立新的Task，在该Task启动的新Activity会依附于其。（但实际上并不是你想象中的这样）\n\n\nsingleInstance\n\n官方解读，启动的Activity会开启一个新的Task并独享，在其上启动的Activity会寻找其他合适的Task\n\n\n\nMode揭秘\n\n\nsingleTask的Activity不一定是在栈低，在默认状况也不会创建新的Task，除非指定taskAffinity，或使用其他程序启动该Activity（或在另外的进程启动，如Receiver之类的回调中，需加NEW_TASK标识），如果没有对应的Task，则会创建，如果已有，则会附庸。其特性可利用之处在于，其总能保证一个Task内只有一个实例，并且总会销毁位于它之上的所有Activity\nsingleInstance的Activity永远会创建新的Task并自己独享该Activity，不会受到taskAffinity的影响，并且在其上开启的其他Activity都会寻找适合自己的Task（如指定则会附庸或者创建，如未指定则会使用之前默认的栈），singleInstance能保证整个操作系统拥有唯一的实例对象。\n\nActivity对task state影响的其他属性介绍\n\n\nandroid:allowTaskReparenting\n\n默认false，程序A已经启动了数个Activity，其中包含Activity1，如果这个Activity1拥有该属性，当程序B也要启动它的时候，其可宿主到程序B内。\n\n\nandroid:alwaysRetainTaskState\n\n默认false，操作系统会在程序长时间不会动的时候，清除Task状态，如果开启这个，系统会继续保持直到再次打开，只对根Activity生效\n\n\nandroid:clearTaskOnLaunch\n\n默认false，如果开启，从桌面重新进入程序时，只会存在根Activity，如有其他程序的Activity，他们将会寻找宿主，这个属性也只对根生效\n\n\nandroid:finishOnTaskLaunch\n\n默认false，如果开启，程序重新启动，会销毁所有存在的Activity，也只对根Activity生效\n\n\n\n重要的几个Intent Flag介绍\n\nIntent存在很多可以设置的Flag，但是其基本是为系统所使用，在不正确的状态下调用无效。下面说说几个比较有用的Flag。\nFLAG_ACTIVITY_CLEAR_TOP\n\n如果在ABCD的堆栈状态下，以该标识启动B，则会销毁CD，且B也是重新创建的（与singleTask有区别），如果配合FLAG_ACTIVITY_SINGLE_TOP，则就会成为singleTask的模式\n\nFLAG_ACTIVITY_BROUGHT_TO_FRONT\n\n如果ABCD中A以这个标识启动B，则D再启动B，B将会被调入前台，成为ACDB，且B不会重新创建\n\nFLAG_ACTIVITY_REORDER_TO_FRONT\n\n这个Flag主要用来改变Task堆栈顺序，如果在ABCD的状态下，以该标识启动B，则会成为ACDB，且B不会重新创建\n\nFLAG_ACTIVITY_RESET_TASK_IF_NEEDED\n\n这个标识主要用于创建一个还原点，再次启动该Task时会将还原点之上包括其本身都销毁掉，如果在一个程序中以该标识启动了另外一个程序的功能，如一个用于看图的软件，当退出桌面，再点击这个程序，看图软件会消失。\n\nFLAG_ACTIVITY_NEW_TASK\n\n这个是最常用的，但是往往会被误解，在程序根Activity的Task栈里加此标识开启新Activity都不会创建新的Task，只有当另一程序（进程）启动带有改标识的Activity时，才会创建新的Task。如果配合FLAG_ACTIVITY_NEW_MULTI_TASK，则无论什么情况都会创建新的Task，就成了singleInstance的情况了。\n\n复杂的mode, 复杂的属性，复杂的flag，含糊的doc，以及网络上很多只意象，为实践或者研究源码的文章，造就了对此相关问题的误解，在这里做以真实揭秘，所有都经过验证，如有披露，还请斧正。\n\n参考\nhttp://www.cnblogs.com/mengdd/archive/2013/06/13/3134380.html\n","dateCreated":"2014-12-18T19:24:32+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2014-12-18T19:24:32+08:00","description":"Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。","headline":"Activity LaunchMode 与 Intent Flags 揭秘","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/","keywords":"android","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。\nTask概念\n\n\nTask相当于一个栈，用来管理Activity，默认情况下每一个程序都会拥有一个自己的Task，有自己独立的id，所以一个手机同时可能会拥有很多Task，标识就是id，默认情况下跟包名有关系。\n\nMode\n\n\nstandard\n\n默认模式，启动的所有Activity都会入栈，无论是之前启动过的还是没有启动过的，最终会形成的特色栈况为：ABCDEF…….或者ABCDDCEFAB……..\n\n\nsingleTop\n\n跟标准模式唯一的区别就是，当栈顶为要启动的Activity时，复用该Activity，只会调用onNewIntent，而不会onCreate。所以不会出现ABCDD,而只会有ABCD\n\n\nsingleTask\n\n官方文档解读，启动的Activity为栈底，并且会重新建立新的Task，在该Task启动的新Activity会依附于其。（但实际上并不是你想象中的这样）\n\n\nsingleInstance\n\n官方解读，启动的Activity会开启一个新的Task并独享，在其上启动的Activity会寻找其他合适的Task\n\n\n\nMode揭秘\n\n\nsingleTask的Activity不一定是在栈低，在默认状况也不会创建新的Task，除非指定taskAffinity，或使用其他程序启动该Activity（或在另外的进程启动，如Receiver之类的回调中，需加NEW_TASK标识），如果没有对应的Task，则会创建，如果已有，则会附庸。其特性可利用之处在于，其总能保证一个Task内只有一个实例，并且总会销毁位于它之上的所有Activity\nsingleInstance的Activity永远会创建新的Task并自己独享该Activity，不会受到taskAffinity的影响，并且在其上开启的其他Activity都会寻找适合自己的Task（如指定则会附庸或者创建，如未指定则会使用之前默认的栈），singleInstance能保证整个操作系统拥有唯一的实例对象。\n\nActivity对task state影响的其他属性介绍\n\n\nandroid:allowTaskReparenting\n\n默认false，程序A已经启动了数个Activity，其中包含Activity1，如果这个Activity1拥有该属性，当程序B也要启动它的时候，其可宿主到程序B内。\n\n\nandroid:alwaysRetainTaskState\n\n默认false，操作系统会在程序长时间不会动的时候，清除Task状态，如果开启这个，系统会继续保持直到再次打开，只对根Activity生效\n\n\nandroid:clearTaskOnLaunch\n\n默认false，如果开启，从桌面重新进入程序时，只会存在根Activity，如有其他程序的Activity，他们将会寻找宿主，这个属性也只对根生效\n\n\nandroid:finishOnTaskLaunch\n\n默认false，如果开启，程序重新启动，会销毁所有存在的Activity，也只对根Activity生效\n\n\n\n重要的几个Intent Flag介绍\n\nIntent存在很多可以设置的Flag，但是其基本是为系统所使用，在不正确的状态下调用无效。下面说说几个比较有用的Flag。\nFLAG_ACTIVITY_CLEAR_TOP\n\n如果在ABCD的堆栈状态下，以该标识启动B，则会销毁CD，且B也是重新创建的（与singleTask有区别），如果配合FLAG_ACTIVITY_SINGLE_TOP，则就会成为singleTask的模式\n\nFLAG_ACTIVITY_BROUGHT_TO_FRONT\n\n如果ABCD中A以这个标识启动B，则D再启动B，B将会被调入前台，成为ACDB，且B不会重新创建\n\nFLAG_ACTIVITY_REORDER_TO_FRONT\n\n这个Flag主要用来改变Task堆栈顺序，如果在ABCD的状态下，以该标识启动B，则会成为ACDB，且B不会重新创建\n\nFLAG_ACTIVITY_RESET_TASK_IF_NEEDED\n\n这个标识主要用于创建一个还原点，再次启动该Task时会将还原点之上包括其本身都销毁掉，如果在一个程序中以该标识启动了另外一个程序的功能，如一个用于看图的软件，当退出桌面，再点击这个程序，看图软件会消失。\n\nFLAG_ACTIVITY_NEW_TASK\n\n这个是最常用的，但是往往会被误解，在程序根Activity的Task栈里加此标识开启新Activity都不会创建新的Task，只有当另一程序（进程）启动带有改标识的Activity时，才会创建新的Task。如果配合FLAG_ACTIVITY_NEW_MULTI_TASK，则无论什么情况都会创建新的Task，就成了singleInstance的情况了。\n\n复杂的mode, 复杂的属性，复杂的flag，含糊的doc，以及网络上很多只意象，为实践或者研究源码的文章，造就了对此相关问题的误解，在这里做以真实揭秘，所有都经过验证，如有披露，还请斧正。\n\n参考\nhttp://www.cnblogs.com/mengdd/archive/2013/06/13/3134380.html\n","dateCreated":"2014-12-18T19:24:32+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2014-12-18T19:24:32+08:00","description":"Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。","headline":"Activity LaunchMode 与 Intent Flags 揭秘","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/","keywords":"android","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg"}</script>
     <meta name="description" content="Activity Task State与Launch Mode 揭秘">
 <meta name="keywords" content="Android,Activity,TaskState,Launchmode,taskAffinity,Intent,Flags">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Activity LaunchMode 与 Intent Flags 揭秘">
-<meta property="og:url" content="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/index.html">
+<meta property="og:url" content="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Activity Task State与Launch Mode 揭秘">
 <meta property="og:locale" content="zh-cn">
@@ -417,7 +417,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -430,7 +430,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -443,7 +443,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -532,7 +532,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -545,7 +545,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -558,7 +558,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                    target="new" href="https://plus.google.com/share?url=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -592,7 +592,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -605,7 +605,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                        href="https://twitter.com/intent/tweet?text=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -618,7 +618,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                        href="https://plus.google.com/share?url=https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -688,7 +688,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-first-blog/"
                             aria-label=": First Blog"
                         >
                             <h3 class="media-heading">First Blog</h3>
@@ -711,7 +711,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/robolectric_f8qftj.png" width="90" height="90"/>
@@ -721,7 +721,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
+                            href="https://talentprince.github.io/2014/12/15/2014-12-15-robolectric-in-android-studio/"
                             aria-label=": Robolectric in Android Studio"
                         >
                             <h3 class="media-heading">Robolectric in Android Studio</h3>
@@ -747,7 +747,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/lunchmode_fvssls.jpg" width="90" height="90"/>
@@ -757,7 +757,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
+                            href="https://talentprince.github.io/2014/12/18/2014-12-18-activity-chang-yong-shu-xing-yu-launch-mode-zheng-jie/"
                             aria-label=": Activity LaunchMode 与 Intent Flags 揭秘"
                         >
                             <h3 class="media-heading">Activity LaunchMode 与 Intent Flags 揭秘</h3>
@@ -780,7 +780,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png" width="90" height="90"/>
@@ -790,7 +790,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
+                            href="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"
                             aria-label=": Joda Time 中英格式化相关问题 for Java"
                         >
                             <h3 class="media-heading">Joda Time 中英格式化相关问题 for Java</h3>
@@ -815,7 +815,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326188/butterknife_g7rpiq.png" width="90" height="90"/>
@@ -825,7 +825,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
+                            href="https://talentprince.github.io/2015/01/04/2015-01-04-android-yu-inject-yi-lai-zhu-ru-de-bu-jie-zhi-yuan/"
                             aria-label=": Android 与Inject(依赖注入)的不解之缘"
                         >
                             <h3 class="media-heading">Android 与Inject(依赖注入)的不解之缘</h3>
@@ -850,7 +850,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/fullscreen_lkruui.jpg" width="90" height="90"/>
@@ -860,7 +860,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
+                            href="https://talentprince.github.io/2015/01/07/2015-01-07-android-activity-quan-ping-fang-fa-zong-jie/"
                             aria-label=": Android Activity 全屏方法总结"
                         >
                             <h3 class="media-heading">Android Activity 全屏方法总结</h3>
@@ -884,7 +884,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync1_sbvugj.png" width="90" height="90"/>
@@ -894,7 +894,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
+                            href="https://talentprince.github.io/2015/01/26/2015-01-26-android-zhang-hao-yu-tong-bu-xi-tong-part-one/"
                             aria-label=": Android 构建账号与同步服务 Part One"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part One</h3>
@@ -927,7 +927,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync2_uyvihr.jpg" width="90" height="90"/>
@@ -937,7 +937,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
+                            href="https://talentprince.github.io/2015/02/04/2015-02-04-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-two/"
                             aria-label=": Android 构建账号与同步服务 Part Two"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Two</h3>
@@ -967,7 +967,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/sync3_trl1qb.jpg" width="90" height="90"/>
@@ -977,7 +977,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
+                            href="https://talentprince.github.io/2015/02/10/2015-02-10-android-gou-jian-zhang-hao-yu-tong-bu-fu-wu-part-three/"
                             aria-label=": Android 构建账号与同步服务 Part Three"
                         >
                             <h3 class="media-heading">Android 构建账号与同步服务 Part Three</h3>
@@ -1006,7 +1006,7 @@
                     <div class="media-left">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <img class="media-image" src="http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326189/understand_fuwgh9.jpg" width="90" height="90"/>
@@ -1016,7 +1016,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
+                            href="https://talentprince.github.io/2016/01/26/2016-01-26-qing-chu-yu-ming-bai/"
                             aria-label=": 清楚与明白"
                         >
                             <h3 class="media-heading">清楚与明白</h3>
