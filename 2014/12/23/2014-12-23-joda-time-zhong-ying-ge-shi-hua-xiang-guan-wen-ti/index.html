@@ -19,19 +19,19 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Joda TimeJoda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  \nInstallJoda已经更新到2.6版本,jar包的下载可以到Joda Jar进行下载.如果使用gradle管理,可添加 \n123dependencies &#123;    compile &apos;joda-time:joda-time:2.6&apos;&#125;\n\n使用大致有两种方式可以对ISO8601时间进行格式化\n12DateTime dateTime  = new DateTime();//也可以传入ISO8601格式时间作为参数textView.setText(dateTime.toString(\"EEEE MMMM dd yyyy HH:mm:ss\"));\n123LocalDate date = LocalDate.now();DateTimeFormatter fmt = DateTimeFormat.forPattern(\"EEEE MMMM dd yyyy HH:mm:ss\");String str = date.toString(fmt);\n中英文格式区别通过官方文档可知, 常用的Symbol有E(星期) y(年) d(日) M(月) H(小时0~23) k(时钟小时1~24) m(分钟) s(秒) K(小时0~11) a(am/pm)\n\nE 中文永远都是星期X 英文E代表简写,如Mon, 而EEEE代表Monday, 调皮的话可以发现EE跟EEE都是简写,而再多的E都是全写\n\ny 可能由于目前的时间都是公元四位数年(2014), 所以超过四个y都会在当前年份前加0,如yyyyy-&gt;02014, 英文其他个数都是全写, 中文如两个y,则为简写,如2014就成了14\n\nd 所有超过两个的使用都会在应有的数字前面加0, 而且中文也不会加上日字\n\nM 英文M跟MM为数字月份,如03, MMM则为简写Mar, 而MMMM或者更多(调皮)为March. 中文三个或以上为X月,其他都为纯数字\n\nH K k m s等小时分钟,一个为0,超过加0\n\nZ表示时区, 个数多少也有不同, 可参见官方文档\n\n\n\n参考:http://www.joda.org/joda-time/key_format.html\n","dateCreated":"2014-12-23T14:19:17+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2014-12-23T14:19:17+08:00","description":"Joda TimeJoda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  \nInstallJoda已经更新到2.6版本,jar包的下载可以到Joda Jar进行下载.如果使用gradle管理,可添加 \n123dependencies &#123;    compile &apos;joda-time:joda-time:2.6&apos;&#125;","headline":"Joda Time 中英格式化相关问题 for Java","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/","keywords":"Java Joda","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"},"articleBody":"Joda TimeJoda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  \nInstallJoda已经更新到2.6版本,jar包的下载可以到Joda Jar进行下载.如果使用gradle管理,可添加 \n123dependencies &#123;    compile &#x27;joda-time:joda-time:2.6&#x27;&#125;\n\n使用大致有两种方式可以对ISO8601时间进行格式化\n12DateTime dateTime  = new DateTime();//也可以传入ISO8601格式时间作为参数textView.setText(dateTime.toString(&quot;EEEE MMMM dd yyyy HH:mm:ss&quot;));\n\n123LocalDate date = LocalDate.now();DateTimeFormatter fmt = DateTimeFormat.forPattern(&quot;EEEE MMMM dd yyyy HH:mm:ss&quot;);String str = date.toString(fmt);\n\n中英文格式区别通过官方文档可知, 常用的Symbol有E(星期) y(年) d(日) M(月) H(小时023) k(时钟小时124) m(分钟) s(秒) K(小时0~11) a(am&#x2F;pm)\n\nE 中文永远都是星期X 英文E代表简写,如Mon, 而EEEE代表Monday, 调皮的话可以发现EE跟EEE都是简写,而再多的E都是全写\n\ny 可能由于目前的时间都是公元四位数年(2014), 所以超过四个y都会在当前年份前加0,如yyyyy-&gt;02014, 英文其他个数都是全写, 中文如两个y,则为简写,如2014就成了14\n\nd 所有超过两个的使用都会在应有的数字前面加0, 而且中文也不会加上日字\n\nM 英文M跟MM为数字月份,如03, MMM则为简写Mar, 而MMMM或者更多(调皮)为March. 中文三个或以上为X月,其他都为纯数字\n\nH K k m s等小时分钟,一个为0,超过加0\n\nZ表示时区, 个数多少也有不同, 可参见官方文档\n\n\n\n参考:http://www.joda.org/joda-time/key_format.html\n","dateCreated":"2014-12-23T14:19:17+08:00","dateModified":"2020-06-22T17:44:59+08:00","datePublished":"2014-12-23T14:19:17+08:00","description":"Joda TimeJoda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  \nInstallJoda已经更新到2.6版本,jar包的下载可以到Joda Jar进行下载.如果使用gradle管理,可添加 \n123dependencies &#123;    compile &#x27;joda-time:joda-time:2.6&#x27;&#125;","headline":"Joda Time 中英格式化相关问题 for Java","image":["http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/"},"publisher":{"@type":"Organization","name":"Prince Chen","sameAs":["https://github.com/talentprince","mailto"],"image":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53","logo":{"@type":"ImageObject","url":"https://www.gravatar.com/avatar/ff771efeac20ab47f827e759b38f6d53"}},"url":"https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/","keywords":"Java Joda","thumbnailUrl":"http://res.cloudinary.com/dtn0pkdmg/image/upload/v1506326187/joda_e277de.png"}</script>
     <meta name="description" content="Joda Time 中英格式化相关问题 for Java">
-<meta name="keywords" content="Java,Joda,Android,时间格式">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="Joda Time 中英格式化相关问题 for Java">
 <meta property="og:url" content="https://talentprince.github.io/2014/12/23/2014-12-23-joda-time-zhong-ying-ge-shi-hua-xiang-guan-wen-ti/index.html">
 <meta property="og:site_name" content="Weyoung&#39;s Blog">
 <meta property="og:description" content="Joda Time 中英格式化相关问题 for Java">
-<meta property="og:locale" content="zh-cn">
-<meta property="og:updated_time" content="2020-06-22T09:44:59.466Z">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2014-12-23T06:19:17.000Z">
+<meta property="article:modified_time" content="2020-06-22T09:44:59.000Z">
+<meta property="article:author" content="Prince Chen">
+<meta property="article:tag" content="Java Joda">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Joda Time 中英格式化相关问题 for Java">
-<meta name="twitter:description" content="Joda Time 中英格式化相关问题 for Java">
     
     
         
@@ -44,7 +44,9 @@
     
     
     <!--STYLES-->
-    <link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
+    
+<link rel="stylesheet" href="/assets/css/style-mfdqvh3ohnpramsqqbc7zbl79sacpxx7rmxse96gjjfq9veqgomv4f7jzw28.min.css">
+
     <!--STYLES END-->
     
 
@@ -266,13 +268,15 @@
     <div class="post-content markdown">
         <div class="main-content-wrap">
             <h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
-<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<a id="more"></a>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &#x27;joda-time:joda-time:2.6&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<span id="more"></span>
 <h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>大致有两种方式可以对ISO8601时间进行格式化</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DateTime dateTime  = <span class="keyword">new</span> DateTime();<span class="comment">//也可以传入ISO8601格式时间作为参数</span></span><br><span class="line">textView.setText(dateTime.toString(<span class="string">"EEEE MMMM dd yyyy HH:mm:ss"</span>));</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LocalDate date = LocalDate.now();</span><br><span class="line">DateTimeFormatter fmt = DateTimeFormat.forPattern(<span class="string">"EEEE MMMM dd yyyy HH:mm:ss"</span>);</span><br><span class="line">String str = date.toString(fmt);</span><br></pre></td></tr></table></figure>
-<h2 id="中英文格式区别"><a href="#中英文格式区别" class="headerlink" title="中英文格式区别"></a>中英文格式区别</h2><p>通过官方文档可知, 常用的<code>Symbol</code>有<code>E</code>(星期) <code>y</code>(年) <code>d</code>(日) <code>M</code>(月) <code>H</code>(小时0~23) <code>k</code>(时钟小时1~24) <code>m</code>(分钟) <code>s</code>(秒) <code>K</code>(小时0~11) <code>a</code>(am/pm)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">DateTime</span> <span class="variable">dateTime</span>  <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DateTime</span>();<span class="comment">//也可以传入ISO8601格式时间作为参数</span></span><br><span class="line">textView.setText(dateTime.toString(<span class="string">&quot;EEEE MMMM dd yyyy HH:mm:ss&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">LocalDate</span> <span class="variable">date</span> <span class="operator">=</span> LocalDate.now();</span><br><span class="line"><span class="type">DateTimeFormatter</span> <span class="variable">fmt</span> <span class="operator">=</span> DateTimeFormat.forPattern(<span class="string">&quot;EEEE MMMM dd yyyy HH:mm:ss&quot;</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> date.toString(fmt);</span><br></pre></td></tr></table></figure>
+
+<h2 id="中英文格式区别"><a href="#中英文格式区别" class="headerlink" title="中英文格式区别"></a>中英文格式区别</h2><p>通过官方文档可知, 常用的<code>Symbol</code>有<code>E</code>(星期) <code>y</code>(年) <code>d</code>(日) <code>M</code>(月) <code>H</code>(小时0<del>23) <code>k</code>(时钟小时1</del>24) <code>m</code>(分钟) <code>s</code>(秒) <code>K</code>(小时0~11) <code>a</code>(am&#x2F;pm)</p>
 <ul>
 <li><p><strong>E</strong> 中文永远都是<code>星期X</code> 英文<code>E</code>代表简写,如<code>Mon</code>, 而<code>EEEE</code>代表<code>Monday</code>, 调皮的话可以发现<code>EE</code>跟<code>EEE</code>都是简写,而再多的<code>E</code>都是全写</p>
 </li>
@@ -288,7 +292,7 @@
 </li>
 </ul>
 <hr>
-<p>参考:<a href="http://www.joda.org/joda-time/key_format.html" target="_blank" rel="noopener">http://www.joda.org/joda-time/key_format.html</a></p>
+<p>参考:<a href="http://www.joda.org/joda-time/key_format.html">http://www.joda.org/joda-time/key_format.html</a></p>
 
             
 
@@ -300,7 +304,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-link" href="/tags/Java-Joda/">Java Joda</a>
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Java-Joda/" rel="tag">Java Joda</a>
 
             </div>
         
@@ -343,7 +347,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -393,7 +397,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -413,7 +417,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2023 Prince Chen. All Rights Reserved.
+        Copyrights &copy; 2025 Prince Chen. All Rights Reserved.
     </span>
 </footer>
 
@@ -458,7 +462,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -508,7 +512,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Nach oben">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -579,7 +583,7 @@
         
             <h4 id="about-card-name">Prince Chen</h4>
         
-            <div id="about-card-bio"><p>Xidian B/M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
+            <div id="about-card-bio"><p>Xidian B&#x2F;M EE <br> 热爱生活, 关爱老婆 <br> 友情链接 <a href="https://www.cnblogs.com/mengdd/">圣骑士</a></p>
 </div>
         
         
@@ -671,7 +675,8 @@
                             </span>
                         </span>
                         <div class="media-content hide-xs font-merryweather"><h2 id="Robolectric"><a href="#Robolectric" class="headerlink" title="Robolectric"></a>Robolectric</h2><p>Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyActivityTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  Activity activity = Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    Button pressMeButton = (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    TextView results = (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    String resultsText = results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">"Testing Android Rocks!"</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test class for MyActivity @RunWith(RobolectricTestRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyActivityTest</span> &#123;</span><br><span class="line"> </span><br><span class="line">  <span class="meta">@Test</span>   <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">clickingButton_shouldChangeResultsViewText</span><span class="params">()</span></span><br><span class="line"><span class="keyword">throws</span> Exception &#123;</span><br><span class="line">  <span class="type">Activity</span> <span class="variable">activity</span> <span class="operator">=</span> Robolectric.buildActivity(MyActivity.class).create().get();</span><br><span class="line">    <span class="type">Button</span> <span class="variable">pressMeButton</span> <span class="operator">=</span> (Button) activity.findViewById(R.id.press_me_button);</span><br><span class="line">    <span class="type">TextView</span> <span class="variable">results</span> <span class="operator">=</span> (TextView) activity.findViewById(R.id.results_text_view);</span><br><span class="line"></span><br><span class="line">    pressMeButton.performClick();</span><br><span class="line">    <span class="type">String</span> <span class="variable">resultsText</span> <span class="operator">=</span> results.getText().toString();</span><br><span class="line">    assertThat(resultsText, equalTo(<span class="string">&quot;Testing Android Rocks!&quot;</span>));   &#125; &#125;</span><br></pre></td></tr></table></figure>
+
 <p>Robolectric makes this possible by rewriting Android SDK classes as they’re being loaded and making it possible for them to run on a regular JVM. </p>
 <hr></div>
                     </div>
@@ -706,7 +711,7 @@
                                 
                             </span>
                         </span>
-                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。<br></div>
+                        <div class="media-content hide-xs font-merryweather"><p>Android Activity所涉及的四种Launch Mode与其重要的几个属性，如taskAffinity，allowTaskReparenting等，包括Intent内的各种Flag的功效，一直是为广大开发者所苦恼，网上文章众说纷纭，开发文档又及其模糊且与实际情况有一定偏差，那么今天我们就来真正的揭秘，还原事实的真相。</p></div>
                     </div>
                     <div style="clear:both;"></div>
                     <hr>
@@ -740,8 +745,8 @@
                             </span>
                         </span>
                         <div class="media-content hide-xs font-merryweather"><h1 id="Joda-Time"><a href="#Joda-Time" class="headerlink" title="Joda Time"></a>Joda Time</h1><p>Joda-Time提供了一组Java类包用于处理包括ISO8601标准在内的date和time。可以利用它把JDK Date和Calendar类完全替换掉，而且仍然能够提供很好的集成。  </p>
-<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6" target="_blank" rel="noopener">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &apos;joda-time:joda-time:2.6&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h2 id="Install"><a href="#Install" class="headerlink" title="Install"></a>Install</h2><p>Joda已经更新到2.6版本,jar包的下载可以到<a href="https://github.com/JodaOrg/joda-time/releases/tag/v2.6">Joda Jar</a>进行下载.<br>如果使用gradle管理,可添加 </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &#x27;joda-time:joda-time:2.6&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
                     </div>
                     <div style="clear:both;"></div>
                     <hr>
@@ -887,7 +892,7 @@
                             </span>
                         </span>
                         <div class="media-content hide-xs font-merryweather"><p>紧接<a href="http://talentprince.github.io/blog/2015/01/26/android-zhang-hao-yu-tong-bu-xi-tong-part-one/">上一部分</a></p>
-<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html" target="_blank" rel="noopener">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
+<h4 id="更新系统的建立"><a href="#更新系统的建立" class="headerlink" title="更新系统的建立"></a>更新系统的建立</h4><p>更新系统即是所说的<a href="http://developer.android.com/training/sync-adapters/creating-sync-adapter.html">SyncAdapter</a>, 实现了这个系统服务, 就可以利用系统的定时器对程序数据<code>ContentProvider</code>进行更新, 也可以在系统设置-&gt;账号里面控制开启或者关闭(如果<code>SyncAdapter</code>的配置文件允许的话)</p>
 <p>完成这些服务的布置大概有三步</p>
 <ul>
 <li>创建SyncService并提供SyncAdapter的IBinder接口以便让系统调用</li>
@@ -978,7 +983,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 51 篇文章
+                找到 52 篇文章
             </p>
         </div>
     </div>
@@ -988,7 +993,9 @@
         
 <div id="cover" style="background-image:url('/assets/images/new_cover.jpg');"></div>
         <!--SCRIPTS-->
+
 <script src="/assets/js/script-aps5gauztkpi1ygcutx4tgx00wcsooq0okdwjt46e3hduxfhmurq7md3aeoa.min.js"></script>
+
 <!--SCRIPTS END-->
 
 
@@ -996,8 +1003,12 @@
 
 
 
-    <script src="/assets/js/moment-with-locales.js"></script>
-    <script src="/assets/js/algoliasearch.js"></script>
+    
+<script src="/assets/js/moment-with-locales.js"></script>
+
+    
+<script src="/assets/js/algoliasearch.js"></script>
+
     <script>
       var algoliaClient = algoliasearch('Z7A3XW4R2I', '12db1ad54372045549ef465881c17e743');
       var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
